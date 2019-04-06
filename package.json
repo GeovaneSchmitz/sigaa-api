@@ -1,0 +1,11 @@
+{
+  "name": "sigga-api",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Geovane Schmitz <contato@geovanems.com.br>",
+  "license": "AGPL-3.0-only",
+  "private": false,
+  "dependencies": {
+    "jsdom": "^14.0.0"
+  }
+}
