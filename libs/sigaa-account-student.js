@@ -1,10 +1,10 @@
-const SigaaRequest = require('./sigaa-request')
+const SigaaRequest = require('./sigaa')
 const { JSDOM } = require('jsdom')
 ;('use strict')
 
 class SigaaAccount extends SigaaRequest {
-  constructor (cache) {
-    super(cache)
+  constructor (urlBase, cache) {
+    super(urlBase, cache)
   }
   
 }

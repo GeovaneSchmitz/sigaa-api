@@ -1,13 +1,13 @@
-const SigaaRequest = require('./sigaa-request')
+const Sigaa = require('./sigaa')
 const { JSDOM } = require('jsdom')
 ;('use strict')
 
-class SigaaAccount extends SigaaRequest {
-  constructor (cache) {
-    super(cache)
+class SigaaAccount extends Sigaa {
+  constructor (urlBase, cache) {
+    super(urlBase, cache)
   }
   getClasses (token) {
-    return this.get('/sigaa/portais/discente/discente.jsf', token).then(res => {
+    return this._get('/sigaa/portais/discente/discente.jsf', token).then(res => {
       return new Promise((resolve, reject) => {
         if (res.statusCode == 200) {
           let { document } = new JSDOM(res.body).window
@@ -46,15 +46,15 @@ class SigaaAccount extends SigaaRequest {
     })
   }
   getTopics (classId, token) {
-    return this.get('/sigaa/portais/discente/discente.jsf', token).then(res => {
+    return this._get('/sigaa/portais/discente/discente.jsf', token).then(res => {
       return new Promise((resolve, reject) => {
         if (res.statusCode == 200) {
-          let form = this.extractForm(res, 'form_acessarTurmaVirtual')
+          let form = this._extractForm(res, 'form_acessarTurmaVirtual')
 
           form.postOptions['form_acessarTurmaVirtual:turmaVirtual'] =
             'form_acessarTurmaVirtual:turmaVirtual'
           form.postOptions["idTurma"] = classId
-          resolve(this.post(form.action, form.postOptions, res.token))
+          resolve(this._post(form.action, form.postOptions, res.token))
         } else if (res.statusCode == 302) {
           reject({
             status: 'ERROR',
@@ -71,41 +71,66 @@ class SigaaAccount extends SigaaRequest {
     .then(res =>{
       return new Promise((resolve, reject) => {
         let { document } = new JSDOM(res.body).window
-        let contentEl = document.getElementById('conteudo')
-        let topicsEls;
-        if(contentEl){
-          topicsEls = contentEl.querySelectorAll(".topico-aula")
+        let contentElement = document.getElementById('conteudo')
+        let topicsElements;
+        if(contentElement){
+          topicsElements = contentElement.querySelectorAll(".topico-aula")
         }else{
           reject(classId)
         }
         let topics = []
-        for(let topicEl of topicsEls){
-          let topicTitleEl = topicEl.querySelector(".titulo")
-          let topicTitleFull = topicTitleEl.innerHTML.replace(/<[^>]+>| +(?= )|\t|\n/gm, '').trim()
+        for(let topicEl of topicsElements){
+          let topicTitleElement = topicEl.querySelector(".titulo")
+          let topicTitleFull = topicTitleElement.innerHTML.replace(/<[^>]+>| +(?= )|\t|\n/gm, '').trim()
           
           let topicDates = topicTitleFull.slice(topicTitleFull.lastIndexOf("(")+1, topicTitleFull.lastIndexOf(")"))
           let topicStartDate = topicDates.slice(0,topicDates.indexOf(" "))
           let topicEndDate = topicDates.slice(topicDates.lastIndexOf(" ")+1)
           let topicTitle = topicTitleFull.slice(0, topicTitleFull.lastIndexOf("("))
-          let topicContentEl = topicEl.querySelector(".conteudotopico")
-          let topicContent = decodeURI(topicContentEl.innerHTML.replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<a([\S\s]*?)>([\S\s]*?)<\/a>|<[^>]+>| +(?= )|\t/gm, '').trim())
+          let topicContentElement = topicEl.querySelector(".conteudotopico")
+          let topicContentText = decodeURI(this._removeTagsHtml(topicContentElement.innerHTML))
 
-          let topicFiles = []
+          let topicAttachments = []
 
 
-          if(topicContentEl.querySelector("a")){
-            for(let fileEl of topicContentEl.querySelectorAll("a")){
-              let file = {}
-              file.fileName = fileEl.innerHTML.replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<a([\S\s]*?)>([\S\s]*?)<\/a>|<[^>]+>| +(?= )|\t|\n/gm, '').trim()
-              file.id = fileEl.getAttribute("onclick").replace(/if([\S\s]*?)id,|'([\S\s]*?)false/gm,'')
-              topicFiles.push(file)
+          if(topicContentElement.querySelector("span[id] > div.item")){
+            for(let AttachmentElement of topicContentElement.querySelectorAll("span[id] > div.item")){
+              
+              let attachment = {
+                type:"",
+                title:"",
+                description:""
+              }
+
+              
+              let iconElement = AttachmentElement.querySelector("img")
+              if(iconElement.src.includes("questionario.png")){
+                attachment.type = "quiz"
+              }else if(iconElement.src.includes("video.png")){
+                attachment.type = "video";
+                attachment.src = AttachmentElement.querySelector("iframe").src;
+              }else if(iconElement.src.includes("survey.png")){
+                attachment.type = "survey"
+              }else{
+                attachment.type = "file"
+              }
+
+              let descriptionElement = AttachmentElement.querySelector("div.descricao-item").firstChild
+
+              attachment.description = decodeURI(this._removeTagsHtml(descriptionElement.innerHTML))
+              
+              let titleElement = AttachmentElement.querySelector("span").firstChild
+              attachment.title = titleElement.innerHTML.trim()
+
+              attachment.form = this._extractJSFCLJS(titleElement.getAttribute("onclick"), res)
+              topicAttachments.push(attachment)
             }
           }
           
           let topic = {};
           topic.title = topicTitle
-          topic.content = topicContent
-          topic.files = topicFiles
+          topic.contentText = topicContentText
+          topic.attachments = topicAttachments
 
           topic.startDate = topicStartDate
           topic.endDate = topicEndDate
@@ -115,58 +140,7 @@ class SigaaAccount extends SigaaRequest {
       })
     })
   }
-  getFile (fileId, classId, token, force) {
-    return this.get('/sigaa/portais/discente/discente.jsf', token,{noCache:force}).then(res => {
-      return new Promise((resolve, reject) => {
-        if (res.statusCode == 200) {
-          let form = this.extractForm(res, 'form_acessarTurmaVirtual')
-          form.postOptions['form_acessarTurmaVirtual:turmaVirtual'] =
-            'form_acessarTurmaVirtual:turmaVirtual'
-          form.postOptions["idTurma"] = classId
-          resolve(this.post(form.action, form.postOptions, res.token, {noCache:force}))
-        } else if (res.statusCode == 302) {
-          reject({
-            status: 'ERROR',
-            errorCode: 'INVALID_TOKEN'
-          })
-        } else {
-          reject({
-            status: 'ERROR',
-            errorCode: res.statusCode
-          })
-        }
-    })
-  })
-  .then(res =>{
-    return new Promise((resolve, reject) => {
-      if(res.statusCode == 200){
-        try{
-          var form = this.extractForm(res, 'formAva')
-        }catch(e){
-          reject({
-            status: 'ERROR',
-            errorCode: 'INVALID_TOKEN'
-          })
-        }
-        form.postOptions["formAva:j_id_jsp_1224201599_259:1:listaMateriais:0:idInserirMaterialArquivo"]="formAva:j_id_jsp_1224201599_259:1:listaMateriais:0:idInserirMaterialArquivo"
-        form.postOptions["id"] = fileId
-        resolve({
-          
-          postOptions
-        }
-        )
-      }else{
-        reject({
-          status: 'ERROR',
-          errorCode: res.statusCode
-        })
-      }
-      })
-    });
   
-  
-
-  }
 }
 
 module.exports = SigaaAccount

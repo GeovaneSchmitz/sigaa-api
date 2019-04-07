@@ -3,17 +3,23 @@ const querystring = require ('querystring');
 const {JSDOM} = require ('jsdom');
 
 ('use strict');
-class sigaaRequest {
-  constructor (cache) {
+class sigaa {
+  constructor (urlBase, cache) {
+    this.urlBase = urlBase;
     if (cache) {
       this._cache = cache;
       this._cacheStatus = true;
     } else {
       this._cacheStatus = false;
     }
-    this.urlBase = 'https://sigaa.ifsc.edu.br';
   }
-  _basicOptions (method, link,token) {
+  get urlBase(){
+    return this._urlBase
+  }
+  set urlBase(url){
+    this._urlBase = url;
+  }
+  _basicRequestOptions (method, link,token) {
     const basicOptions = {
       hostname: link.hostname,
       port: 443,
@@ -32,11 +38,11 @@ class sigaaRequest {
     }
     return options;
   }
-  post (path, postOptions, token, params) {
+  _post (path, postOptions, token, params) {
    
     let link = new URL (path, this.urlBase);
 
-    let options = this._basicOptions ('POST', link, token);
+    let options = this._basicRequestOptions ('POST', link, token);
 
     let postOptionsString = querystring.stringify (postOptions);
     options.headers['Content-Length'] = Buffer.byteLength (postOptionsString);
@@ -57,10 +63,10 @@ class sigaaRequest {
       }
     });
   }
-  get (path, token, params) {
+  _get (path, token, params) {
     let link = new URL (path, this.urlBase);
 
-    let options = this._basicOptions ('GET', link, token);
+    let options = this._basicRequestOptions ('GET', link, token);
 
     return new Promise ((resolve) => {
       if (this._cacheStatus  && !(params && params.noCache === true)) {
@@ -125,7 +131,19 @@ class sigaaRequest {
       req.end ();
     });
   }
-  extractForm (res, formName, options) {
+  _removeTagsHtml(string){
+    return string.replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>([\S\s]*?)<\/([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm, '').trim()
+  }
+  _extractJSFCLJS(javaScriptCode, res){
+    let formName = javaScriptCode.replace(/if([\S\s]*?)forms\['|'([\S\s]*?)false/gm,'')
+    let form = this._extractForm(res, formName, {submitInput:false})
+    let postOptions = javaScriptCode.replace(/if([\S\s]*?),'|'([\S\s]*?)false/gm,'').split(",")
+    for(let i = 0; i < postOptions.length;i=i+2){
+      form.postOptions[postOptions[i]] = postOptions[i+1]
+    }
+    return form;
+  }
+  _extractForm (res, formName, options) {
     if (options) {
       if (options.submitInput) {
         var query = 'input[name]';
@@ -144,7 +162,7 @@ class sigaaRequest {
       throw 'FORM_NOT_FOUND';
     }
     let form = {}
-    form.action = formEl.action;
+    form.action = new URL (formEl.action, this.urlBase).href;
     form.method = formEl.method;
     form.postOptions = {};
     for (let input of inputs) {
@@ -154,9 +172,9 @@ class sigaaRequest {
   }
   async followAllRedirect (res) {
     while (res.headers.location) {
-      res = await this.get (res.headers.location, res.token);
+      res = await this._get (res.headers.location, res.token);
     }
     return res;
   }
 }
-module.exports = sigaaRequest;
+module.exports = sigaa;

@@ -1,10 +1,10 @@
-const SigaaRequest = require('./sigaa-request')
+const Sigga = require('./sigaa')
 const { JSDOM } = require('jsdom')
 ;('use strict')
 
-class SigaaAccount extends SigaaRequest {
-  constructor (cache) {
-    super(cache)
+class SigaaAccount extends Sigga {
+  constructor (urlBase, cache) {
+    super(urlBase, cache)
   }
   login (user, password) {
     let postOptions = {
@@ -17,7 +17,7 @@ class SigaaAccount extends SigaaRequest {
       'user.login': user,
       'user.senha': password
     }
-    return this.post('/sigaa/logar.do?dispatch=logOn', postOptions)
+    return this._post('/sigaa/logar.do?dispatch=logOn', postOptions)
       .then(res => {
         return this.followAllRedirect(res)
       })
@@ -28,6 +28,7 @@ class SigaaAccount extends SigaaRequest {
             if (res.url.pathname.includes('logar.do')) {
               response.status = 'ERROR'
               response.errorCode = 'WRONG_CREDENTIALS'
+              reject(response)
             } else {
               if (res.url.pathname.includes('discente')) {
                 response.status = 'LOGGED'
@@ -54,7 +55,7 @@ class SigaaAccount extends SigaaRequest {
   }
 
   logoff (token) {
-    return this.get('/sigaa/logar.do?dispatch=logOff', token)
+    return this._get('/sigaa/logar.do?dispatch=logOff', token)
       .then(res => {
         return this.followAllRedirect(res)
       })
@@ -72,7 +73,7 @@ class SigaaAccount extends SigaaRequest {
       })
   }
   setNewPassword (oldPassword, newPassword, token) {
-    return this.get('/sigaa/alterar_dados.jsf', token)
+    return this._get('/sigaa/alterar_dados.jsf', token)
       .then(res => {
         return new Promise((resolve, reject) => {
           if (res.statusCode == 302) {
@@ -99,9 +100,9 @@ class SigaaAccount extends SigaaRequest {
             res.statusCode == 200 &&
             res.url.href.includes('usuario/alterar_dados.jsf')
           ) {
-            let form = this.extractForm(res, 'form', {submitInput:false})
+            let form = this._extractForm(res, 'form', {submitInput:false})
             form.postOptions['form:alterarSenha'] = 'form:alterarSenha'
-            resolve(this.post(form.action, form.postOptions, res.token))
+            resolve(this._post(form.action, form.postOptions, res.token))
           } else {
             reject({
               status: 'ERROR',
@@ -113,11 +114,11 @@ class SigaaAccount extends SigaaRequest {
       .then(res => {
         return new Promise((resolve, reject) => {
           if (res.statusCode == 200) {
-            let form = this.extractForm(res, 'form', {submitInput:true})
+            let form = this._extractForm(res, 'form', {submitInput:true})
             form.postOptions['form:senhaAtual'] = oldPassword
             form.postOptions['form:novaSenha'] = newPassword
             form.postOptions['form:repetnNovaSenha'] = newPassword
-            resolve(this.post(form.action, form.postOptions, res.token))
+            resolve(this._post(form.action, form.postOptions, res.token))
           } else {
             reject({
               status: 'ERROR',
