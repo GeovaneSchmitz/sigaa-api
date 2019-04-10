@@ -159,6 +159,7 @@ class sigaa {
     if (formEl) {
       var inputs = formEl.querySelectorAll (query);
     } else {
+      console.log(res.body)
       throw 'FORM_NOT_FOUND';
     }
     let form = {}
