@@ -1,11 +1,5 @@
 const Sigaa = require ('..');
-const https = require ('https');
-const fs = require ('fs');
-const path = require ('path');
-const querystring = require ('querystring');
-
 const sigaa = new Sigaa ();
-
 
 // put your crendecias
 var userName = '';
@@ -22,22 +16,32 @@ sigaa.account
       token: random string
     }
     */
-    if(res.userType === 'STUDENT'){
+    if (res.userType === 'STUDENT') {
       token = res.token; // this stores access token
       return sigaa.classStudent.getClasses (res.token); // this return a array with all classes
-    }else{
-      throw 'user is not a student'
+    } else {
+      throw 'user is not a student';
     }
   })
   .then (classes => {
-    let studentClass = classes[1]
-    return sigaa.classStudent.getTopics(studentClass.id, token)
+    async function viewGrade () {
+      for (let studentClass of classes) {
+        let grade = await sigaa.classStudent
+          .getGrades (classes[6].id, token)
+          .catch (data => {
+            console.log (data);
+          });
+        console.log(classes[6].name)
+        console.log(grade)
+      }
+    }
+    return viewGrade()
   })
-  .then ((data) => {
-    return sigaa.account.logoff (token) // logoff afeter finished downloads
- 
+  .then (data => {
+    console.log (data);
+
+    return sigaa.account.logoff (token); // logoff afeter finished downloads
   })
   .catch (data => {
     console.log (data);
   });
-  

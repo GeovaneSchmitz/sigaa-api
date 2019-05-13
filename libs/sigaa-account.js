@@ -1,6 +1,7 @@
 const Sigga = require('./sigaa')
 const { JSDOM } = require('jsdom')
-;('use strict')
+
+'use strict'
 
 class SigaaAccount extends Sigga {
   constructor (urlBase, cache) {
@@ -100,7 +101,7 @@ class SigaaAccount extends Sigga {
             res.statusCode == 200 &&
             res.url.href.includes('usuario/alterar_dados.jsf')
           ) {
-            let form = this._extractForm(res, 'form', {submitInput:false})
+            let form = this._extractForm(res.body, 'form', {submitInput:false})
             form.postOptions['form:alterarSenha'] = 'form:alterarSenha'
             resolve(this._post(form.action, form.postOptions, res.token))
           } else {
@@ -114,7 +115,7 @@ class SigaaAccount extends Sigga {
       .then(res => {
         return new Promise((resolve, reject) => {
           if (res.statusCode == 200) {
-            let form = this._extractForm(res, 'form', {submitInput:true})
+            let form = this._extractForm(res.body, 'form', {submitInput:true})
             form.postOptions['form:senhaAtual'] = oldPassword
             form.postOptions['form:novaSenha'] = newPassword
             form.postOptions['form:repetnNovaSenha'] = newPassword

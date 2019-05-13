@@ -1,264 +1,319 @@
-const Sigaa = require('./sigaa')
-const { JSDOM } = require('jsdom')
-;('use strict')
+const Sigaa = require('./sigaa');
+const { JSDOM } = require('jsdom');
+('use strict');
 
 class SigaaAccount extends Sigaa {
-  constructor (urlBase, cache) {
-    super(urlBase, cache)
+  constructor(urlBase, cache) {
+    super(urlBase, cache);
   }
-  getClasses (token) {
-    return this._get('/sigaa/portais/discente/discente.jsf', token).then(res => {
+  getClasses(token) {
+    return this._get(
+      '/sigaa/portais/discente/discente.jsf',
+      token
+    ).then(res => {
       return new Promise((resolve, reject) => {
         if (res.statusCode == 200) {
-          let { document } = new JSDOM(res.body).window
+          let { document } = new JSDOM(res.body).window;
           let tbodyClasses = document
             .querySelector('div#turmas-portal.simple-panel')
             .querySelector("table[style='margin-top: 1%;']")
-            .querySelector('tbody')
-          let trsClasses = tbodyClasses.querySelectorAll("tr[class=''], tr.odd")
-          let list = []
+            .querySelector('tbody');
+          let trsClasses = tbodyClasses.querySelectorAll(
+            "tr[class=''], tr.odd"
+          );
+          let list = [];
           for (var i = 0; i < trsClasses.length; i++) {
-            let tds = trsClasses[i].querySelectorAll('td')
-            let name = tds[0].querySelector('a').innerHTML
-            let id = tds[0].querySelector("input[name='idTurma']").value
-            let location = tds[1].innerHTML
-            let schedule = tds[2].firstChild.innerHTML.replace(/\t|\n/g, '')
+            let tds = trsClasses[i].querySelectorAll('td');
+            let name = tds[0].querySelector('a').innerHTML;
+            let id = tds[0].querySelector("input[name='idTurma']").value;
+            let location = tds[1].innerHTML;
+            let schedule = tds[2].firstChild.innerHTML.replace(/\t|\n/g, '');
             list.push({
               name,
               id,
               location,
-              schedule
-            })
+              schedule,
+            });
           }
-          resolve(list)
+          resolve(list);
         } else if (res.statusCode == 302) {
           reject({
             status: 'ERROR',
-            errorCode: 'INVALID_TOKEN'
-          })
+            errorCode: 'INVALID_TOKEN',
+          });
         } else {
           reject({
             status: 'ERROR',
-            errorCode: res.statusCode
-          })
+            errorCode: res.statusCode,
+          });
         }
-      })
-    })
+      });
+    });
   }
-  _requestClassPage(classId, token){
+  _requestClassPage(classId, token) {
     return this._get('/sigaa/portais/discente/discente.jsf', token)
-    .then(res => {
-      return new Promise((resolve, reject) => {
-        if (res.statusCode == 200) {
-          
-          let form = this._extractForm(res, 'form_acessarTurmaVirtual')
-        
-          form.postOptions['form_acessarTurmaVirtual:turmaVirtual'] =
-            'form_acessarTurmaVirtual:turmaVirtual'
-          form.postOptions["idTurma"] = classId
-          resolve(this._post(form.action, form.postOptions, res.token))
-        } else if (res.statusCode == 302) {
-          reject({
-            status: 'ERROR',
-            errorCode: 'INVALID_TOKEN'
-          })
-        } else {
-          reject({
-            status: 'ERROR',
-            errorCode: res.statusCode
-          })
-        }
-      })
-    })
-    .then((res)=>{
-      return new Promise((resolve, reject) =>{
-        if(res.statusCode == 200){
-          if(res.body.includes("Comportamento Inesperado!")){
+      .then(res => {
+        return new Promise((resolve, reject) => {
+          if (res.statusCode == 200) {
+            let form = this._extractForm(res.body, 'form_acessarTurmaVirtual');
+
+            form.postOptions['form_acessarTurmaVirtual:turmaVirtual'] =
+              'form_acessarTurmaVirtual:turmaVirtual';
+            form.postOptions['idTurma'] = classId;
+            resolve(this._post(form.action, form.postOptions, res.token));
+          } else if (res.statusCode == 302) {
             reject({
-              status:'ERROR',
-              errorCode: 'INVALID_CLASS_TOKEN'
-            })
-          }else{
-            resolve(res)
+              status: 'ERROR',
+              errorCode: 'INVALID_TOKEN',
+            });
+          } else {
+            reject({
+              status: 'ERROR',
+              errorCode: res.statusCode,
+            });
           }
-        }else{
-          reject({
-            status: 'ERROR',
-            errorCode: res.statusCode
-          })
-        }
+        });
       })
-    })
-  }
-  getTopics (classId, token) {
-    return this._requestClassPage(classId, token)
-    .then(res =>{
-       return new Promise((resolve, reject) => {
-        let { document } = new JSDOM(res.body).window
-        let contentElement = document.getElementById('conteudo')
-        let topicsElements;
-        if(contentElement){
-          topicsElements = contentElement.querySelectorAll(".topico-aula")
-        }else{
-          reject(classId)
-        }
-        let topics = []
-        for(let topicEl of topicsElements){
-          let topicTitleElement = topicEl.querySelector(".titulo")
-          let topicTitleFull = topicTitleElement.innerHTML.replace(/<[^>]+>| +(?= )|\t|\n/gm, '').trim()
-          
-          let topicDates = topicTitleFull.slice(topicTitleFull.lastIndexOf("(")+1, topicTitleFull.lastIndexOf(")"))
-          let topicStartDate = topicDates.slice(0,topicDates.indexOf(" "))
-          let topicEndDate = topicDates.slice(topicDates.lastIndexOf(" ")+1)
-          let topicTitle = topicTitleFull.slice(0, topicTitleFull.lastIndexOf("("))
-          let topicContentElement = topicEl.querySelector(".conteudotopico")
-          let topicContentText = decodeURI(this._removeTagsHtml(topicContentElement.innerHTML))
-
-          let topicAttachments = []
-
-
-          if(topicContentElement.querySelector("span[id] > div.item")){
-            for(let AttachmentElement of topicContentElement.querySelectorAll("span[id] > div.item")){
-              
-              let attachment = {
-                type:"",
-                title:"",
-                description:""
-              }
-
-              
-              let iconElement = AttachmentElement.querySelector("img")
-              if(iconElement.src.includes("questionario.png")){
-                attachment.type = "quiz"
-              }else if(iconElement.src.includes("video.png")){
-                attachment.type = "video";
-                attachment.src = AttachmentElement.querySelector("iframe").src;
-              }else if(iconElement.src.includes("survey.png")){
-                attachment.type = "survey"
-              }else{
-                attachment.type = "file"
-              }
-
-              let descriptionElement = AttachmentElement.querySelector("div.descricao-item").firstChild
-
-              attachment.description = decodeURI(this._removeTagsHtml(descriptionElement.innerHTML))
-              
-              let titleElement = AttachmentElement.querySelector("span").firstChild
-              attachment.title = titleElement.innerHTML.trim()
-
-              attachment.form = this._extractJSFCLJS(titleElement.getAttribute("onclick"), res)
-              topicAttachments.push(attachment)
+      .then(res => {
+        return new Promise((resolve, reject) => {
+          if (res.statusCode == 200) {
+            if (res.body.includes('Comportamento Inesperado!')) {
+              reject({
+                status: 'ERROR',
+                errorCode: 'INVALID_CLASS_TOKEN',
+              });
+            } else {
+              resolve(res);
             }
+          } else {
+            reject({
+              status: 'ERROR',
+              errorCode: res.statusCode,
+            });
           }
-          
-          let topic = {};
-          topic.title = topicTitle
-          topic.contentText = topicContentText
-          topic.attachments = topicAttachments
-
-          topic.startDate = topicStartDate
-          topic.endDate = topicEndDate
-          topics.push(topic)
-        }
-        resolve(topics)
-      })
-    })
+        });
+      });
   }
-  getGrade (classId, token) {
-    return this._get('/sigaa/portais/discente/discente.jsf', token).then(res => {
+  getTopics(classId, token) {
+    return this._requestClassPage(classId, token).then(res => {
       return new Promise((resolve, reject) => {
-        if (res.statusCode == 200) {
-          let form = this._extractForm(res, 'form_acessarTurmaVirtual')
-
-          form.postOptions['form_acessarTurmaVirtual:turmaVirtual'] =
-            'form_acessarTurmaVirtual:turmaVirtual'
-          form.postOptions["idTurma"] = classId
-          return this._post(form.action, form.postOptions, res.token)
-        } else if (res.statusCode == 302) {
-          reject({
-            status: 'ERROR',
-            errorCode: 'INVALID_TOKEN'
-          })
+        let { document } = new JSDOM(res.body).window;
+        let contentElement = document.getElementById('conteudo');
+        let topicsElements;
+        if (contentElement) {
+          topicsElements = contentElement.querySelectorAll('.topico-aula');
         } else {
-          reject({
-            status: 'ERROR',
-            errorCode: res.statusCode
-          })
+          reject(classId);
         }
-      })
-    })
-    .then(res =>{
-      return new Promise((resolve, reject) => {
-        let { document } = new JSDOM(res.body).window
-        let contentElement = document.getElementById('conteudo')
-        let topicsElements;
-        if(contentElement){
-          topicsElements = contentElement.querySelectorAll(".topico-aula")
-        }else{
-          reject(classId)
-        }
-        let topics = []
-        for(let topicEl of topicsElements){
-          let topicTitleElement = topicEl.querySelector(".titulo")
-          let topicTitleFull = topicTitleElement.innerHTML.replace(/<[^>]+>| +(?= )|\t|\n/gm, '').trim()
-          
-          let topicDates = topicTitleFull.slice(topicTitleFull.lastIndexOf("(")+1, topicTitleFull.lastIndexOf(")"))
-          let topicStartDate = topicDates.slice(0,topicDates.indexOf(" "))
-          let topicEndDate = topicDates.slice(topicDates.lastIndexOf(" ")+1)
-          let topicTitle = topicTitleFull.slice(0, topicTitleFull.lastIndexOf("("))
-          let topicContentElement = topicEl.querySelector(".conteudotopico")
-          let topicContentText = decodeURI(this._removeTagsHtml(topicContentElement.innerHTML))
+        let topics = [];
+        for (let topicEl of topicsElements) {
+          let topicNameElement = topicEl.querySelector('.titulo');
+          let topicNameFull = topicNameElement.innerHTML
+            .replace(/<[^>]+>| +(?= )|\t|\n/gm, '')
+            .trim();
 
-          let topicAttachments = []
+          let topicDates = topicNameFull.slice(
+            topicNameFull.lastIndexOf('(') + 1,
+            topicNameFull.lastIndexOf(')')
+          );
+          let topicStartDate = topicDates.slice(0, topicDates.indexOf(' '));
+          let topicEndDate = topicDates.slice(
+            topicDates.lastIndexOf(' ') + 1
+          );
+          let topicName = topicNameFull.slice(
+            0,
+            topicNameFull.lastIndexOf('(')
+          );
+          let topicContentElement = topicEl.querySelector('.conteudotopico');
+          let topicContentText = decodeURI(
+            this._removeTagsHtml(topicContentElement.innerHTML)
+          );
 
+          let topicAttachments = [];
 
-          if(topicContentElement.querySelector("span[id] > div.item")){
-            for(let AttachmentElement of topicContentElement.querySelectorAll("span[id] > div.item")){
-              
+          if (topicContentElement.querySelector('span[id] > div.item')) {
+            for (let AttachmentElement of topicContentElement.querySelectorAll(
+              'span[id] > div.item'
+            )) {
               let attachment = {
-                type:"",
-                title:"",
-                description:""
+                type: '',
+                Name: '',
+                description: '',
+              };
+
+              let iconElement = AttachmentElement.querySelector('img');
+              if (iconElement.src.includes('questionario.png')) {
+                attachment.type = 'quiz';
+              } else if (iconElement.src.includes('video.png')) {
+                attachment.type = 'video';
+                attachment.src = AttachmentElement.querySelector('iframe').src;
+              } else if (iconElement.src.includes('survey.png')) {
+                attachment.type = 'survey';
+              } else {
+                attachment.type = 'file';
               }
 
+              let descriptionElement = AttachmentElement.querySelector(
+                'div.descricao-item'
+              ).firstChild;
+
+              attachment.description = decodeURI(
+                this._removeTagsHtml(descriptionElement.innerHTML)
+              );
+
+              let titleElement = AttachmentElement.querySelector('span')
+                .firstChild;
+              attachment.name = titleElement.innerHTML.trim();
+
+              attachment.form = this._extractJSFCLJS(
+                titleElement.getAttribute('onclick'),
+                res.body
+              );
+              topicAttachments.push(attachment);
+            }
+          }
+
+          let topic = {};
+          topic.name = topicName;
+          topic.contentText = topicContentText;
+          topic.attachments = topicAttachments;
+
+          topic.startDate = topicStartDate;
+          topic.endDate = topicEndDate;
+          topics.push(topic);
+        }
+        resolve(topics);
+      });
+    });
+  }
+  getGrades(classId, token) {
+    return this._requestClassPage(classId, token)
+      .then(res => {
+        return new Promise((resolve, reject) => {
+          let { document } = new JSDOM(res.body).window;
+
+          let getGradesBtnEl = Array.from(
+            document.querySelectorAll('div.itemMenu')
+          ).find(el => {
+            return el.textContent === 'Ver Notas';
+          });
+
+          let form = this._extractJSFCLJS(
+            getGradesBtnEl.parentElement.getAttribute('onclick'),
+            res.body
+          );
+          resolve(this._post(form.action, form.postOptions, token));
+        });
+      })
+      .then(res => {
+        return new Promise((resolve, reject) => {
+
+          let getCellByPositionColSpan = (ths, position) => {
+            var i = 0;
+            for (let tr of ths) {
+              i += tr.colSpan
+              if (i >= position) {
+                return tr;
+              }
+            }
+            return false;
+          }
+
+          let getPositionByCellColSpan = (ths, cell) => {
+            var i = 0;
+            for (let tr of ths) {
+              if (cell === tr) {
+                return i+1;
+              }
+              i += tr.colSpan
               
-              let iconElement = AttachmentElement.querySelector("img")
-              if(iconElement.src.includes("questionario.png")){
-                attachment.type = "quiz"
-              }else if(iconElement.src.includes("video.png")){
-                attachment.type = "video";
-                attachment.src = AttachmentElement.querySelector("iframe").src;
-              }else if(iconElement.src.includes("survey.png")){
-                attachment.type = "survey"
+            }
+            return false;
+          
+          }
+
+          let removeCellsWithName = [
+            '',
+            'Matrícula',
+            'Nome',
+            'Sit.',
+            'Faltas',
+          ];
+
+
+          let { document } = new JSDOM(res.body).window;
+          let theadTrs = document.querySelectorAll('thead tr');
+          let valueCells = document.querySelector('tbody tr').children;
+
+          let grades = [];
+          let theadTrsThs = [];
+
+          for (let theadTr of theadTrs) {
+            theadTrsThs.push(theadTr.querySelectorAll("th"))
+          }
+          
+          for (let i = 0; i < theadTrsThs[0].length; i++) {
+            let gradeGroupName = this._removeTagsHtml(theadTrsThs[0][i].innerHTML);
+            if (removeCellsWithName.indexOf(gradeGroupName) == -1) {
+              let gradeGroup = {
+                name:gradeGroupName,
+              }
+              let index = getPositionByCellColSpan(theadTrsThs[0], theadTrsThs[0][i])
+              if(theadTrsThs[0][i].colSpan == 1){
+                gradeGroup.value = parseFloat(this._removeTagsHtml(valueCells[index].innerHTML).replace(/,/g, '.'));
               }else{
-                attachment.type = "file"
+                gradeGroup.grades =[]
+                for (let j = index; j < index + theadTrsThs[0][i].colSpan; j++) {
+                  let cellName = getCellByPositionColSpan(theadTrsThs[1], j)
+                  gradeName = this._removeTagsHtml(cellName.innerHTML);                  
+                  gradeGroup.grades.push({
+                    name:gradeName
+                  })
+                }
               }
-
-              let descriptionElement = AttachmentElement.querySelector("div.descricao-item").firstChild
-
-              attachment.description = decodeURI(this._removeTagsHtml(descriptionElement.innerHTML))
-              
-              let titleElement = AttachmentElement.querySelector("span").firstChild
-              attachment.title = titleElement.innerHTML.trim()
-
-              attachment.form = this._extractJSFCLJS(titleElement.getAttribute("onclick"), res)
-              topicAttachments.push(attachment)
+              grades.push(gradeGroup)
             }
           }
           
-          let topic = {};
-          topic.title = topicTitle
-          topic.contentText = topicContentText
-          topic.attachments = topicAttachments
+          if(false){
+            let cell = getCellByPositionColSpan(theadTrsThs[0], i)
+            var gradeName = this._removeTagsHtml(cell.innerHTML);
+            let gradeGroup = {
+              name: gradeName
+            }
+            let colspan = theadTrsThs[0][i].colSpan;
+            if(colspan > 1){
+              gradeGroup.grades = []
+              for(let j =0, colspan=theadTrsThs[0][i].colSpan; j< colspan; j++){
+                let gradeId = theadTrsThs[1][i+j].id.substring(5);
+                
+                  let cell = getCellByPositionColSpan(theadTrsThs[0], i)
+                  var gradeName = this._removeTagsHtml(cell.innerHTML);
+                if(gradeId == true){
+                  var gradeName = document.querySelector(`input#denAval_${gradeId}`).value
+                }
 
-          topic.startDate = topicStartDate
-          topic.endDate = topicEndDate
-          topics.push(topic)
-        }
-        resolve(topics)
-      })
-    })
+              }
+            }else{
+              var gradeValue = parseFloat(this._removeTagsHtml(valueCells[i].innerHTML).replace(/,/g, '.'));
+            }
+            
+            
+
+            if (removeCellsWithName.indexOf(gradeName) == -1) {
+
+              let grade = {
+                name: gradeName,
+                value: gradeValue,
+              };
+              grades.push(grade);
+            }
+
+          }
+          resolve(grades);
+        });
+      });
   }
 }
 
-module.exports = SigaaAccount
+module.exports = SigaaAccount;

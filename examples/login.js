@@ -1,6 +1,6 @@
 const Sigaa = require ('..');
 
-const sigaa = new Sigaa ();
+const sigaa = new Sigaa ({cache:false});
 
 // put your crendecias
 var userName = '';

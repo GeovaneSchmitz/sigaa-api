@@ -2,7 +2,8 @@ const https = require ('https');
 const querystring = require ('querystring');
 const {JSDOM} = require ('jsdom');
 
-('use strict');
+'use strict'
+
 class sigaa {
   constructor (urlBase, cache) {
     this.urlBase = urlBase;
@@ -13,13 +14,13 @@ class sigaa {
       this._cacheStatus = false;
     }
   }
-  get urlBase(){
-    return this._urlBase
+  get urlBase () {
+    return this._urlBase;
   }
-  set urlBase(url){
+  set urlBase (url) {
     this._urlBase = url;
   }
-  _basicRequestOptions (method, link,token) {
+  _basicRequestOptions (method, link, token) {
     const basicOptions = {
       hostname: link.hostname,
       port: 443,
@@ -39,7 +40,6 @@ class sigaa {
     return options;
   }
   _post (path, postOptions, token, params) {
-   
     let link = new URL (path, this.urlBase);
 
     let options = this._basicRequestOptions ('POST', link, token);
@@ -68,13 +68,9 @@ class sigaa {
 
     let options = this._basicRequestOptions ('GET', link, token);
 
-    return new Promise ((resolve) => {
-      if (this._cacheStatus  && !(params && params.noCache === true)) {
-        var cachePage = this._cache.get (
-          'GET',
-          link.href,
-          options.headers
-        );
+    return new Promise (resolve => {
+      if (this._cacheStatus && !(params && params.noCache === true)) {
+        var cachePage = this._cache.get ('GET', link.href, options.headers);
       }
       if (cachePage) {
         cachePage.token = token;
@@ -105,17 +101,16 @@ class sigaa {
         });
 
         res.on ('end', () => {
-          if (this._cacheStatus && res.statusCode == 200){
-            this._cache.store(options.method, {
-              url:link,
-              requestHeaders:options.headers,
-              responseHeaders:res.headers,
-              body:res.body
+          if (this._cacheStatus && res.statusCode == 200) {
+            this._cache.store (options.method, {
+              url: link,
+              requestHeaders: options.headers,
+              responseHeaders: res.headers,
+              body: res.body,
             });
           }
           resolve (res);
         });
-
       });
 
       req.on ('error', e => {
@@ -127,23 +122,33 @@ class sigaa {
         reject (response);
       });
 
-      if(options.method == 'POST') req.write (postOptionsString);
+      if (options.method == 'POST') req.write (postOptionsString);
       req.end ();
     });
   }
-  _removeTagsHtml(string){
-    return string.replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>([\S\s]*?)<\/([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm, '').trim()
+  _removeTagsHtml (string) {
+    return string
+      .replace (
+        /<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>([\S\s]*?)<\/([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
+        ''
+      )
+      .trim ();
   }
-  _extractJSFCLJS(javaScriptCode, res){
-    let formName = javaScriptCode.replace(/if([\S\s]*?)forms\['|'([\S\s]*?)false/gm,'')
-    let form = this._extractForm(res, formName, {submitInput:false})
-    let postOptions = javaScriptCode.replace(/if([\S\s]*?),'|'([\S\s]*?)false/gm,'').split(",")
-    for(let i = 0; i < postOptions.length;i=i+2){
-      form.postOptions[postOptions[i]] = postOptions[i+1]
+  _extractJSFCLJS (javaScriptCode, htmlBody) {
+    let formName = javaScriptCode.replace (
+      /if([\S\s]*?)forms\['|'([\S\s]*?)false/gm,
+      ''
+    );
+    let form = this._extractForm (htmlBody, formName, {submitInput: false});
+    let postOptions = javaScriptCode
+      .replace (/if([\S\s]*?),'|'([\S\s]*?)false/gm, '')
+      .split (',');
+    for (let i = 0; i < postOptions.length; i = i + 2) {
+      form.postOptions[postOptions[i]] = postOptions[i + 1];
     }
     return form;
   }
-  _extractForm (res, formName, options) {
+  _extractForm (htmlBody, formName, options) {
     if (options) {
       if (options.submitInput) {
         var query = 'input[name]';
@@ -154,15 +159,14 @@ class sigaa {
       var query = 'input[name]';
     }
 
-    let {document} = new JSDOM (res.body).window;
+    let {document} = new JSDOM (htmlBody).window;
     let formEl = document.forms[formName];
     if (formEl) {
       var inputs = formEl.querySelectorAll (query);
     } else {
-      console.log(res.body)
       throw 'FORM_NOT_FOUND';
     }
-    let form = {}
+    let form = {};
     form.action = new URL (formEl.action, this.urlBase).href;
     form.method = formEl.method;
     form.postOptions = {};

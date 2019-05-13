@@ -50,7 +50,7 @@ sigaa.account
         for (let topic of topics) { //for each topic
           for (let attachment of topic.attachments) { 
             if (attachment.type == 'file') {
-              console.log(`--- ${attachment.title}`)
+              console.log(`> ${attachment.name}`)
               await downloadFile(studentClass, attachment);         
             }
           }
@@ -81,7 +81,7 @@ async function downloadFile(studentClass, attachment) {
       if (err && err.code != 'EEXIST')
         throw 'up';
 
-      let fileDestiny = path.join(BaseDestiny, studentClass.name, attachment.title);
+      let fileDestiny = path.join(BaseDestiny, studentClass.name, attachment.name);
       let file = fs.createWriteStream(fileDestiny);
 
       let link = new URL(attachment.form.action);
