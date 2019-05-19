@@ -128,8 +128,8 @@ class sigaa {
   }
   _removeTagsHtml (string) {
     return string
-      .replace (
-        /<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>([\S\s]*?)<\/([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
+      .replace(/\<p\>|'\n'|<br\/>|<br>|\t/gm, '\n').replace (
+        /<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
         ''
       )
       .trim ();

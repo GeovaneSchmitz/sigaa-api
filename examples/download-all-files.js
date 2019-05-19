@@ -1,6 +1,7 @@
 const Sigaa = require ('..');
 const https = require ('https');
 const fs = require ('fs');
+const uuid = require('uuid/v4');
 const path = require ('path');
 const querystring = require ('querystring');
 
@@ -15,7 +16,6 @@ var password = '';
 
 //this creates folder downloads
 let BaseDestiny = path.join (
-  '..',
   'downloads',
 );
 fs.mkdir(BaseDestiny, err => { 
@@ -81,8 +81,8 @@ async function downloadFile(studentClass, attachment) {
       if (err && err.code != 'EEXIST')
         throw 'up';
 
-      let fileDestiny = path.join(BaseDestiny, studentClass.name, attachment.name);
-      let file = fs.createWriteStream(fileDestiny);
+      let tmpFileDestiny = path.join(BaseDestiny, studentClass.name, uuid());
+      let file = fs.createWriteStream(tmpFileDestiny);
 
       let link = new URL(attachment.form.action);
       
@@ -106,12 +106,18 @@ async function downloadFile(studentClass, attachment) {
      
       // makes request
       var request = https.request(options, (response) => {
+        let filename = response.headers['content-disposition'].replace(/([\S\s]*?)filename=\"/gm, '').slice(0, -1);
+        let filepath = path.join(BaseDestiny, studentClass.name, filename)
         response.pipe(file); //save to file
+        
         file.on('finish', () => {
           file.close(resolve); // close() is async, call resolve after close completes.
+          fs.rename(tmpFileDestiny, filepath, (err)=>{
+            if (err) throw err;
+          })
         });
       }).on('error', (err) => {
-        fs.unlink(fileDestiny); // Delete the file async.
+        fs.unlink(tmpFileDestiny); // Delete the file async.
         reject(false);
       });
       request.write(postOptionsString); //send post parameters
