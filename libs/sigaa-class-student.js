@@ -126,7 +126,7 @@ class SigaaAccount extends Sigaa {
           );
           let topicContentElement = topicEl.querySelector('.conteudotopico');
           let topicContentText = decodeURI(
-            this._removeTagsHtml(topicContentElement.innerHTML)
+            this._removeTagsHtml(topicContentElement.innerHTML.replace(/\<div([\S\s]*?)div>/gm, ''))
           );
 
           let topicAttachments = [];
