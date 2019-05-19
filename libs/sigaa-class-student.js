@@ -283,7 +283,7 @@ class SigaaAccount extends Sigaa {
             var i = 0;
             for (let tr of ths) {
               if (cell === tr) {
-                return i + 1;
+                return i;
               }
               i += tr.colSpan
 
@@ -324,11 +324,26 @@ class SigaaAccount extends Sigaa {
               } else {
                 gradeGroup.grades = []
                 for (let j = index; j < index + theadTrsThs[0][i].colSpan; j++) {
-                  let cellName = getCellByPositionColSpan(theadTrsThs[1], j)
-                  gradeName = this._removeTagsHtml(cellName.innerHTML);
-                  gradeGroup.grades.push({
-                    name: gradeName
-                  })
+                  
+                  let gradeId = theadTrsThs[1][j].id.slice(5);
+
+                  if(gradeId !== ""){
+                    let gradeName = document.querySelector(`input#denAval_${gradeId}`).value
+                    let gradeAbbreviation = document.querySelector(`input#abrevAval_${gradeId}`).value
+                    let gradeWeight = document.querySelector(`input#pesoAval_${gradeId}`).value
+                    gradeGroup.grades.push({
+                      name: gradeName,
+                      abbreviation:gradeAbbreviation,
+                      weight:gradeWeight,
+                      value:parseFloat(this._removeTagsHtml(valueCells[j].innerHTML).replace(/,/g, '.'))
+                    })
+                  }else{
+                    let cellName = getCellByPositionColSpan(theadTrsThs[1], j + 1)
+                    var gradeName = this._removeTagsHtml(cellName.innerHTML);
+                    gradeGroup.average = parseFloat(this._removeTagsHtml(valueCells[j].innerHTML).replace(/,/g, '.'))
+ 
+                  }
+                  
                 }
               }
               grades.push(gradeGroup)

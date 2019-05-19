@@ -27,18 +27,16 @@ sigaa.account
     async function viewGrade () {
       for (let studentClass of classes) {
         let grade = await sigaa.classStudent
-          .getGrades (classes[6].id, token)
+          .getGrades (studentClass.id, token)
           .catch (data => {
             console.log (data);
           });
-        console.log(classes[6].name)
-        console.log(grade)
+        console.log(JSON.stringify(grade))
       }
     }
     return viewGrade()
   })
   .then (data => {
-    console.log (data);
 
     return sigaa.account.logoff (token); // logoff afeter finished downloads
   })
