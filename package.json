@@ -1,6 +1,6 @@
 {
-  "name": "sigga-api",
-  "version": "0.0.1",
+  "name": "sigaa-api",
+  "version": "0.0.2",
   "main": "index.js",
   "author": "Geovane Schmitz <contato@geovanems.com.br>",
   "license": "AGPL-3.0-only",
