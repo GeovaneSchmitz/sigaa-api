@@ -101,7 +101,9 @@ class SigaaAccount extends Sigga {
             res.statusCode == 200 &&
             res.url.href.includes('usuario/alterar_dados.jsf')
           ) {
-            let form = this._extractForm(res.body, 'form', {submitInput:false})
+            let {document} = new JSDOM (res.body).window;
+            let formEl = document.forms['form']
+            let form = this._extractForm(formEl, {submitInput:false})
             form.postOptions['form:alterarSenha'] = 'form:alterarSenha'
             resolve(this._post(form.action, form.postOptions, res.token))
           } else {
@@ -115,7 +117,9 @@ class SigaaAccount extends Sigga {
       .then(res => {
         return new Promise((resolve, reject) => {
           if (res.statusCode == 200) {
-            let form = this._extractForm(res.body, 'form', {submitInput:true})
+            let {document} = new JSDOM (res.body).window;
+            let formEl = document.forms['form']
+            let form = this._extractForm(formEl, {submitInput:true})
             form.postOptions['form:senhaAtual'] = oldPassword
             form.postOptions['form:novaSenha'] = newPassword
             form.postOptions['form:repetnNovaSenha'] = newPassword

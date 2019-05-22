@@ -135,11 +135,27 @@ class sigaa {
       .trim ();
   }
   _extractJSFCLJS (javaScriptCode, htmlBody) {
-    let formName = javaScriptCode.replace (
-      /if([\S\s]*?)forms\['|'([\S\s]*?)false/gm,
-      ''
-    );
-    let form = this._extractForm (htmlBody, formName, {submitInput: false});
+    let {document} = new JSDOM (htmlBody).window;
+
+    if(javaScriptCode.includes("getElementById")){
+      var formQuery = javaScriptCode.replace (
+        /if([\S\s]*?)getElementById\('|'([\S\s]*?)false/gm,
+        ''
+      );
+      var formEl = document.getElementById(formQuery)
+
+    }else if(javaScriptCode.includes("document.forms")){
+      var formQuery = javaScriptCode.replace (
+        /if([\S\s]*?)forms\['|'([\S\s]*?)false/gm,
+        ''
+      );
+      var formEl = document.forms[formQuery]
+    }
+    if(!formEl){
+      throw 'FORM_NOT_FOUND';
+    }
+        
+    let form = this._extractForm (formEl, {submitInput: false});
     let postOptions = javaScriptCode
       .replace (/if([\S\s]*?),'|'([\S\s]*?)false/gm, '')
       .split (',');
@@ -148,7 +164,10 @@ class sigaa {
     }
     return form;
   }
-  _extractForm (htmlBody, formName, options) {
+  _extractForm (formEl, options) {
+    if(!formEl){
+      throw 'FORM_NOT_FOUND';
+    }
     if (options) {
       if (options.submitInput) {
         var query = 'input[name]';
@@ -159,13 +178,8 @@ class sigaa {
       var query = 'input[name]';
     }
 
-    let {document} = new JSDOM (htmlBody).window;
-    let formEl = document.forms[formName];
-    if (formEl) {
-      var inputs = formEl.querySelectorAll (query);
-    } else {
-      throw 'FORM_NOT_FOUND';
-    }
+    var inputs = formEl.querySelectorAll (query);
+
     let form = {};
     form.action = new URL (formEl.action, this.urlBase).href;
     form.method = formEl.method;

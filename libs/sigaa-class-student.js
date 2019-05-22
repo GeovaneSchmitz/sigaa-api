@@ -55,7 +55,9 @@ class SigaaAccount extends Sigaa {
       .then(res => {
         return new Promise((resolve, reject) => {
           if (res.statusCode == 200) {
-            let form = this._extractForm(res.body, 'form_acessarTurmaVirtual');
+            let {document} = new JSDOM (res.body).window;
+            let formEl = document.forms['form_acessarTurmaVirtual']
+            let form = this._extractForm(formEl)
 
             form.postOptions['form_acessarTurmaVirtual:turmaVirtual'] =
               'form_acessarTurmaVirtual:turmaVirtual';
