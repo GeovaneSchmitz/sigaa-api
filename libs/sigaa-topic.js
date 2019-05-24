@@ -16,6 +16,7 @@ class SigaaTopic {
             this._name = options.name
             this._contextText = options.contentText
             this._startDate = options.startDate
+            this._endDate = options.endDate
             this._attachments = this._constructorAttachments(options.attachments)
         } else {
             throw "INVALID_TOPIC"
@@ -30,6 +31,12 @@ class SigaaTopic {
     }
     get attachments() {
         return this._attachments
+    }
+    get startDate() {
+        return this._startDate
+    }
+    get endDate() {
+        return this._endDate
     }
     _constructorAttachments(attachments) {
         let attachmentsClasses = []
