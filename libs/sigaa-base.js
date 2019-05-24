@@ -4,7 +4,7 @@ const {JSDOM} = require ('jsdom');
 
 'use strict'
 
-class sigaa {
+class sigaaBase {
   constructor (urlBase, cache) {
     this.urlBase = urlBase;
     if (cache) {
@@ -196,4 +196,4 @@ class sigaa {
     return res;
   }
 }
-module.exports = sigaa;
+module.exports = sigaaBase;

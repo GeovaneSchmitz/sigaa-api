@@ -7,8 +7,26 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Download All Files",
-            "program": "${workspaceFolder}/examples/download-all-files.js"
+            "name": "Download all fFiles",
+            "program": "${workspaceFolder}\\examples\\download-all-files.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "View classes",
+            "program": "${workspaceFolder}\\examples\\view-classes.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "View News",
+            "program": "${workspaceFolder}\\examples\\view-news.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "View grades",
+            "program": "${workspaceFolder}\\examples\\view-grades.js"
         }
     ]
 }

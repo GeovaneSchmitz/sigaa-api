@@ -2,51 +2,33 @@ const Sigaa = require ('..');
 const sigaa = new Sigaa ();
 
 // put your crendecias
-var userName = '';
+var username = '';
 var password = '';
 
-let token;
+let account;
 
-sigaa.account
-  .login (userName, password) // login
-  .then (res => {
-    /* res = {
-      status:'LOGGED',
-      userType:'STUDENT',
-      token: random string
-    }
-    */
-    if (res.userType === 'STUDENT') {
-      token = res.token; // this stores access token
-      return sigaa.classStudent.getClasses (res.token); // this return a array with all classes
-    } else {
-      throw 'user is not a student';
-    }
+sigaa.login (username, password) // login
+  .then (sigaaAccount => {
+    let account = sigaaAccount;
+    return account.getClasses (); // this return a array with all classes
+
   })
   .then (classes => {
-    async function viewNews () {
-      for (let studentClass of classes) {
-        let news = await sigaa.classStudent
-          .getNewsIndex (studentClass.id, token)
-          .catch (data => {
-            console.log (data);
-          });
-        console.log(studentClass.name)
-        for(let a of news){
-        let newa = await sigaa.classStudent.getNews(a.newsId, token)
-        console.log(newa.name)
-        console.log(newa.date)
-        console.log(newa.content)  
+    return (async () => {
+      for (let classStudent of classes) {
+        console.log(classStudent.name)
+        let newsIndexList = await classStudent.getNewsIndex()
+        for(let newsIndex of newsIndexList){
+          let news = await classStudent.getNews(newsIndex.newsId)
+          console.log(news)
         }
       }
-    }
-    return viewNews()
+    })();
   })
-  .then (data => {
-    console.log (data);
+  .then (() => {
 
-    return sigaa.account.logoff (token); // logoff afeter finished downloads
+    return account.logoff (); // logoff afeter finished 
   })
-  .catch (data => {
-    console.log (data);
+  .catch (err => {
+    console.log (err);
   });

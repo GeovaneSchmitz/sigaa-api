@@ -1,55 +1,36 @@
-const Sigaa = require('./sigaa');
+const SigaaBase = require('./sigaa-base');
 const SigaaTopic = require('./sigaa-topic')
 const { JSDOM } = require('jsdom');
 ('use strict');
 
-class SigaaAccount extends Sigaa {
-  constructor(urlBase, cache) {
-    super(urlBase, cache);
+class SigaaClassStudent extends SigaaBase {
+  constructor(classParam, options) {
+    super(options.urlBase, options.cache);
+    if (classParam.name != undefined &&
+        classParam.id != undefined &&
+        classParam.location != undefined &&
+        classParam.schedule != undefined) {
+        this._name = classParam.name
+        this._id = classParam.id
+        this._location = classParam.location
+        this._schedule = classParam.schedule
+    } else {
+        throw "INVALID_CLASS_OPTIONS"
+    }
+    if (!options.token) {
+        throw "ATTACHMENT_TOKEN_IS_NECESSARY"
+    }
+    this._token = options.token;
+
   }
-  getClasses(token) {
-    return this._get(
-      '/sigaa/portais/discente/discente.jsf',
-      token
-    ).then(res => {
-      return new Promise((resolve, reject) => {
-        if (res.statusCode == 200) {
-          let { document } = new JSDOM(res.body).window;
-          let tbodyClasses = document
-            .querySelector('div#turmas-portal.simple-panel')
-            .querySelector("table[style='margin-top: 1%;']")
-            .querySelector('tbody');
-          let trsClasses = tbodyClasses.querySelectorAll(
-            "tr[class=''], tr.odd"
-          );
-          let list = [];
-          for (var i = 0; i < trsClasses.length; i++) {
-            let tds = trsClasses[i].querySelectorAll('td');
-            let name = tds[0].querySelector('a').innerHTML;
-            let id = tds[0].querySelector("input[name='idTurma']").value;
-            let location = tds[1].innerHTML;
-            let schedule = tds[2].firstChild.innerHTML.replace(/\t|\n/g, '');
-            list.push({
-              name,
-              id,
-              location,
-              schedule,
-            });
-          }
-          resolve(list);
-        } else if (res.statusCode == 302) {
-          reject({
-            status: 'ERROR',
-            errorCode: 'INVALID_TOKEN',
-          });
-        } else {
-          reject({
-            status: 'ERROR',
-            errorCode: res.statusCode,
-          });
-        }
-      });
-    });
+  get name(){
+    return this._name
+  }
+  get location(){
+    return this._location
+  }
+  get stringSchedule(){
+    return this._schedule
   }
   _requestClassPage(classId, token) {
     return this._get('/sigaa/portais/discente/discente.jsf', token)
@@ -97,8 +78,8 @@ class SigaaAccount extends Sigaa {
         });
       });
   }
-  getTopics(classId, token) {
-    return this._requestClassPage(classId, token).then(res => {
+  getTopics() {
+    return this._requestClassPage(this._id, this._token).then(res => {
       return new Promise((resolve, reject) => {
         
         let { document } = new JSDOM(res.body).window;
@@ -107,7 +88,7 @@ class SigaaAccount extends Sigaa {
         if (contentElement) {
           topicsElements = contentElement.querySelectorAll('.topico-aula');
         } else {
-          reject(classId);
+          reject(this._id);
         }
         let topics = [];
         for (let topicEl of topicsElements) {
@@ -184,15 +165,15 @@ class SigaaAccount extends Sigaa {
             attachments:topicAttachments,
             startDate:topicStartDate,
             endDate:topicEndDate,
-          }, token)
+          }, this._token)
           topics.push(topic)
         }
         resolve(topics);
       });
     });
   }
-  getNewsIndex(classId, token) {
-    return this._requestClassPage(classId, token)
+  getNewsIndex() {
+    return this._requestClassPage(this._id, this._token)
       .then(res => {
         return new Promise((resolve, reject) => {
           let { document } = new JSDOM(res.body).window;
@@ -207,7 +188,7 @@ class SigaaAccount extends Sigaa {
             newsBtnEl.parentElement.getAttribute('onclick'),
             res.body
           );
-          resolve(this._post(form.action, form.postOptions, token));
+          resolve(this._post(form.action, form.postOptions, this._token));
         });
       })
       .then(res => {
@@ -234,8 +215,8 @@ class SigaaAccount extends Sigaa {
 
       })
   }
-  getNews(newsId, token) {
-    return this._post(newsId.action, newsId.postOptions, token)
+  getNews(newsId) {
+    return this._post(newsId.action, newsId.postOptions, this._token)
       .then(res => {
         return new Promise((resolve, reject) => {
           let { document } = new JSDOM(res.body).window;
@@ -251,8 +232,8 @@ class SigaaAccount extends Sigaa {
 
       })
   }
-  getGrades(classId, token) {
-    return this._requestClassPage(classId, token)
+  getGrades() {
+    return this._requestClassPage(this._id, this._token)
       .then(res => {
         return new Promise((resolve, reject) => {
           let { document } = new JSDOM(res.body).window;
@@ -267,7 +248,7 @@ class SigaaAccount extends Sigaa {
             getGradesBtnEl.parentElement.getAttribute('onclick'),
             res.body
           );
-          resolve(this._post(form.action, form.postOptions, token));
+          resolve(this._post(form.action, form.postOptions, this._token));
         });
       })
       .then(res => {
@@ -360,4 +341,4 @@ class SigaaAccount extends Sigaa {
   }
 }
 
-module.exports = SigaaAccount;
+module.exports = SigaaClassStudent;
