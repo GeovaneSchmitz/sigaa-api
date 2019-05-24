@@ -1,13 +1,77 @@
-const Sigga = require('./sigaa')
 const { JSDOM } = require('jsdom')
+
+
+const SigaaBase = require('./sigaa-base')
+const SigaaClassStudent = require('./sigaa-class-student')
 
 'use strict'
 
-class SigaaAccount extends Sigga {
-  constructor (urlBase, cache) {
-    super(urlBase, cache)
+class SigaaAccount extends SigaaBase {
+  constructor (username, password, options) {
+    super(options.urlBase, options.cache)
+    return this._login(username, password) 
   }
-  login (user, password) {
+
+
+  getClasses() {
+    return new Promise((resolve, reject) => {
+      if(this._userType !== "STUDENT"){
+        reject("USER_IS_NOT_A_STUDENT")
+      }
+      if(this._status !== 'LOGGED'){
+        reject("USER_IS_NOT_LOGGED")
+      }
+      resolve()
+    }).then(() => {
+      return this._get(
+        '/sigaa/portais/discente/discente.jsf',
+        this._token)
+    }).then(res => {
+      return new Promise((resolve, reject) => {
+        if (res.statusCode == 200) {
+          let { document } = new JSDOM(res.body).window;
+          let tbodyClasses = document
+            .querySelector('div#turmas-portal.simple-panel')
+            .querySelector("table[style='margin-top: 1%;']")
+            .querySelector('tbody');
+          let trsClasses = tbodyClasses.querySelectorAll(
+            "tr[class=''], tr.odd"
+          );
+          let list = [];
+          for (var i = 0; i < trsClasses.length; i++) {
+            let tds = trsClasses[i].querySelectorAll('td');
+            let name = tds[0].querySelector('a').innerHTML;
+            let id = tds[0].querySelector("input[name='idTurma']").value;
+            let location = tds[1].innerHTML;
+            let schedule = tds[2].firstChild.innerHTML.replace(/\t|\n/g, '');
+            
+            list.push(new SigaaClassStudent({
+              name,
+              id,
+              location,
+              schedule,
+            }, {
+              token: this._token,
+              urlBase: this._urlBase,
+              cache: this._cache
+            }));
+          }
+          resolve(list);
+        } else if (res.statusCode == 302) {
+          reject({
+            status: 'ERROR',
+            errorCode: 'INVALID_TOKEN',
+          });
+        } else {
+          reject({
+            status: 'ERROR',
+            errorCode: res.statusCode,
+          });
+        }
+      });
+    });
+  }
+  _login (username, password) {
     let postOptions = {
       width: 1920,
       height: 1080,
@@ -15,48 +79,50 @@ class SigaaAccount extends Sigga {
       subsistemaRedirect: '',
       acao: '',
       acessibilidade: '',
-      'user.login': user,
+      'user.login': username,
       'user.senha': password
     }
+
     return this._post('/sigaa/logar.do?dispatch=logOn', postOptions)
       .then(res => {
         return this.followAllRedirect(res)
       })
       .then(res => {
         return new Promise((resolve, reject) => {
-          let response = {}
           if (res.statusCode == 200) {
             if (res.url.pathname.includes('logar.do')) {
-              response.status = 'ERROR'
-              response.errorCode = 'WRONG_CREDENTIALS'
-              reject(response)
+              reject({ 
+                status:'ERROR',
+                errorCode: 'WRONG_CREDENTIALS'
+              })
             } else {
               if (res.url.pathname.includes('discente')) {
-                response.status = 'LOGGED'
-                response.userType = 'STUDENT'
-                response.token = res.token
+                this._status = 'LOGGED'
+                this._userType = 'STUDENT'
               } else if (res.url.pathname.includes('docente')) {
-                response.status = 'LOGGED'
-                response.userType = 'TEACHER'
-                response.token = res.token
+                this._status = 'LOGGED'
+                this._userType = 'TEACHER'
               } else {
-                response.status = 'LOGGED'
-                response.userType = 'UNKNOWN'
-                response.token = res.token
+                this._status = 'LOGGED'
+                this._userType = 'UNKNOWN'
               }
+              this._token = res.token
+              resolve(this)
+
             }
-            resolve(response)
+            resolve(this)
           } else {
-            response.status = 'ERROR'
-            response.errorCode = res.statusCode
-            reject(response)
+            reject({
+              status:'ERROR',
+              errorCode:res.statusCode
+            })
           }
         })
       })
   }
 
-  logoff (token) {
-    return this._get('/sigaa/logar.do?dispatch=logOff', token)
+  logoff () {
+    return this._get('/sigaa/logar.do?dispatch=logOff', this._token)
       .then(res => {
         return this.followAllRedirect(res)
       })
@@ -73,8 +139,8 @@ class SigaaAccount extends Sigga {
         }
       })
   }
-  setNewPassword (oldPassword, newPassword, token) {
-    return this._get('/sigaa/alterar_dados.jsf', token)
+  setNewPassword (oldPassword, newPassword) {
+    return this._get('/sigaa/alterar_dados.jsf', this._token)
       .then(res => {
         return new Promise((resolve, reject) => {
           if (res.statusCode == 302) {

@@ -19,8 +19,6 @@ class Sigaa {
             this._cache = new SigaaCache()
             this.urlBase = 'https://sigaa.ifsc.edu.br'
         }
-        this.account = new SigaaAccount(this.urlBase, this._cache)
-        this.classStudent = new SigaaClassStudent(this.urlBase, this._cache)
     }
     get urlBase(){
         return this._urlBase
@@ -31,6 +29,9 @@ class Sigaa {
         }else{
             throw 'urlBase is not a string'
         }
+    }
+    login(username, password){
+        return new SigaaAccount(username, password, {urlBase:this.urlBase, cache:this._cache})
     }
 }
 

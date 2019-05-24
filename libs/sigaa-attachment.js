@@ -1,11 +1,11 @@
-const Sigaa = require("./sigaa")
+const SigaaBase = require("./sigaa-base")
 const fs = require("fs")
 const https = require("https")
 const path = require("path")
 const querystring = require("querystring");
 ('use strict');
 
-class SigaaAttachment extends Sigaa {
+class SigaaAttachment extends SigaaBase {
     constructor(options, token) {
         super()
         if (options.type != undefined &&
@@ -32,6 +32,9 @@ class SigaaAttachment extends Sigaa {
     get type() {
         return this._type;
     }
+    get id(){
+        return this._form.postOptions.id
+    }
     downloadFile(basepath) {
         if (this.type == "file") {
             return new Promise((resolve, reject) => {
@@ -52,9 +55,9 @@ class SigaaAttachment extends Sigaa {
                     if(response.statusCode === 200){
                         
                         if (fileStats.isDirectory()) {
-                            let filename = response.headers['content-disposition']
-                            .replace(/([\S\s]*?)filename=\"/gm, '').slice(0, -1);
-                            var filepath = path.join(basepath, filename)
+                                let filename = response.headers['content-disposition']
+                                .replace(/([\S\s]*?)filename=\"/gm, '').slice(0, -1);
+                                var filepath = path.join(basepath, filename)
                         }else{
                             var filepath = basepath
                         }
