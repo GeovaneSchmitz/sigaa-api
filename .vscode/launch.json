@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Download All Files",
-            "program": "${workspaceFolder}\\examples\\download-all-files.js"
+            "program": "${workspaceFolder}/examples/download-all-files.js"
         }
     ]
 }

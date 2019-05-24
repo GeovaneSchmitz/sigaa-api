@@ -1,4 +1,5 @@
 const Sigaa = require('./sigaa');
+const SigaaTopic = require('./sigaa-topic')
 const { JSDOM } = require('jsdom');
 ('use strict');
 
@@ -99,6 +100,7 @@ class SigaaAccount extends Sigaa {
   getTopics(classId, token) {
     return this._requestClassPage(classId, token).then(res => {
       return new Promise((resolve, reject) => {
+        
         let { document } = new JSDOM(res.body).window;
         let contentElement = document.getElementById('conteudo');
         let topicsElements;
@@ -139,7 +141,7 @@ class SigaaAccount extends Sigaa {
             )) {
               let attachment = {
                 type: '',
-                Name: '',
+                title: '',
                 description: '',
               };
 
@@ -165,7 +167,7 @@ class SigaaAccount extends Sigaa {
 
               let titleElement = AttachmentElement.querySelector('span')
                 .firstChild;
-              attachment.name = titleElement.innerHTML.trim();
+              attachment.title = titleElement.innerHTML.trim();
 
               attachment.form = this._extractJSFCLJS(
                 titleElement.getAttribute('onclick'),
@@ -175,14 +177,15 @@ class SigaaAccount extends Sigaa {
             }
           }
 
-          let topic = {};
-          topic.name = topicName;
-          topic.contentText = topicContentText;
-          topic.attachments = topicAttachments;
-
-          topic.startDate = topicStartDate;
-          topic.endDate = topicEndDate;
-          topics.push(topic);
+      
+          let topic = new SigaaTopic({
+            name:topicName,
+            contentText:topicContentText,
+            attachments:topicAttachments,
+            startDate:topicStartDate,
+            endDate:topicEndDate,
+          }, token)
+          topics.push(topic)
         }
         resolve(topics);
       });
@@ -350,42 +353,6 @@ class SigaaAccount extends Sigaa {
               }
               grades.push(gradeGroup)
             }
-          }
-
-          if (false) {
-            let cell = getCellByPositionColSpan(theadTrsThs[0], i)
-            var gradeName = this._removeTagsHtml(cell.innerHTML);
-            let gradeGroup = {
-              name: gradeName
-            }
-            let colspan = theadTrsThs[0][i].colSpan;
-            if (colspan > 1) {
-              gradeGroup.grades = []
-              for (let j = 0, colspan = theadTrsThs[0][i].colSpan; j < colspan; j++) {
-                let gradeId = theadTrsThs[1][i + j].id.substring(5);
-
-                let cell = getCellByPositionColSpan(theadTrsThs[0], i)
-                var gradeName = this._removeTagsHtml(cell.innerHTML);
-                if (gradeId == true) {
-                  var gradeName = document.querySelector(`input#denAval_${gradeId}`).value
-                }
-
-              }
-            } else {
-              var gradeValue = parseFloat(this._removeTagsHtml(valueCells[i].innerHTML).replace(/,/g, '.'));
-            }
-
-
-
-            if (removeCellsWithName.indexOf(gradeName) == -1) {
-
-              let grade = {
-                name: gradeName,
-                value: gradeValue,
-              };
-              grades.push(grade);
-            }
-
           }
           resolve(grades);
         });
