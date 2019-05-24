@@ -13,11 +13,10 @@ class Sigaa {
             if(params.urlBase){
                 this.urlBase = params.urlBase
             }else{
-                this.urlBase = 'https://sigaa.ifsc.edu.br'
+                throw "SIGAA_URLBASE_IS_NECESSARY"
             }
         }else{
-            this._cache = new SigaaCache()
-            this.urlBase = 'https://sigaa.ifsc.edu.br'
+            throw "SIGAA_OPTIONS_IS_NECESSARY"
         }
     }
     get urlBase(){
