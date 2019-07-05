@@ -103,7 +103,7 @@ class SigaaAttachment extends SigaaBase {
                     }else{
                         reject({
                             status: 'ERROR',
-                            errorCode: res.statusCode
+                            errorCode: response.statusCode
                         })
                     }
                 });
