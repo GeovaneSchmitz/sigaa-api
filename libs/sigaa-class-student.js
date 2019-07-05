@@ -23,6 +23,9 @@ class SigaaClassStudent extends SigaaBase {
     this._token = options.token;
 
   }
+  get id(){
+    return this._id
+  }
   get name(){
     return this._name
   }
