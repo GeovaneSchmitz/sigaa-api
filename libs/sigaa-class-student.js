@@ -24,6 +24,9 @@ class SigaaClassStudent extends SigaaBase {
   get name() {
     return this._name
   }
+  get id(){
+    return this._id
+  }
   get location() {
     return this._location
   }

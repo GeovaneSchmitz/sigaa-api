@@ -31,6 +31,10 @@ sigaa.login(username, password) // login
     return (async () =>{
       let newsList = []
       let topics = []
+      console.log("Loading IDs")
+      for (let classStudent of classes) { //for each class
+        console.log(` > ${classStudent.name} : ${classStudent.id}`)
+      }
       console.log("Loading Absence")
       for (let classStudent of classes) { //for each class
         console.log(" > " + classStudent.name)
