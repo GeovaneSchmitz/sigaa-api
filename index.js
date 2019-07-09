@@ -1,17 +1,14 @@
 const SigaaAccount = require("./libs/sigaa-account")
-const SigaaClassStudent = require("./libs/sigaa-class-student")
-const SigaaCache = require("./libs/sigaa-cache")
+const SigaaAccountStudent = require("./libs/sigaa-account-student")
+const SigaaLogin = require("./libs/sigaa-login")
+const SigaaData = require("./libs/sigaa-data")
 
 class Sigaa {
     constructor(params){
+
         if(params){
-            if(params.cache === false){
-                
-            }else{
-                this._cache = new SigaaCache()
-            }
             if(params.urlBase){
-                this.urlBase = params.urlBase
+                this._urlBase = params.urlBase             
             }else{
                 throw "SIGAA_URLBASE_IS_NECESSARY"
             }
@@ -19,19 +16,40 @@ class Sigaa {
             throw "SIGAA_OPTIONS_IS_NECESSARY"
         }
     }
-    get urlBase(){
-        return this._urlBase
-    }
-    set urlBase(data){
-        if(typeof data === 'string'){
-            this._urlBase = data;
-        }else{
-            throw 'urlBase is not a string'
-        }
-    }
+    
     login(username, password){
-        return new SigaaAccount(username, password, {urlBase:this.urlBase, cache:this._cache})
+        let sigaaData = new SigaaData()
+        sigaaData.urlBase = this._urlBase
+
+        let sigaaLogin = new SigaaLogin(sigaaData)
+
+        return sigaaLogin.login(username, password)
+        .then(() => new Promise((resolve, reject) => {
+            if (sigaaData.userType == 'STUDENT') {
+                resolve(new SigaaAccountStudent(sigaaData));
+            }
+            else {
+                resolve(new SigaaAccount(SigaaData));
+            }
+        }))
     }
+    loginWithToken(token){
+        let sigaaData = new SigaaData()
+        sigaaData.urlBase = this._urlBase
+
+        let sigaaLogin = new SigaaLogin(sigaaData)
+
+        return sigaaLogin.loginWithToken(token)
+        .then(new Promise((resolve, reject) => {
+            if(sigaaData.userType == 'STUDENT'){
+                resolve(new SigaaAccountStudent(sigaaData))
+            }else{
+                resolve(new SigaaAccount(SigaaData))
+            }
+        }))
+    }
+
+    
 }
 
 module.exports = Sigaa

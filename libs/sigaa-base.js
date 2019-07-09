@@ -5,21 +5,14 @@ const {JSDOM} = require ('jsdom');
 'use strict'
 
 class sigaaBase {
-  constructor (urlBase, cache) {
-    this.urlBase = urlBase;
-    if (cache) {
-      this._cache = cache;
-      this._cacheStatus = true;
-    } else {
-      this._cacheStatus = false;
+  constructor (sigaaData) {
+    if (sigaaData) {
+      this._data = sigaaData;
+    }else{
+      throw "SIGAA_DATA_IS_NECESSARY"
     }
   }
-  get urlBase () {
-    return this._urlBase;
-  }
-  set urlBase (url) {
-    this._urlBase = url;
-  }
+  
   _basicRequestOptions (method, link, token) {
     const basicOptions = {
       hostname: link.hostname,
@@ -40,15 +33,14 @@ class sigaaBase {
     return options;
   }
   _post (path, postOptions, token, params) {
-    let link = new URL (path, this.urlBase);
+    let link = new URL (path, this._data.urlBase);
 
     let options = this._basicRequestOptions ('POST', link, token);
 
-    let postOptionsString = querystring.stringify (postOptions);
-    options.headers['Content-Length'] = Buffer.byteLength (postOptionsString);
+    
     return new Promise ((resolve, reject) => {
-      if (this._cacheStatus && !(params && params.noCache === true)) {
-        var cachePage = this._cache.get (
+      if (!(params && params.noCache === true)) {
+        var cachePage = this._data.getPage (
           'POST',
           link.href,
           options.headers,
@@ -59,18 +51,18 @@ class sigaaBase {
         cachePage.token = token;
         resolve (cachePage);
       } else {
-        resolve (this._request (link, options, token, postOptionsString));
+        resolve (this._request (link, options, token, postOptions));
       }
     });
   }
   _get (path, token, params) {
-    let link = new URL (path, this.urlBase);
+    let link = new URL (path, this._data.urlBase);
 
     let options = this._basicRequestOptions ('GET', link, token);
 
     return new Promise (resolve => {
-      if (this._cacheStatus && !(params && params.noCache === true)) {
-        var cachePage = this._cache.get ('GET', link.href, options.headers);
+      if (!(params && params.noCache === true)) {
+        var cachePage = this._data.getPage ('GET', link.href, options.headers);
       }
       if (cachePage) {
         cachePage.token = token;
@@ -80,8 +72,12 @@ class sigaaBase {
       }
     });
   }
-  _request (link, options, token, postOptionsString) {
+  _request (link, options, token, postOptions) {
     return new Promise ((resolve, reject) => {
+      if(postOptions){
+        var postOptionsString = querystring.stringify (postOptions);
+        options.headers['Content-Length'] = Buffer.byteLength (postOptionsString);
+      }
       const req = https.request (options, res => {
         res.setEncoding ('utf8');
         res.url = link;
@@ -101,12 +97,23 @@ class sigaaBase {
         });
 
         res.on ('end', () => {
-          if (this._cacheStatus && res.statusCode == 200) {
-            this._cache.store (options.method, {
+          if (res.statusCode == 200) {
+            let {document} = new JSDOM (res.body).window;
+            let responseViewStateEl = document.querySelector("input[name='javax.faces.ViewState']")
+            if(responseViewStateEl){
+              var responseViewState = responseViewStateEl.value
+            }else{
+              responseViewState = false;
+            }
+            if(postOptions && postOptions['javax.faces.ViewState']){
+              this._data.reactivateCachePageByViewState(postOptions['javax.faces.ViewState'])
+            }
+            this._data.storePage(options.method, {
               url: link,
               requestHeaders: options.headers,
               responseHeaders: res.headers,
               body: res.body,
+              viewState: responseViewState
             });
           }
           resolve (res);
@@ -128,41 +135,60 @@ class sigaaBase {
   }
   _removeTagsHtml (string) {
     return string
-      .replace(/\<p\>|'\n'|<br\/>|<br>|\t/gm, '\n').replace (
-        /<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
-        ''
-      )
+      .replace(/\n|\t/gm, ' ')
+      .replace(/\<p\>|<br\/>|<br>/gm, '\n')
+      .replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
+        '')
       .trim ();
   }
   _extractJSFCLJS (javaScriptCode, htmlBody) {
     let {document} = new JSDOM (htmlBody).window;
 
     if(javaScriptCode.includes("getElementById")){
-      var formQuery = javaScriptCode.replace (
+      let formQuery = javaScriptCode.replace (
         /if([\S\s]*?)getElementById\('|'([\S\s]*?)false/gm,
         ''
       );
-      var formEl = document.getElementById(formQuery)
+      let formEl = document.getElementById(formQuery)
+      if(!formEl){
+        throw 'FORM_NOT_FOUND';
+      }
+      let postOptionsString = 
+      '{'
+      + javaScriptCode
+      .replace (/if([\S\s]*?),{|},([\S\s]*?)false/gm, '')
+      .replace(/"/gm, '\"')
+      .replace(/\'/gm, '"')
+      + '}'
+      let postOptions = JSON.parse(postOptionsString)
+      let form = this._extractForm (formEl, {submitInput: false});
+      for (let postOption of Object.entries(postOptions)) {
+        form.postOptions[postOption[0]] = postOption[1];
+      }
+      return form;
 
     }else if(javaScriptCode.includes("document.forms")){
-      var formQuery = javaScriptCode.replace (
+      let formQuery = javaScriptCode.replace (
         /if([\S\s]*?)forms\['|'([\S\s]*?)false/gm,
         ''
       );
-      var formEl = document.forms[formQuery]
-    }
-    if(!formEl){
-      throw 'FORM_NOT_FOUND';
-    }
-        
-    let form = this._extractForm (formEl, {submitInput: false});
-    let postOptions = javaScriptCode
+      let formEl = document.forms[formQuery]
+      if(!formEl){
+        throw 'FORM_NOT_FOUND';
+      }
+      let postOptions = javaScriptCode
       .replace (/if([\S\s]*?),'|'([\S\s]*?)false/gm, '')
       .split (',');
-    for (let i = 0; i < postOptions.length; i = i + 2) {
-      form.postOptions[postOptions[i]] = postOptions[i + 1];
+
+      let form = this._extractForm (formEl, {submitInput: false});
+      for (let i = 0; i < postOptions.length; i = i + 2) {
+        form.postOptions[postOptions[i]] = postOptions[i + 1];
+      }
+      return form;
     }
-    return form;
+    
+        
+   
   }
   _extractForm (formEl, options) {
     if(!formEl){
@@ -181,7 +207,7 @@ class sigaaBase {
     var inputs = formEl.querySelectorAll (query);
 
     let form = {};
-    form.action = new URL (formEl.action, this.urlBase).href;
+    form.action = new URL (formEl.action, this._data.urlBase).href;
     form.method = formEl.method;
     form.postOptions = {};
     for (let input of inputs) {

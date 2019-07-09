@@ -36,7 +36,11 @@ sigaa.login (username, password) // login
           let attachments = topic.attachments
           for (let attachment of attachments) { 
             if (attachment.type == 'file') {
-              await attachment.downloadFile(BaseDestiny);         
+              console.log()
+              await attachment.downloadFile(BaseDestiny, (bytesDownloaded)=>{
+                let progress = Math.trunc(bytesDownloaded /10)/100 + "kB"
+                process.stdout.write('Progress: '+progress+'\r');
+              });            
             }
           }
         }

@@ -4,29 +4,45 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
             "type": "node",
             "request": "launch",
-            "name": "Download all fFiles",
-            "program": "${workspaceFolder}/examples/download-all-files.js"
+            "name": "Download all Files",
+            "program": "${workspaceFolder}/examples/download-all-files.1.js",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Stress Library",
+            "program": "${workspaceFolder}/examples/stress-library.js",
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Login with token (cookie)",
+            "program": "${workspaceFolder}/examples/login-with-token.js",
         },
         {
             "type": "node",
             "request": "launch",
             "name": "View classes",
-            "program": "${workspaceFolder}/examples/view-classes.js"
+            "program": "${workspaceFolder}/examples/view-classes.js",
+            "console": "integratedTerminal"
         },
         {
             "type": "node",
             "request": "launch",
             "name": "View News",
-            "program": "${workspaceFolder}/examples/view-news.js"
+            "program": "${workspaceFolder}/examples/view-news.js",
+            "console": "integratedTerminal"
         },
         {
             "type": "node",
             "request": "launch",
             "name": "View grades",
-            "program": "${workspaceFolder}/examples/view-grades.js"
+            "program": "${workspaceFolder}/examples/view-grades.js",
+            "console": "integratedTerminal"
         }
     ]
 }
