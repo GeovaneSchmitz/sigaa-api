@@ -1,38 +1,34 @@
-const Sigaa = require ('..');
-const fs = require ('fs');
-const path = require ('path');
+const Sigaa = require('..')
 
-const sigaa = new Sigaa ({
+const sigaa = new Sigaa({
   urlBase: 'https://sigaa.ifsc.edu.br'
-});
-
+})
 
 // put your crendecias
-var username = '';
-var password = '';
+var username = ''
+var password = ''
 
-
-let account;
+let account
 
 sigaa.login(username, password) // login
-  .then (sigaaAccount => {
+  .then(sigaaAccount => {
     account = sigaaAccount
-    return account.getClasses (); // this return a array with all classes
+    return account.getClasses() // this return a array with all current classes
   })
-  .then (classes => {
-    return (async () =>{
-      console.log("Loading Absence")
-      for (let classStudent of classes) { //for each class
-        console.log(" > " + classStudent.name)
-        let absencesClass = await classStudent.getAbsence()
+  .then(classes => {
+    return (async () => {
+      console.log('Loading Absence')
+      for (const classStudent of classes) { // for each class
+        console.log(' > ' + classStudent.name)
+        const absencesClass = await classStudent.getAbsence()
         console.log(absencesClass)
       }
     })()
   })
-.then (() => {
-  return account.logoff() // logoff afeter finished downloads
-})
-.catch (data => {
-  if(data.stack) console.log (data.stack);
-  console.log(data)
-  });
+  .then(() => {
+    return account.logoff() // logoff after finished downloads
+  })
+  .catch(err => {
+    if (err.stack) console.log(err.stack)
+    console.log(err)
+  })

@@ -1,42 +1,38 @@
-const Sigaa = require ('..');
+const Sigaa = require('..')
 
-
-const sigaa = new Sigaa ({
+const sigaa = new Sigaa({
   urlBase: 'https://sigaa.ifsc.edu.br'
-});
+})
 
 // put your crendecias
-var username = '';
-var password = '';
+var username = ''
+var password = ''
 
-let account;
+let account
 
-sigaa.login (username, password) // login
-  .then (sigaaAccount => {
-    account = sigaaAccount;
-    return account.getClasses (); // this return a array with all classes
-
+sigaa.login(username, password) // login
+  .then(sigaaAccount => {
+    account = sigaaAccount
+    return account.getClasses() // this return a array with all current classes
   })
-  .then (classes => {
+  .then(classes => {
     return (async () => {
-      for (let classStudent of classes) {
+      for (const classStudent of classes) {
         console.log(classStudent.name)
-        let newsList = await classStudent.getNews()
-        for(let news of newsList){
+        const newsList = await classStudent.getNews()
+        for (const news of newsList) {
           console.log('----------------')
           console.log(news.name)
           console.log(await news.getContent())
           console.log(await news.getTime())
           console.log('----------------')
-
         }
       }
-    })();
+    })()
   })
-  .then (() => {
-
-    return account.logoff (); // logoff afeter finished 
+  .then(() => {
+    return account.logoff() // logoff after finished
   })
-  .catch (err => {
-    console.log (err);
-  });
+  .catch(err => {
+    console.log(err)
+  })

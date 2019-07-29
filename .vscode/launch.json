@@ -5,23 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         
+
+        
         {
             "type": "node",
             "request": "launch",
             "name": "Download all Files",
-            "program": "${workspaceFolder}/examples/download-all-files.1.js",
+            "program": "${workspaceFolder}/examples/download-all-files.js",
+            "console": "integratedTerminal"
+
         },
         {
             "type": "node",
             "request": "launch",
             "name": "Stress Library",
-            "program": "${workspaceFolder}/examples/stress-library.js",
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Login with token (cookie)",
-            "program": "${workspaceFolder}/examples/login-with-token.js",
+            "program": "${workspaceFolder}/examples/stress-test.js",
         },
         {
             "type": "node",
@@ -35,6 +33,13 @@
             "request": "launch",
             "name": "View News",
             "program": "${workspaceFolder}/examples/view-news.js",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "View topics",
+            "program": "${workspaceFolder}/examples/view-topics.js",
             "console": "integratedTerminal"
         },
         {

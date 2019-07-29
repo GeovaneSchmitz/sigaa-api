@@ -1,32 +1,32 @@
-const Sigaa = require ('..');
+const Sigaa = require('..')
 
-const sigaa = new Sigaa ({
+const sigaa = new Sigaa({
   urlBase: 'https://sigaa.ifsc.edu.br'
-});
+})
 
 // put your crendecias
-var username = '';
-var password = '';
+var username = ''
+var password = ''
 
-let account;
+let account
 
-sigaa.login (username, password) // login
-  .then (sigaaAccount => {
+sigaa.login(username, password) // login
+  .then(sigaaAccount => {
     account = sigaaAccount
-    return account.getClasses (); // this return a array with all classes
+    return account.getClasses() // this return a array with all current classes
   })
-  .then (classes => {
-    return (async() => {
-      for (let classStudent of classes) {
+  .then(classes => {
+    return (async () => {
+      for (const classStudent of classes) {
         console.log(classStudent.name)
-        let grade = await classStudent.getGrades ()
+        const grade = await classStudent.getGrades()
         console.log(grade)
       }
     })()
   })
-  .then (() => {
-    return account.logoff(); // logoff afeter finished
+  .then(() => {
+    return account.logoff() // logoff after finished
   })
-  .catch (data => {
-    console.log (data);
-  });
+  .catch(data => {
+    console.log(data)
+  })
