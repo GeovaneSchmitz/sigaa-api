@@ -172,9 +172,9 @@ class SigaaClassStudent extends SigaaBase {
     const topicDates = topicNameFull.slice(topicNameFull.lastIndexOf('(') + 1, topicNameFull.lastIndexOf(')'))
     topic.name = this._removeTagsHtml(topicNameFull.slice(0, topicNameFull.lastIndexOf('(')))
     const startDate = this._removeTagsHtml(topicDates.slice(0, topicDates.indexOf(' '))).split('/')
-    topic.startTimestamp = new Date(`${startDate[1]}/${startDate[0]}/${startDate[2]}`)
+    topic.startTimestamp = Math.trunc(new Date(`${startDate[1]}/${startDate[0]}/${startDate[2]}`) / 1000)
     const endDate = this._removeTagsHtml(topicDates.slice(topicDates.lastIndexOf(' ') + 1)).split('/')
-    topic.endTimestamp = new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`)
+    topic.endTimestamp = Math.trunc(new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`) / 1000)
     const topicContentElement = topicElement.querySelector('.conteudotopico')
     topic.contentText = decodeURI(this._removeTagsHtml(topicContentElement.innerHTML.replace(/<div([\S\s]*?)div>/gm, '')))
     topic.attachments = this._extractAttachmentsFromTopic(topicContentElement, page)
@@ -249,7 +249,7 @@ class SigaaClassStudent extends SigaaBase {
     const description = decodeURI(this._removeTagsHtml(descriptionElement.innerHTML))
     const dates = this._extractDateTimestampsFromAttachmentDescription(description)
     attachment.startTimestamp = dates.startTimestamp
-    attachment.endTimestamp = dates.startTimestamp
+    attachment.endTimestamp = dates.endTimestamp
     return attachment
   }
 
@@ -259,6 +259,8 @@ class SigaaClassStudent extends SigaaBase {
     attachment.src = attachmentElement.querySelector('iframe').getAttribute('src')
     const titleElement = attachmentElement.querySelector('span[id] > span[id]')
     attachment.title = this._removeTagsHtml(titleElement.innerHTML.trim())
+    const descriptionElement = attachmentElement.querySelector('div.descricao-item')
+    attachment.description = decodeURI(this._removeTagsHtml(descriptionElement.innerHTML))
     return attachment
   }
 
@@ -281,13 +283,14 @@ class SigaaClassStudent extends SigaaBase {
     const createDateFromString = (dataString, timeString) => {
       const dateSplited = dataString.match(/[0-9]+/g)
       const timeSplited = timeString.match(/[0-9]+/g)
-      return new Date(`${dateSplited[2]}/${dateSplited[1]}/${dateSplited[0]}T${timeSplited[0]}:${timeSplited[1]}:00.000-0300`)
+      return new Date(`${dateSplited[2]}-${dateSplited[1]}-${dateSplited[0]}T${('0' + timeSplited[0]).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000-03:00`)
     }
     const startDate = createDateFromString(DatesStrings[0], DatesStrings[1])
     const endDate = createDateFromString(DatesStrings[2], DatesStrings[3])
+
     return {
-      startTimestamp: startDate.valueOf(),
-      endTimestamp: endDate.valueOf()
+      startTimestamp: Math.trunc(startDate.valueOf() / 1000),
+      endTimestamp: Math.trunc(endDate.valueOf() / 1000)
     }
   }
 

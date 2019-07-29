@@ -17,9 +17,11 @@ class SigaaVideo extends SigaaBase {
 
   update (options) {
     if (options.title !== undefined &&
-        options.src !== undefined) {
+        options.src !== undefined &&
+        options.description !== undefined) {
       this._title = options.title
       this._src = options.src
+      this._description = options.description
       this._finish = false
       if (this._awaitUpdate) {
         this._awaitUpdate.bind(this)()
@@ -37,6 +39,11 @@ class SigaaVideo extends SigaaBase {
   get src () {
     this._checkIfItWasFinalized()
     return this._src
+  }
+
+  get description () {
+    this._checkIfItWasFinalized()
+    return this._description
   }
 
   finish () {

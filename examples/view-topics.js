@@ -20,15 +20,15 @@ sigaa.login(username, password) // return SigaaAccount
         for (const topic of topics) {
           console.log(`\t> ${topic.name}`)
           if (topic.contentText) console.log(`\t${topic.contentText}`)
-          const startDate = new Date(topic.startTimestamp).toString()
-          const endDate = new Date(topic.endTimestamp).toString()
+          const startDate = new Date(topic.startTimestamp * 1000).toString()
+          const endDate = new Date(topic.endTimestamp * 1000).toString()
           console.log(`\t${startDate} ${endDate}`)
           for (const attachment of topic.attachments) {
-            console.log(`\t\ttitle: ${attachment.title}`)
-            console.log(`\t\ttype: ${attachment.type}`)
             if (attachment.description) console.log(`\t\tdescription: ${attachment.description}`)
             if (attachment.src) console.log(`\t\tsrc: ${attachment.src}`)
             if (attachment.id) console.log(`\t\tid: ${attachment.id}`)
+            if (attachment.startTimestamp) console.log(`\t\tstartTimestamp: ${attachment.startTimestamp}`)
+            if (attachment.endTimestamp) console.log(`\t\tendTimestamp: ${attachment.endTimestamp}`)
           }
         }
       }
