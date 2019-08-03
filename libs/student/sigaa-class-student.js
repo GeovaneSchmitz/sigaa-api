@@ -167,11 +167,18 @@ class SigaaClassStudent extends SigaaBase {
     const titleElement = topicElement.querySelector('.titulo')
     const titleFull = this._removeTagsHtml(titleElement.innerHTML)
     const topicDates = titleFull.slice(titleFull.lastIndexOf('(') + 1, titleFull.lastIndexOf(')'))
+    if (topicDates.includes(' ')) {
+      const startDate = this._removeTagsHtml(topicDates.slice(0, topicDates.indexOf(' '))).split('/')
+      topic.startTimestamp = Math.trunc(new Date(`${startDate[1]}/${startDate[0]}/${startDate[2]}`) / 1000)
+      const endDate = this._removeTagsHtml(topicDates.slice(topicDates.lastIndexOf(' ') + 1)).split('/')
+      topic.endTimestamp = Math.trunc(new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`) / 1000)
+    } else {
+      const date = this._removeTagsHtml(topicDates).split('/')
+      const timestamp = Math.trunc(new Date(`${date[1]}/${date[0]}/${date[2]}`) / 1000)
+      topic.startTimestamp = timestamp
+      topic.endTimestamp = timestamp
+    }
     topic.title = this._removeTagsHtml(titleFull.slice(0, titleFull.lastIndexOf('(')))
-    const startDate = this._removeTagsHtml(topicDates.slice(0, topicDates.indexOf(' '))).split('/')
-    topic.startTimestamp = Math.trunc(new Date(`${startDate[1]}/${startDate[0]}/${startDate[2]}`) / 1000)
-    const endDate = this._removeTagsHtml(topicDates.slice(topicDates.lastIndexOf(' ') + 1)).split('/')
-    topic.endTimestamp = Math.trunc(new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`) / 1000)
     const topicContentElement = topicElement.querySelector('.conteudotopico')
     topic.contentText = decodeURI(this._removeTagsHtml(topicContentElement.innerHTML.replace(/<div([\S\s]*?)div>/gm, '')))
     topic.attachments = this._extractAttachmentsFromTopic(topicContentElement, page)
