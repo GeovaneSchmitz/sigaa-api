@@ -236,7 +236,7 @@ class SigaaClassStudent extends SigaaBase {
         } else if (iconElement.src.includes('video.png')) {
           const videoOptions = this._extractAtachmentVideo(attachmentElement)
           this._videos.push(videoOptions)
-          topicAttachments.push(this._videos)
+          topicAttachments.push(videoOptions)
         } else if (iconElement.src.includes('tarefa.png')) {
           const homeworkOptions = this._extractAttachmentHomework(attachmentElement, page)
           const id = homeworkOptions.id
