@@ -710,7 +710,9 @@ class SigaaClassStudent extends SigaaBase {
               }
               const index = getPositionByCellColSpan(theadElements[0], theadElements[0][i])
               if (theadElements[0][i].colSpan === 1) {
-                gradeGroup.value = parseFloat(this._removeTagsHtml(valueCells[index].innerHTML).replace(/,/g, '.'))
+                let value = parseFloat(this._removeTagsHtml(valueCells[index].innerHTML).replace(/,/g, '.'))
+                if (!value) value = null
+                gradeGroup.value = value
               } else {
                 gradeGroup.grades = []
                 for (let j = index; j < index + theadElements[0][i].colSpan; j++) {
@@ -720,14 +722,18 @@ class SigaaClassStudent extends SigaaBase {
                     const gradeName = document.querySelector(`input#denAval_${gradeId}`).value
                     const gradeAbbreviation = document.querySelector(`input#abrevAval_${gradeId}`).value
                     const gradeWeight = document.querySelector(`input#pesoAval_${gradeId}`).value
+                    let value = parseFloat(this._removeTagsHtml(valueCells[j].innerHTML).replace(/,/g, '.'))
+                    if (!value) value = null
                     gradeGroup.grades.push({
                       name: gradeName,
                       abbreviation: gradeAbbreviation,
                       weight: gradeWeight,
-                      value: parseFloat(this._removeTagsHtml(valueCells[j].innerHTML).replace(/,/g, '.'))
+                      value
                     })
                   } else {
-                    gradeGroup.average = parseFloat(this._removeTagsHtml(valueCells[j].innerHTML).replace(/,/g, '.'))
+                    let average = parseFloat(this._removeTagsHtml(valueCells[j].innerHTML).replace(/,/g, '.'))
+                    if (!average) average = null
+                    gradeGroup.average = average
                   }
                 }
               }
