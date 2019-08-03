@@ -1,11 +1,12 @@
-const SigaaBase = require('../common/sigaa-session')
+const SigaaBase = require('../common/sigaa-base')
+const { JSDOM } = require('jsdom')
 
 class SigaaWebcontent extends SigaaBase {
   constructor (options, updateAttachment, sigaaSession) {
     super(sigaaSession)
     this.update(options)
     if (updateAttachment !== undefined) {
-      this._updateAttachment = updateAttachment
+      this._updateWebContent = updateAttachment
     } else {
       throw new Error('WEBCONTENT_UPDATEWEBCONTENT_IS_NECESSARY')
     }
@@ -17,18 +18,18 @@ class SigaaWebcontent extends SigaaBase {
 
   update (options) {
     if (options.title !== undefined &&
-            options.description !== undefined &&
-            options.form !== undefined) {
+        options.form !== undefined) {
       this._title = options.title
-      this._description = options.description
+      this._timestamp = options.timestamp
       this._form = options.form
       this._finish = false
-      if (this._awaitUpdate) {
-        this._awaitUpdate.bind(this)()
-      }
     } else {
       throw new Error('INVALID_WEBCONTENT_OPTIONS')
     }
+  }
+
+  get timestamp () {
+    return this._timestamp
   }
 
   get title () {
@@ -36,9 +37,33 @@ class SigaaWebcontent extends SigaaBase {
     return this._title
   }
 
-  get description () {
+  async getDescription (retry = true) {
     this._checkIfItWasFinalized()
-    return this._description
+    if (this._description) {
+      return this._description
+    }
+    try {
+      const page = await this._post(this._form.action, this._form.postOptions)
+      if (page.statusCode === 200) {
+        this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
+        const { document } = new JSDOM(page.body).window
+        const table = document.querySelector('table.formAva')
+        const rows = table.querySelectorAll('tr')
+        this._description = this._removeTagsHtml(rows[1].querySelector('td').innerHTML)
+        return this._description
+      } else if (page.statusCode === 302) {
+        throw new Error('WEBCONTENT_EXPIRED')
+      } else {
+        throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
+      }
+    } catch (err) {
+      if (retry) {
+        await this._updateWebContent()
+        return this.getDescription(false)
+      } else {
+        return err
+      }
+    }
   }
 
   get id () {

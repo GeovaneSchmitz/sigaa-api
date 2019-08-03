@@ -15,16 +15,18 @@ sigaa.login(username, password) // return SigaaAccount
   .then(classes => {
     return (async () => {
       for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.name)
+        console.log(' > ' + classStudent.title)
         const topics = await classStudent.getTopics() // this lists all topics
         for (const topic of topics) {
-          console.log(`\t> ${topic.name}`)
+          console.log(`\t> ${topic.title}`)
           if (topic.contentText) console.log(`\t${topic.contentText}`)
           const startDate = new Date(topic.startTimestamp * 1000).toString()
           const endDate = new Date(topic.endTimestamp * 1000).toString()
           console.log(`\t${startDate} ${endDate}`)
           for (const attachment of topic.attachments) {
             if (attachment.description) console.log(`\t\tdescription: ${attachment.description}`)
+            if (attachment.getDescription) console.log(`\t\tdescription: ${await attachment.getDescription()}`)
+            if (attachment.getHaveGrade) console.log(`\t\thaveGrade: ${await attachment.getHaveGrade()}`)
             if (attachment.src) console.log(`\t\tsrc: ${attachment.src}`)
             if (attachment.id) console.log(`\t\tid: ${attachment.id}`)
             if (attachment.startTimestamp) console.log(`\t\tstartTimestamp: ${attachment.startTimestamp}`)

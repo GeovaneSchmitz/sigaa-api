@@ -1,4 +1,4 @@
-const SigaaBase = require('../common/sigaa-session')
+const SigaaBase = require('../common/sigaa-base')
 
 class SigaaSurvey extends SigaaBase {
   constructor (options, updateAttachment, sigaaSession) {

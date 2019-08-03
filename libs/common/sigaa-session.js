@@ -6,12 +6,7 @@ class SigaaSession {
     } else {
       this.timeout = 5 * 60 // 5min
     }
-    setInterval(() => {
-      this._cachePages = this._cachePages.filter(cachePage => {
-        return !(cachePage.modifiedAt < Date.now() - timeout)
-      })
-    }, 15000)
-    this._tokens = []
+    this._tokens = {}
   }
 
   get timeout () {
@@ -70,6 +65,13 @@ class SigaaSession {
     }
   }
 
+  finish () {
+    if (this._intervalId) {
+      clearInterval(this._intervalId)
+    }
+    this._cachePages = []
+  }
+
   storePage (method, params) {
     const page = {
       method,
@@ -79,6 +81,16 @@ class SigaaSession {
       body: params.body,
       modifiedAt: Date.now(),
       viewState: params.viewState
+    }
+    if (!this._intervalId) {
+      this._intervalId = setInterval(() => {
+        this._cachePages = this._cachePages.filter(cachePage => {
+          return !(cachePage.modifiedAt < Date.now() - this.timeout)
+        })
+        if (this._cachePages.length === 0) {
+          clearInterval(this._intervalId)
+        }
+      }, 15000)
     }
     if (method === 'POST') page.postOptions = params.postOptions
     var replace = false

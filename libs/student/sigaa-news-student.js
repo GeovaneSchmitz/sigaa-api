@@ -13,10 +13,10 @@ class SigaaNews extends SigaaBase {
   }
 
   update (newsParams) {
-    if (newsParams.name !== undefined &&
+    if (newsParams.title !== undefined &&
       newsParams.date !== undefined &&
       newsParams.form !== undefined) {
-      this._name = newsParams.name
+      this._title = newsParams.title
       this._date = newsParams.date
       this._form = newsParams.form
     } else {
@@ -32,9 +32,9 @@ class SigaaNews extends SigaaBase {
     return this._date
   }
 
-  get name () {
+  get title () {
     this._checkIfItWasFinalized()
-    return this._name
+    return this._title
   }
 
   getContent () {

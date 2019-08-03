@@ -18,7 +18,7 @@ sigaa.login(username, password) // login
   .then(classes => {
     return (async () => {
       for (const classStudent of classes) {
-        console.log(classStudent.name)
+        console.log(classStudent.title)
         const grade = await classStudent.getGrades()
         console.log(grade)
       }

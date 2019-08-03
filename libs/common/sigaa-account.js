@@ -10,6 +10,7 @@ class SigaaAccount extends SigaaBase {
       })
       .then(res => {
         if (res.statusCode === 200) {
+          this._sigaaSession.finish()
           return {
             status: 'UNLOGGED'
           }

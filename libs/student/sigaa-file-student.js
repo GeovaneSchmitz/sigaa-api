@@ -5,13 +5,13 @@ const path = require('path')
 const querystring = require('querystring')
 
 class SigaaFile extends SigaaBase {
-  constructor (options, updateAttachment, sigaaSession) {
+  constructor (options, fileUpdater, sigaaSession) {
     super(sigaaSession)
     this.update(options)
-    if (updateAttachment !== undefined) {
-      this._updateAttachment = updateAttachment
+    if (fileUpdater !== undefined) {
+      this._updateFile = fileUpdater
     } else {
-      throw new Error('ATTACHMENTUPDATE_IS_NECESSARY')
+      throw new Error('FILE_UPDATE_IS_NECESSARY')
     }
   }
 
@@ -27,9 +27,6 @@ class SigaaFile extends SigaaBase {
       this._description = options.description
       this._form = options.form
       this._finish = false
-      if (this._awaitUpdate) {
-        this._awaitUpdate.bind(this)()
-      }
     } else {
       throw new Error('INVALID_FILE_OPTIONS')
     }
@@ -60,104 +57,116 @@ class SigaaFile extends SigaaBase {
     }
   }
 
-  downloadFile (basepath, cb, retry = true) {
+  download (basepath, callback, retry = true) {
     return new Promise((resolve, reject) => {
-      this._checkIfItWasFinalized()
-      let file
-      const fileStats = fs.lstatSync(basepath)
-      if (!(fileStats.isDirectory() || fileStats.isFile())) {
-        throw new Error('FILE_PATH_NOT_EXISTS')
-      }
-      const link = new URL(this._form.action)
-      const options = this._requestBasicOptions('POST', link)
-      // this converts post parameters to string
-      const postOptionsString = querystring.stringify(this._form.postOptions)
-      // this inserts post parameters length to  header http
+      new Promise((resolve, reject) => {
+        this._checkIfItWasFinalized()
+        let file
+        const fileStats = fs.lstatSync(basepath)
+        if (!(fileStats.isDirectory() || fileStats.isFile())) {
+          reject(new Error('FILE_PATH_NOT_EXISTS'))
+        }
+        const link = new URL(this._form.action)
+        const options = this._requestBasicOptions('POST', link)
+        // this converts post parameters to string
+        const postOptionsString = querystring.stringify(this._form.postOptions)
+        // this inserts post parameters length to  header http
 
-      options.headers['Content-Length'] = Buffer.byteLength(postOptionsString)
+        options.headers['Content-Length'] = Buffer.byteLength(postOptionsString)
 
-      // makes request
-      var request = https.request(options, (response) => {
-        switch (response.statusCode) {
-          case 200:
-            this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
-            var len = 0
-            var filepath
-            if (fileStats.isDirectory()) {
-              try {
-                const filename = response.headers['content-disposition']
-                  .replace(/([\S\s]*?)filename="/gm, '').slice(0, -1)
-                filepath = path.join(basepath, filename)
-              } catch (e) {
-                throw new Error('FILE_DOWNLOAD_EXPIRED')
-              }
-            } else {
-              filepath = basepath
-            }
-            file = fs.createWriteStream(filepath)
-            response.pipe(file) // save to file
+        // makes request
+        try {
+          var request = https.request(options, (response) => {
+            switch (response.statusCode) {
+              case 200:
+                try {
+                  this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
+                  var len = 0
+                  var filepath
+                  if (fileStats.isDirectory()) {
+                    try {
+                      const filename = response.headers['content-disposition']
+                        .replace(/([\S\s]*?)filename="/gm, '').slice(0, -1)
+                      filepath = path.join(basepath, filename)
+                    } catch (e) {
+                      reject(new Error('FILE_DOWNLOAD_EXPIRED'))
+                    }
+                  } else {
+                    filepath = basepath
+                  }
 
-            if (cb) {
-              response.on('data', (chunk) => {
-                len += chunk.byteLength
-                cb(len)
-              })
-            }
+                  file = fs.createWriteStream(filepath)
+                  response.pipe(file) // save to file
 
-            file.on('finish', () => {
-              file.close((err) => {
-                if (err) {
-                  fs.unlink(filepath, (err) => {
-                    if (err) reject(err.message)
+                  if (callback) {
+                    response.on('data', (chunk) => {
+                      len += chunk.byteLength
+                      callback(len)
+                    })
+                  }
+
+                  file.on('finish', () => {
+                    file.close((err) => {
+                      if (err) {
+                        fs.unlink(filepath, (err) => {
+                          if (err) reject(err.message)
+                          reject(err)
+                        })
+                      }
+                    }) // close() is async, call resolve after close completes.
+                    resolve(filepath)
+                  })
+                  response.on('error', (err) => {
+                    file.close((err) => {
+                      if (err) {
+                        reject(err)
+                      }
+                    })
+                    fs.unlink(filepath, (err) => {
+                      if (err) reject(err.message)
+                    })
                     reject(err)
                   })
-                }
-              }) // close() is async, call resolve after close completes.
-              resolve(filepath)
-            })
-            response.on('error', (err) => {
-              file.close((err) => {
-                if (err) {
-                  reject(err)
-                }
-              })
-              fs.unlink(filepath, (err) => {
-                if (err) reject(err.message)
-              })
-              reject(err)
-            })
-            file.on('error', (err) => {
-              file.close((err) => {
-                if (err) {
-                  fs.unlink(filepath, (err) => {
-                    if (err) reject(err)
+                  file.on('error', (err) => {
+                    file.close((err) => {
+                      if (err) {
+                        fs.unlink(filepath, (err) => {
+                          if (err) reject(err)
+                        })
+                        reject(err)
+                      }
+                    })
+                    fs.unlink(filepath, (err) => {
+                      if (err) reject(err)
+                    })
+                    reject(err)
                   })
+                } catch (err) {
                   reject(err)
                 }
-              })
-              fs.unlink(filepath, (err) => {
-                if (err) reject(err)
-              })
-              reject(err)
-            })
-            break
-          case 302:
-            if (retry) {
-              this._updateAttachment()
-              this._awaitUpdate = () => {
-                this._awaitUpdate = undefined
-                resolve(this.downloadFile(basepath, cb, false))
-              }
-            } else {
-              reject(new Error('FILE_DOWNLOAD_EXPIRED'))
+                break
+              case 302:
+                reject(new Error('FILE_DOWNLOAD_EXPIRED'))
+                break
+              default:
+                reject(new Error(`SIGAA_STATUSCODE_${response.statusCode}`))
             }
-            break
-          default:
-            reject(new Error(`SIGAA_STATUSCODE_${response.statusCode}`))
+          })
+          request.write(postOptionsString)
+          request.end()
+        } catch (err) {
+          reject(err)
         }
       })
-      request.write(postOptionsString)
-      request.end()
+        .then(data => resolve(data))
+        .catch((err) => {
+          if (retry) {
+            resolve(this._updateFile()
+              .then(() => this.download(basepath, callback, false)))
+          } else {
+            reject(err)
+          }
+        })
     })
   }
 }

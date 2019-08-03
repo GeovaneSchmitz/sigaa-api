@@ -19,7 +19,7 @@ sigaa.login(username, password) // login
     return (async () => {
       console.log('Loading Absence')
       for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.name)
+        console.log(' > ' + classStudent.title)
         const absencesClass = await classStudent.getAbsence()
         console.log(absencesClass)
       }

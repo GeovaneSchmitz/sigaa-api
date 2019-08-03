@@ -14,9 +14,9 @@ sigaa.login(username, password) // return SigaaAccount
   })
   .then(classes => {
     for (const classStudent of classes) {
-      console.log(classStudent.name)
+      console.log(classStudent.title)
       console.log(classStudent.location)
-      console.log(classStudent.stringSchedule)
+      console.log(classStudent.scheduleSIGAAnotation)
     }
   })
   .catch(err => {

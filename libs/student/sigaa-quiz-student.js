@@ -1,11 +1,11 @@
-const SigaaBase = require('../common/sigaa-session')
+const SigaaBase = require('../common/sigaa-base')
 
 class SigaaQuiz extends SigaaBase {
-  constructor (options, updateAttachment, sigaaSession) {
+  constructor (options, updateQuiz, sigaaSession) {
     super(sigaaSession)
     this.update(options)
-    if (updateAttachment !== undefined) {
-      this._updateAttachment = updateAttachment
+    if (updateQuiz !== undefined) {
+      this._updateQuiz = updateQuiz
     } else {
       throw new Error('QUIZ_UPDATEQUIZ_IS_NECESSARY')
     }
@@ -19,15 +19,14 @@ class SigaaQuiz extends SigaaBase {
     if (options.title !== undefined &&
         options.startTimestamp !== undefined &&
         options.endTimestamp !== undefined &&
-        options.form !== undefined) {
+        options.id !== undefined) {
       this._title = options.title
-      this._form = options.form
+      this._id = options.id
       this._startTimestamp = options.startTimestamp
       this._endTimestamp = options.endTimestamp
       this._finish = false
-      if (this._awaitUpdate) {
-        this._awaitUpdate.bind(this)()
-      }
+      this._formSendAnswers = options.formSendAnswers
+      this._formViewAnswersSubmitted = options.formViewAnswersSubmitted
     } else {
       throw new Error('INVALID_QUIZ_OPTIONS')
     }
@@ -43,6 +42,46 @@ class SigaaQuiz extends SigaaBase {
     return this._endTimestamp
   }
 
+  getAnswersSubmitted (retry = true) {
+    return new Promise((resolve, reject) => {
+      try {
+        if (this._formSendAnswers !== undefined) {
+          throw new Error('QUIZ_YET_NO_SENT_ANSWERS')
+        }
+        if (this._formViewAnswersSubmitted === undefined) {
+          throw new Error('QUIZ_FORM_IS_UNDEFINED')
+        }
+        this._post(this._formViewAnswersSubmitted.action, this._formViewAnswersSubmitted.postOptions)
+          .then(page => {
+            switch (page.statusCode) {
+              case 200:
+                this._sigaaSession.reactivateCachePageByViewState(this._formViewAnswersSubmitted.postOptions['javax.faces.ViewState'])
+                if (page.body.includes('Acabou o prazo para visualizar as respostas.')) {
+                  reject(new Error('QUIZ_DEADLINE_TO_READ_ANSWERS'))
+                }
+                reject(new Error('QUIZ_TODO'))
+                break
+              case 302:
+                reject(new Error('QUIZ_EXPIRED'))
+                break
+              default:
+                reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
+            }
+          })
+      } catch (err) {
+        if (err.message === 'QUIZ_DEADLINE_TO_READ_ANSWERS' || err.message === 'QUIZ_YET_NO_SENT_ANSWERS') {
+          reject(err)
+        }
+        if (retry) {
+          resolve(this._updateQuiz()
+            .then(this.getAnswersSubmitted(false)))
+        } else {
+          reject(err)
+        }
+      }
+    })
+  }
+
   get startTimestamp () {
     this._checkIfItWasFinalized()
     return this._startTimestamp
@@ -50,7 +89,7 @@ class SigaaQuiz extends SigaaBase {
 
   get id () {
     this._checkIfItWasFinalized()
-    return this._form.postOptions.id
+    return this._id
   }
 
   finish () {

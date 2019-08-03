@@ -22,7 +22,7 @@ class SigaaAccountStudent extends SigaaAccount {
               if (buttonClassPage) {
                 const classData = {}
                 const fullname = this._removeTagsHtml(cellElements[0].innerHTML)
-                classData.name = fullname.slice(fullname.indexOf(' - ') + 3)
+                classData.title = fullname.slice(fullname.indexOf(' - ') + 3)
                 classData.abbreviation = fullname.slice(0, fullname.indexOf(' - '))
                 classData.numberOfStudents = this._removeTagsHtml(cellElements[2].innerHTML)
                 classData.schedule = this._removeTagsHtml(cellElements[4].innerHTML)
@@ -51,14 +51,14 @@ class SigaaAccountStudent extends SigaaAccount {
             for (var i = 0; i < trsClasses.length; i++) {
               const cells = trsClasses[i].querySelectorAll('td')
 
-              const nameElement = cells[0].querySelector('a')
-              const name = this._removeTagsHtml(nameElement.innerHTML)
-              const form = this._extractJSFCLJS(nameElement.getAttribute('onclick'), page.body)
+              const titleElement = cells[0].querySelector('a')
+              const title = this._removeTagsHtml(titleElement.innerHTML)
+              const form = this._extractJSFCLJS(titleElement.getAttribute('onclick'), page.body)
               const id = form.postOptions.idTurma
               const location = this._removeTagsHtml(cells[1].innerHTML)
               const schedule = this._removeTagsHtml(cells[2].firstChild.innerHTML)
               list.push(new SigaaClassStudent({
-                name,
+                title,
                 id,
                 period,
                 form,

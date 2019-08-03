@@ -22,63 +22,69 @@ let account
 sigaa.login(username, password) // login
   .then(sigaaAccount => {
     account = sigaaAccount
-    return account.getClasses() // this return a array with all current classes
+    return account.getAllClasses() // this return a array with all current classes
   })
   .then(classes => {
     return (async () => {
       const newsList = []
-      const topics = []
+      const files = []
       console.log('Loading IDs')
       for (const classStudent of classes) { // for each class
-        console.log(` > ${classStudent.name} : ${classStudent.id}`)
+        console.log(` > ${classStudent.title} : ${classStudent.id}`)
+      }
+      console.log('Loading Exam Calendar')
+      for (const classStudent of classes) { // for each class
+        console.log(' > ' + classStudent.title)
+        const examCalendar = await classStudent.getExamCalendar()
+        console.log(examCalendar)
       }
       console.log('Loading Absence')
       for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.name)
+        console.log(' > ' + classStudent.title)
         const absencesClass = await classStudent.getAbsence()
         console.log(absencesClass)
       }
       console.log('Loading News')
       for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.name)
+        console.log(' > ' + classStudent.title)
         const newsClassList = await classStudent.getNews()
         newsClassList.forEach(newsClass => {
           newsList.push(newsClass)
         })
       }
       console.log('Loading Topics')
+      for (const classStudent of classes) {
+        console.log(await classStudent.getTopics())
+      }
+
+      console.log('Loading Files')
       for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.name)
-        const classTopics = await classStudent.getTopics() // this lists all topics
-        classTopics.forEach(topic => {
-          topics.push(topic)
+        console.log(' > ' + classStudent.title)
+        const classFiles = await classStudent.getFiles() // this lists all topics
+        classFiles.forEach(file => {
+          files.push(file)
         })
       }
       console.log('Loading Full News')
       for (const news of newsList) {
-        console.log(news.name)
+        console.log(news.title)
         console.log(await news.getContent())
         console.log(await news.getTime())
         console.log()
       }
       console.log('Loading Grades')
       for (const classStudent of classes) {
-        console.log(' > ' + classStudent.name)
+        console.log(' > ' + classStudent.title)
         const grade = await classStudent.getGrades()
         console.log(grade)
       }
-      console.log('Downloading Attachments')
-      for (const topic of topics) { // for each topic
-        const attachments = topic.attachments
-        for (const attachment of attachments) {
-          if (attachment.type === 'file') {
-            console.log()
-            await attachment.downloadFile(BaseDestiny, (bytesDownloaded) => {
-              const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB'
-              process.stdout.write('Progress: ' + progress + '\r')
-            })
-          }
-        }
+      console.log('Downloading Files')
+      for (const file of files) { // for each file
+        await file.download(BaseDestiny, (bytesDownloaded) => {
+          const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB'
+          process.stdout.write('Progress: ' + progress + '\r')
+        })
+        console.log()
       }
     })()
   })

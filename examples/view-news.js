@@ -18,11 +18,11 @@ sigaa.login(username, password) // login
   .then(classes => {
     return (async () => {
       for (const classStudent of classes) {
-        console.log(classStudent.name)
+        console.log(classStudent.title)
         const newsList = await classStudent.getNews()
         for (const news of newsList) {
           console.log('----------------')
-          console.log(news.name)
+          console.log(news.title)
           console.log(await news.getContent())
           console.log(await news.getTime())
           console.log('----------------')

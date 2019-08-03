@@ -1,13 +1,13 @@
-const SigaaBase = require('../common/sigaa-session')
+const SigaaBase = require('../common/sigaa-base')
 
 class SigaaHomework extends SigaaBase {
-  constructor (options, updateAttachment, sigaaSession) {
+  constructor (options, homeworkUpdate, sigaaSession) {
     super(sigaaSession)
     this.update(options)
-    if (updateAttachment !== undefined) {
-      this._updateAttachment = updateAttachment
+    if (homeworkUpdate !== undefined) {
+      this._homeworkUpdate = homeworkUpdate
     } else {
-      throw new Error('HOMEWORK_UPDATEHOMEWORK_IS_NECESSARY')
+      throw new Error('HOMEWORK_UPDATE_IS_NECESSARY')
     }
   }
 
@@ -17,17 +17,19 @@ class SigaaHomework extends SigaaBase {
 
   update (options) {
     if (options.title !== undefined &&
-        options.startTimestamp !== undefined &&
-        options.endTimestamp !== undefined &&
-        options.form !== undefined) {
+      options.startTimestamp !== undefined &&
+      options.id !== undefined &&
+      options.endTimestamp !== undefined) {
       this._title = options.title
       this._startTimestamp = options.startTimestamp
       this._endTimestamp = options.endTimestamp
-      this._form = options.form
+      this._id = options.id
       this._finish = false
-      if (this._awaitUpdate) {
-        this._awaitUpdate.bind(this)()
-      }
+
+      this._formSendHomework = options.formSendHomework
+      this._formViewHomeworkSubmitted = options.formViewHomeworkSubmitted
+      this._description = options.description
+      this._haveGrade = options.haveGrade
     } else {
       throw new Error('INVALID_HOMEWORK_OPTIONS')
     }
@@ -36,6 +38,32 @@ class SigaaHomework extends SigaaBase {
   get title () {
     this._checkIfItWasFinalized()
     return this._title
+  }
+
+  getHaveGrade () {
+    return new Promise(resolve => {
+      if (this._haveGrade !== undefined) {
+        resolve(this._haveGrade)
+      } else {
+        return this._homeworkUpdate()
+          .then(() => {
+            resolve(this._haveGrade)
+          })
+      }
+    })
+  }
+
+  getDescription () {
+    return new Promise(resolve => {
+      if (this._description !== undefined) {
+        resolve(this._description)
+      } else {
+        return this._homeworkUpdate()
+          .then(() => {
+            resolve(this._description)
+          })
+      }
+    })
   }
 
   get endTimestamp () {
@@ -50,7 +78,7 @@ class SigaaHomework extends SigaaBase {
 
   get id () {
     this._checkIfItWasFinalized()
-    return this._form.postOptions.id
+    return this._id
   }
 
   finish () {
