@@ -351,8 +351,10 @@ class SigaaClassStudent extends SigaaBase {
         if (dateStrings[i + 1] && (dateStrings[i + 1].includes(':') || dateStrings[i + 1].includes('h'))) {
           dates.push(createDateFromString(dateStrings[i], dateStrings[i + 1]).valueOf() / 1000)
           i++
+          continue
         } else {
           dates.push(createDateFromString(dateStrings[i]).valueOf() / 1000)
+          continue
         }
       }
       if (currentDate && (dateStrings[i].includes(':') || dateStrings[i].includes('h'))) {
