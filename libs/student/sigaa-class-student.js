@@ -311,6 +311,7 @@ class SigaaClassStudent extends SigaaBase {
 
   _extractAtachmentVideo (attachmentElement) {
     const attachment = {}
+    attachment.type = 'video'
     attachment.src = attachmentElement.querySelector('iframe').getAttribute('src')
     const titleElement = attachmentElement.querySelector('span[id] > span[id]')
     attachment.title = this._removeTagsHtml(titleElement.innerHTML.trim())
