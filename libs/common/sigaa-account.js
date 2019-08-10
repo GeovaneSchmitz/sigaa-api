@@ -23,6 +23,14 @@ class SigaaAccount extends SigaaBase {
       })
   }
 
+  get status () {
+    return this._sigaaSession.status
+  }
+
+  get userType () {
+    return this._sigaaSession.userType
+  }
+
   setNewPassword (oldPassword, newPassword) {
     return this._get('/sigaa/alterar_dados.jsf')
       .then(page => {

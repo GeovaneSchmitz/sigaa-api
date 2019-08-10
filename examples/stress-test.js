@@ -89,7 +89,7 @@ sigaa.login(username, password) // login
     })()
   })
   .then(() => {
-    return account.logoff() // logoff after finished downloads
+    return account.logoff()
   })
   .catch(err => {
     if (err.stack) console.log(err.stack)

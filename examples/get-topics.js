@@ -10,11 +10,12 @@ var password = ''
 
 sigaa.login(username, password) // return SigaaAccount
   .then(sigaaAccount => {
-    return sigaaAccount.getClasses() // this return a array with all current classes
+    return sigaaAccount.getAllClasses() // this return a array with all current classes
   })
   .then(classes => {
     return (async () => {
       for (const classStudent of classes) { // for each class
+        if (classStudent.id !== '129960') continue
         console.log(' > ' + classStudent.title)
         const topics = await classStudent.getTopics() // this lists all topics
         for (const topic of topics) {

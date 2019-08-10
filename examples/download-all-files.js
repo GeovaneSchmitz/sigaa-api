@@ -27,7 +27,6 @@ sigaa.login(username, password) // login
   .then(classes => {
     return (async () => {
       for (const classStudent of classes) { // for each class
-        if (classStudent.id !== '129955') continue
         console.log(classStudent.title)
         var files = await classStudent.getFiles() // this lists all topics
         if (files.length !== 0) {

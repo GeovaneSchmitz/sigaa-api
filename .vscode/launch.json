@@ -1,12 +1,18 @@
 {
     // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
+    // Hover to get descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "getAbsences",
+            "program": "${workspaceFolder}/examples/get-absences.js",
+            "console": "integratedTerminal"
 
-        
+        },
         {
             "type": "node",
             "request": "launch",
@@ -24,29 +30,29 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "View classes",
-            "program": "${workspaceFolder}/examples/view-classes.js",
+            "name": "getClasses",
+            "program": "${workspaceFolder}/examples/get-classes.js",
             "console": "integratedTerminal"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "View News",
-            "program": "${workspaceFolder}/examples/view-news.js",
+            "name": "getNews",
+            "program": "${workspaceFolder}/examples/get-news.js",
             "console": "integratedTerminal"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "View topics",
-            "program": "${workspaceFolder}/examples/view-topics.js",
+            "name": "getTopics",
+            "program": "${workspaceFolder}/examples/get-topics.js",
             "console": "integratedTerminal"
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "View grades",
-            "program": "${workspaceFolder}/examples/view-grades.js",
+            "name": "getGrades",
+            "program": "${workspaceFolder}/examples/get-grades.js",
             "console": "integratedTerminal"
         }
     ]
