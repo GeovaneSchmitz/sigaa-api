@@ -37,6 +37,15 @@ class SigaaAccountStudent extends SigaaAccount {
         }))
   }
 
+  async getUsername () {
+    const page = await this._get('/sigaa/portais/discente/discente.jsf')
+    if (page.statusCode === 200) {
+      const { document } = new JSDOM(page.body).window
+      const username = this._removeTagsHtml(document.querySelector('p.usuario > span').innerHTML)
+      return username
+    }
+  }
+
   getClasses () {
     return this._get('/sigaa/portais/discente/discente.jsf')
       .then(page => {
