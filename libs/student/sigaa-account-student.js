@@ -43,6 +43,10 @@ class SigaaAccountStudent extends SigaaAccount {
       const { document } = new JSDOM(page.body).window
       const username = this._removeTagsHtml(document.querySelector('p.usuario > span').innerHTML)
       return username
+    } else if (page.statusCode === 302) {
+      throw new Error('SESSION_EXPIRED')
+    } else {
+      throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
     }
   }
 
