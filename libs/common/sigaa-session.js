@@ -53,15 +53,15 @@ class SigaaSession {
     }
   }
 
-  get urlBase () {
-    return this._urlBase
+  get url () {
+    return this._url
   }
 
-  set urlBase (data) {
+  set url (data) {
     if (typeof data === 'string') {
-      this._urlBase = data
+      this._url = data
     } else {
-      throw new Error('URLBASE_IS_NOT_A_STRING')
+      throw new Error('URL_IS_NOT_A_STRING')
     }
   }
 

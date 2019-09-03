@@ -1,5 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
-const { JSDOM } = require('jsdom')
+const cheerio = require('cheerio')
 
 class SigaaWebcontent extends SigaaBase {
   constructor (options, updateAttachment, sigaaSession) {
@@ -46,10 +46,11 @@ class SigaaWebcontent extends SigaaBase {
       const page = await this._post(this._form.action, this._form.postOptions)
       if (page.statusCode === 200) {
         this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
-        const { document } = new JSDOM(page.body).window
-        const table = document.querySelector('table.formAva')
-        const rows = table.querySelectorAll('tr')
-        this._description = this._removeTagsHtml(rows[1].querySelector('td').innerHTML)
+        const $ = cheerio.load(page.body, {
+          normalizeWhitespace: true
+        })
+        const rows = $('table.formAva > tr')
+        this._description = this._removeTagsHtml(rows.eq(1).find('td').html())
         return this._description
       } else if (page.statusCode === 302) {
         throw new Error('WEBCONTENT_EXPIRED')

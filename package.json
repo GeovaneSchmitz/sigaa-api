@@ -6,7 +6,8 @@
   "license": "AGPL-3.0-only",
   "private": false,
   "dependencies": {
-    "jsdom": "^14.0.0"
+    "cheerio": "^1.0.0-rc.3",
+    "he": "^1.2.0"
   },
   "devDependencies": {
     "eslint": "^6.1.0",

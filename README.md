@@ -14,7 +14,7 @@ Existe alguns exemplos de uso, você pode ver na pasta examples, como:
 * Você precisa dizer a url do sigaa da sua instituição:
 ```javascript
 const sigaa = new Sigaa ({
-  urlBase: 'https://sigaa.ifsc.edu.br'
+  url: 'https://sigaa.ifsc.edu.br'
 });
 ```
 * Preencher com seu usuário e senha do sigaa

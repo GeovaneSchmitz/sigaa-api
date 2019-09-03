@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 
 const sigaa = new Sigaa({
-  urlBase: 'https://sigaa.ifsc.edu.br'
+  url: 'https://sigaa.ifsc.edu.br'
 })
 
 // put your crendecias
@@ -26,65 +26,59 @@ sigaa.login(username, password) // login
   })
   .then(classes => {
     return (async () => {
-      const newsList = []
-      const files = []
       console.log('Loading IDs')
       for (const classStudent of classes) { // for each class
         console.log(` > ${classStudent.title} : ${classStudent.id}`)
-      }
-      console.log('Loading Exam Calendar')
-      for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.title)
+
+        console.log('Loading Exam Calendar')
         const examCalendar = await classStudent.getExamCalendar()
         console.log(examCalendar)
-      }
-      console.log('Loading Absence')
-      for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.title)
+
+        console.log('Loading Absence')
         const absencesClass = await classStudent.getAbsence()
         console.log(absencesClass)
-      }
-      console.log('Loading News')
-      for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.title)
-        const newsClassList = await classStudent.getNews()
-        newsClassList.forEach(newsClass => {
-          newsList.push(newsClass)
-        })
-      }
-      console.log('Loading Topics')
-      for (const classStudent of classes) {
-        console.log(await classStudent.getTopics())
-      }
 
-      console.log('Loading Files')
-      for (const classStudent of classes) { // for each class
-        console.log(' > ' + classStudent.title)
+        console.log('Loading News')
+        const newsClassList = await classStudent.getNews()
+        console.log('Loading Full News')
+        for (const news of newsClassList) {
+          console.log(news.title)
+          console.log(await news.getContent())
+          console.log(await news.getTime())
+          console.log()
+        }
+        console.log('Loading Topics')
+        const topics = await classStudent.getTopics()
+        for (const topic of topics) {
+          console.log(`\t> ${topic.title}`)
+          if (topic.contentText) console.log(`\t${topic.contentText}`)
+          const startDate = new Date(topic.startTimestamp * 1000).toString()
+          const endDate = new Date(topic.endTimestamp * 1000).toString()
+          console.log(`\t${startDate} ${endDate}`)
+          for (const attachment of topic.attachments) {
+            if (attachment.description) console.log(`\t\tdescription: ${attachment.description}`)
+            if (attachment.getDescription) console.log(`\t\tdescription: ${await attachment.getDescription()}`)
+            if (attachment.getHaveGrade) console.log(`\t\thaveGrade: ${await attachment.getHaveGrade()}`)
+            if (attachment.src) console.log(`\t\tsrc: ${attachment.src}`)
+            if (attachment.id) console.log(`\t\tid: ${attachment.id}`)
+            if (attachment.startTimestamp) console.log(`\t\tstartTimestamp: ${attachment.startTimestamp}`)
+            if (attachment.endTimestamp) console.log(`\t\tendTimestamp: ${attachment.endTimestamp}`)
+          }
+        }
+        console.log('Loading Files')
         const classFiles = await classStudent.getFiles() // this lists all topics
-        classFiles.forEach(file => {
-          files.push(file)
-        })
-      }
-      console.log('Loading Full News')
-      for (const news of newsList) {
-        console.log(news.title)
-        console.log(await news.getContent())
-        console.log(await news.getTime())
-        console.log()
-      }
-      console.log('Loading Grades')
-      for (const classStudent of classes) {
-        console.log(' > ' + classStudent.title)
+        console.log('Downloading Files')
+        for (const file of classFiles) { // for each file
+          await file.download(BaseDestiny, (bytesDownloaded) => {
+            const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB'
+            process.stdout.write('Progress: ' + progress + '\r')
+          })
+          console.log()
+        }
+
+        console.log('Loading Grades')
         const grade = await classStudent.getGrades()
         console.log(grade)
-      }
-      console.log('Downloading Files')
-      for (const file of files) { // for each file
-        await file.download(BaseDestiny, (bytesDownloaded) => {
-          const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB'
-          process.stdout.write('Progress: ' + progress + '\r')
-        })
-        console.log()
       }
     })()
   })
@@ -92,6 +86,6 @@ sigaa.login(username, password) // login
     return account.logoff()
   })
   .catch(err => {
-    if (err.stack) console.log(err.stack)
-    console.log(err)
+    console.log(err.message)
+    console.log(err.stack)
   })

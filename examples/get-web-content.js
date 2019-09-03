@@ -1,7 +1,7 @@
 const Sigaa = require('..')
 
 const sigaa = new Sigaa({
-  urlBase: 'https://sigaa.ifsc.edu.br'
+  url: 'https://sigaa.ifsc.edu.br'
 })
 
 // put your crendecias

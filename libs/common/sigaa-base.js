@@ -1,6 +1,7 @@
 const https = require('https')
 const querystring = require('querystring')
-const { JSDOM } = require('jsdom')
+const cheerio = require('cheerio')
+const htmlEntities = require('he')
 
 class sigaaBase {
   constructor (sigaaSession) {
@@ -31,7 +32,7 @@ class sigaaBase {
   }
 
   _post (path, postOptions, params) {
-    const link = new URL(path, this._sigaaSession.urlBase)
+    const link = new URL(path, this._sigaaSession.url)
     const options = this._requestBasicOptions('POST', link)
 
     return new Promise((resolve, reject) => {
@@ -52,7 +53,7 @@ class sigaaBase {
   }
 
   _get (path, params) {
-    const link = new URL(path, this._sigaaSession.urlBase)
+    const link = new URL(path, this._sigaaSession.url)
 
     const options = this._requestBasicOptions('GET', link)
 
@@ -93,10 +94,12 @@ class sigaaBase {
 
         res.on('end', () => {
           if (res.statusCode === 200) {
-            const { document } = new JSDOM(res.body).window
-            const responseViewStateEl = document.querySelector("input[name='javax.faces.ViewState']")
+            const $ = cheerio.load(res.body, {
+              normalizeWhitespace: true
+            })
+            const responseViewStateEl = $("input[name='javax.faces.ViewState']")
             if (responseViewStateEl) {
-              var responseViewState = responseViewStateEl.value
+              var responseViewState = responseViewStateEl.val()
             } else {
               responseViewState = false
             }
@@ -131,26 +134,29 @@ class sigaaBase {
 
   _removeTagsHtml (text) {
     try {
-      return text
-        .replace(/\n|\t/gm, ' ')
-        .replace(/<p>|<br\/>|<br>/gm, '\n')
-        .replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|&nbsp;|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
-          '')
-        .trim()
+      const removeNbsp = new RegExp(String.fromCharCode(160), 'g')
+      const textWithoutBreakLinesHtmlAndTabs = text.replace(/\n|\xA0|\t/gm, ' ')
+      const textWithBreakLines = textWithoutBreakLinesHtmlAndTabs.replace(/<p>|<br\/>|<br>/gm, '\n')
+      const textWithoutHtmlTags = textWithBreakLines.replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm, '')
+      const textWithHtmlEncoded = htmlEntities.escape(htmlEntities.decode(textWithoutHtmlTags))
+      const textWithoutNbsp = textWithHtmlEncoded.replace(removeNbsp, ' ')
+      return textWithoutNbsp.replace(/^(\s|\n)*|(\s|\n)*$/gm, '').trim()
     } catch (err) {
       return ''
     }
   }
 
   _extractJSFCLJS (javaScriptCode, htmlBody) {
-    const { document } = new JSDOM(htmlBody).window
+    const $ = cheerio.load(htmlBody, {
+      normalizeWhitespace: true
+    })
 
     if (javaScriptCode.includes('getElementById')) {
       const formQuery = javaScriptCode.replace(
         /if([\S\s]*?)getElementById\('|'([\S\s]*?)false/gm,
         ''
       )
-      const formEl = document.getElementById(formQuery)
+      const formEl = $(`#${formQuery}`)
       if (!formEl) {
         throw new Error('FORM_NOT_FOUND')
       }
@@ -158,61 +164,20 @@ class sigaaBase {
       '{' +
       javaScriptCode
         .replace(/if([\S\s]*?),{|},([\S\s]*?)false/gm, '')
-        .replace(/"/gm, '"')
         .replace(/'/gm, '"') +
       '}'
-      const postOptions = JSON.parse(postOptionsString)
-      const form = this._extractForm(formEl, { submitInput: false })
-      for (const postOption of Object.entries(postOptions)) {
-        form.postOptions[postOption[0]] = postOption[1]
-      }
+      const form = {}
+      form.action = new URL(formEl.attr('action'), this._sigaaSession.url).href
+      form.postOptions = {}
+      formEl.find("input:not([type='submit'])").each(function () {
+        form.postOptions[$(this).attr('name')] = $(this).val()
+      })
+      const postOptionsJSFCLJ = JSON.parse(postOptionsString)
+      Object.assign(form.postOptions, postOptionsJSFCLJ)
       return form
-    } else if (javaScriptCode.includes('document.forms')) {
-      const formQuery = javaScriptCode.replace(
-        /if([\S\s]*?)forms\['|'([\S\s]*?)false/gm,
-        ''
-      )
-      const formEl = document.forms[formQuery]
-      if (!formEl) {
-        throw new Error('FORM_NOT_FOUND')
-      }
-      const postOptions = javaScriptCode
-        .replace(/if([\S\s]*?),'|'([\S\s]*?)false/gm, '')
-        .split(',')
-
-      const form = this._extractForm(formEl, { submitInput: false })
-      for (let i = 0; i < postOptions.length; i = i + 2) {
-        form.postOptions[postOptions[i]] = postOptions[i + 1]
-      }
-      return form
-    }
-  }
-
-  _extractForm (formEl, options) {
-    if (!formEl) {
+    } else {
       throw new Error('FORM_NOT_FOUND')
     }
-    let query
-    if (options) {
-      if (options.submitInput) {
-        query = 'input[name]'
-      } else {
-        query = "input[name]:not([type='submit'])"
-      }
-    } else {
-      query = 'input[name]'
-    }
-
-    var inputs = formEl.querySelectorAll(query)
-
-    const form = {}
-    form.action = new URL(formEl.action, this._sigaaSession.urlBase).href
-    form.method = formEl.method
-    form.postOptions = {}
-    for (const input of inputs) {
-      form.postOptions[input.name] = input.value
-    }
-    return form
   }
 
   async followAllRedirect (res) {

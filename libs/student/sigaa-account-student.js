@@ -1,4 +1,4 @@
-const { JSDOM } = require('jsdom')
+const cheerio = require('cheerio')
 
 const SigaaAccount = require('../common/sigaa-account')
 const SigaaClassStudent = require('./sigaa-class-student')
@@ -8,31 +8,34 @@ class SigaaAccountStudent extends SigaaAccount {
     return this._get('/sigaa/portais/discente/turmas.jsf')
       .then(page =>
         new Promise((resolve, reject) => {
-          const { document } = new JSDOM(page.body).window
-          const table = document.getElementsByClassName('listagem')[0]
-          if (!table) resolve([])
+          const $ = cheerio.load(page.body, {
+            normalizeWhitespace: true
+          })
+          const table = $('.listagem')
+          if (table.length === 0) resolve([])
           const listClasses = []
           let period
-          for (const rowElement of table.querySelectorAll('tbody > tr')) {
-            const cellElements = rowElement.querySelectorAll('td')
-            if (cellElements[0].classList.contains('periodo')) {
-              period = this._removeTagsHtml(cellElements[0].innerHTML)
+          const self = this
+          table.find('tbody > tr').each(function () {
+            const cellElements = $(this).find('td')
+            if (cellElements.eq(0).hasClass('periodo')) {
+              period = self._removeTagsHtml(cellElements.html())
             } else if (period) {
-              const buttonClassPage = cellElements[5].querySelector('a[onclick]')
+              const buttonClassPage = cellElements.eq(5).find('a[onclick]')
               if (buttonClassPage) {
                 const classData = {}
-                const fullname = this._removeTagsHtml(cellElements[0].innerHTML)
+                const fullname = self._removeTagsHtml(cellElements.eq(0).html())
                 classData.title = fullname.slice(fullname.indexOf(' - ') + 3)
                 classData.abbreviation = fullname.slice(0, fullname.indexOf(' - '))
-                classData.numberOfStudents = this._removeTagsHtml(cellElements[2].innerHTML)
-                classData.schedule = this._removeTagsHtml(cellElements[4].innerHTML)
+                classData.numberOfStudents = self._removeTagsHtml(cellElements.eq(2).html())
+                classData.schedule = self._removeTagsHtml(cellElements.eq(4).html())
                 classData.period = period
-                classData.form = this._extractJSFCLJS(buttonClassPage.getAttribute('onclick'), page.body)
-                classData.id = classData.form.postOptions.idTurma
-                listClasses.push(new SigaaClassStudent(classData, this._sigaaSession))
+                classData.form = self._extractJSFCLJS(buttonClassPage.attr('onclick'), page.body)
+                classData.id = classData.form.postOptions['idTurma']
+                listClasses.push(new SigaaClassStudent(classData, self._sigaaSession))
               }
             }
-          }
+          })
           resolve(listClasses)
         }))
   }
@@ -40,8 +43,10 @@ class SigaaAccountStudent extends SigaaAccount {
   async getUsername () {
     const page = await this._get('/sigaa/portais/discente/discente.jsf')
     if (page.statusCode === 200) {
-      const { document } = new JSDOM(page.body).window
-      const username = this._removeTagsHtml(document.querySelector('p.usuario > span').innerHTML)
+      const $ = cheerio.load(page.body, {
+        normalizeWhitespace: true
+      })
+      const username = this._removeTagsHtml($('p.usuario > span').html())
       return username
     } else if (page.statusCode === 302) {
       throw new Error('SESSION_EXPIRED')
@@ -55,25 +60,25 @@ class SigaaAccountStudent extends SigaaAccount {
       .then(page => {
         return new Promise((resolve, reject) => {
           if (page.statusCode === 200) {
-            const { document } = new JSDOM(page.body).window
-            const period = this._removeTagsHtml(document.querySelector('p.periodo-atual > strong').innerHTML)
-            const tbodyClasses = document.querySelector('div#turmas-portal.simple-panel > table[style="margin-top: 1%;"] > tbody')
-            if (!tbodyClasses) resolve([])
-            const trsClasses = tbodyClasses.querySelectorAll("tr[class=''], tr.odd")
+            const $ = cheerio.load(page.body, {
+              normalizeWhitespace: true
+            })
+            const tbodyClasses = $('div#turmas-portal.simple-panel > table[style="margin-top: 1%;"] > tbody')
+            if (tbodyClasses.length === 0) resolve([])
+            const trsClasses = tbodyClasses.find("tr[class=''], tr.odd")
             const list = []
             for (var i = 0; i < trsClasses.length; i++) {
-              const cells = trsClasses[i].querySelectorAll('td')
+              const cells = trsClasses.eq(i).find('td')
 
-              const titleElement = cells[0].querySelector('a')
-              const title = this._removeTagsHtml(titleElement.innerHTML)
-              const form = this._extractJSFCLJS(titleElement.getAttribute('onclick'), page.body)
-              const id = form.postOptions.idTurma
-              const location = this._removeTagsHtml(cells[1].innerHTML)
-              const schedule = this._removeTagsHtml(cells[2].firstChild.innerHTML)
+              const titleElement = cells.first().find('a')
+              const title = this._removeTagsHtml(titleElement.html())
+              const form = this._extractJSFCLJS(titleElement.attr('onclick'), page.body)
+              const id = form.postOptions['idTurma']
+              const location = this._removeTagsHtml(cells.eq(1).html())
+              const schedule = this._removeTagsHtml(cells.eq(2).children().first().html())
               list.push(new SigaaClassStudent({
                 title,
                 id,
-                period,
                 form,
                 location,
                 schedule

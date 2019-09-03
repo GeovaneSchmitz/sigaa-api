@@ -6,10 +6,12 @@ const SigaaSession = require('./libs/common/sigaa-session')
 class Sigaa {
   constructor (params) {
     if (params) {
-      if (params.urlBase) {
-        this._urlBase = params.urlBase
+      if (params.url) {
+        this._sigaaSession = new SigaaSession()
+        this._sigaaSession.url = params.url
+        this._sigaaLogin = new SigaaLogin(this._sigaaSession)
       } else {
-        throw new Error('SIGAA_URLBASE_IS_NECESSARY')
+        throw new Error('SIGAA_URL_IS_NECESSARY')
       }
     } else {
       throw new Error('SIGAA_OPTIONS_IS_NECESSARY')
@@ -17,17 +19,12 @@ class Sigaa {
   }
 
   login (username, password) {
-    const sigaaSession = new SigaaSession()
-    sigaaSession.urlBase = this._urlBase
-
-    const sigaaLogin = new SigaaLogin(sigaaSession)
-
-    return sigaaLogin.login(username, password)
+    return this._sigaaLogin.login(username, password)
       .then(() => new Promise((resolve, reject) => {
-        if (sigaaSession.userType === 'STUDENT') {
-          resolve(new SigaaAccountStudent(sigaaSession))
+        if (this._sigaaSession.userType === 'STUDENT') {
+          resolve(new SigaaAccountStudent(this._sigaaSession))
         } else {
-          resolve(new SigaaAccount(SigaaSession))
+          resolve(new SigaaAccount(this._sigaaSession))
         }
       }))
   }

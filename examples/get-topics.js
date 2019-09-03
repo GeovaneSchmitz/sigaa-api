@@ -1,7 +1,7 @@
 const Sigaa = require('..')
 
 const sigaa = new Sigaa({
-  urlBase: 'https://sigaa.ifsc.edu.br'
+  url: 'https://sigaa.ifsc.edu.br'
 })
 
 // put your crendecias
@@ -15,7 +15,6 @@ sigaa.login(username, password) // return SigaaAccount
   .then(classes => {
     return (async () => {
       for (const classStudent of classes) { // for each class
-        if (classStudent.id !== '129960') continue
         console.log(' > ' + classStudent.title)
         const topics = await classStudent.getTopics() // this lists all topics
         for (const topic of topics) {

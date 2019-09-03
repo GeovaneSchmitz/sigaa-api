@@ -1,4 +1,4 @@
-const { JSDOM } = require('jsdom')
+const cheerio = require('cheerio')
 
 const SigaaBase = require('./sigaa-base')
 
@@ -53,11 +53,18 @@ class SigaaAccount extends SigaaBase {
             page.statusCode === 200 &&
             page.url.href.includes('usuario/alterar_dados.jsf')
           ) {
-            const { document } = new JSDOM(page.body).window
-            const formEl = document.forms['form']
-            const form = this._extractForm(formEl, { submitInput: false })
-            form.postOptions['form:alterarSenha'] = 'form:alterarSenha'
-            resolve(this._post(form.action, form.postOptions))
+            const $ = cheerio.load(page.body, {
+              normalizeWhitespace: true
+            })
+            const formElement = $('form[name="form"]')
+            const action = new URL(formElement.attr('action'), this._sigaaSession.url).href
+            const postOptions = {}
+
+            formElement.find("input[name]:not([type='submit'])").each(() => {
+              postOptions[$(this).attr('name')] = $(this).val()
+            })
+            postOptions['form:alterarSenha'] = 'form:alterarSenha'
+            resolve(this._post(action, postOptions))
           } else {
             reject(new Error(page.statusCode))
           }
@@ -66,13 +73,19 @@ class SigaaAccount extends SigaaBase {
       .then(page => {
         return new Promise((resolve, reject) => {
           if (page.statusCode === 200) {
-            const { document } = new JSDOM(page.body).window
-            const formEl = document.forms['form']
-            const form = this._extractForm(formEl, { submitInput: true })
-            form.postOptions['form:senhaAtual'] = oldPassword
-            form.postOptions['form:novaSenha'] = newPassword
-            form.postOptions['form:repetnNovaSenha'] = newPassword
-            resolve(this._post(form.action, form.postOptions))
+            const $ = cheerio.load(page.body, {
+              normalizeWhitespace: true
+            })
+            const formElement = $('form[name="form"]')
+            const formAction = new URL(formElement.attr('action'), this._sigaaSession.url).href
+            const postOptions = {}
+            formElement.find("input[name]:not([type='submit'])").each(() => {
+              postOptions[$(this).attr('name')] = $(this).val()
+            })
+            postOptions['form:senhaAtual'] = oldPassword
+            postOptions['form:novaSenha'] = newPassword
+            postOptions['form:repetnNovaSenha'] = newPassword
+            resolve(this._post(formAction, postOptions))
           } else {
             reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
           }
@@ -81,8 +94,10 @@ class SigaaAccount extends SigaaBase {
       .then(page => {
         return new Promise((resolve, reject) => {
           if (page.statusCode === 200) {
-            const { document } = new JSDOM(page.body).window
-            const errorMsg = document.querySelector('.erros li').innerHTML
+            const $ = cheerio.load(page.body, {
+              normalizeWhitespace: true
+            })
+            const errorMsg = $('.erros li').html()
             const response = {
               status: 'ERROR',
               errorCode: 'UNKNOWN',

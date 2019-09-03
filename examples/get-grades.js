@@ -1,7 +1,7 @@
 const Sigaa = require('..')
 
 const sigaa = new Sigaa({
-  urlBase: 'https://sigaa.ifsc.edu.br'
+  url: 'https://sigaa.ifsc.edu.br'
 })
 
 // put your crendecias
@@ -13,7 +13,7 @@ let account
 sigaa.login(username, password) // login
   .then(sigaaAccount => {
     account = sigaaAccount
-    return account.getClasses() // this return a array with all current classes
+    return account.getAllClasses() // this return a array with all current classes
   })
   .then(classes => {
     return (async () => {

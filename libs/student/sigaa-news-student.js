@@ -1,5 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
-const { JSDOM } = require('jsdom')
+const cheerio = require('cheerio')
 
 class SigaaNews extends SigaaBase {
   constructor (newsParams, newsUpdate, sigaaSession) {
@@ -86,12 +86,14 @@ class SigaaNews extends SigaaBase {
         return new Promise((resolve, reject) => {
           switch (res.statusCode) {
             case 200:
-              var { document } = new JSDOM(res.body).window
-              var newsElement = document.querySelector('ul.form')
-              if (!newsElement) reject(new Error('NEWS_ELEMENT_NOT_FOUND'))
-              var els = newsElement.querySelectorAll('span')
-              this._time = this._removeTagsHtml(els[1].innerHTML).split(' ')[1]
-              this._content = this._removeTagsHtml(newsElement.querySelector('div').innerHTML)
+              var $ = cheerio.load(res.body, {
+                normalizeWhitespace: true
+              })
+              var newsElement = $('ul.form')
+              if (newsElement.length === 0) reject(new Error('NEWS_ELEMENT_NOT_FOUND'))
+              var els = newsElement.find('span')
+              this._time = this._removeTagsHtml(els.eq(1).html()).split(' ')[1]
+              this._content = newsElement.find('div').text
               resolve()
               break
             default:
