@@ -408,7 +408,7 @@ class SigaaClassStudent extends SigaaBase {
             })
           } else {
             for (const row of rows) {
-              const cell = row.children()
+              const cell = $(row).children()
               const title = this._removeTagsHtml(cell.first().html())
               const date = this._removeTagsHtml(cell.eq(1).html())
               const buttonEl = cell.eq(2).children().first()

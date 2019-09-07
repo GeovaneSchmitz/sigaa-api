@@ -93,7 +93,7 @@ class SigaaNews extends SigaaBase {
               if (newsElement.length === 0) reject(new Error('NEWS_ELEMENT_NOT_FOUND'))
               var els = newsElement.find('span')
               this._time = this._removeTagsHtml(els.eq(1).html()).split(' ')[1]
-              this._content = newsElement.find('div').text
+              this._content = this._removeTagsHtml(newsElement.find('div').html())
               resolve()
               break
             default:
