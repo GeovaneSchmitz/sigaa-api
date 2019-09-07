@@ -180,7 +180,7 @@ class SigaaClassStudent extends SigaaBase {
       topic.startTimestamp = timestamp
       topic.endTimestamp = timestamp
     }
-    topic.title = titleFull.slice(0, titleFull.lastIndexOf('('))
+    topic.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
     const topicContentElement = $(topicElement).find('.conteudotopico')
     topic.contentText = decodeURI(this._removeTagsHtml(topicContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')))
     topic.attachments = this._extractAttachmentsFromTopic($, topicContentElement, page)
