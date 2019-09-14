@@ -24,6 +24,7 @@ sigaa.login(username, password) // return SigaaAccount
           const endDate = new Date(topic.endTimestamp * 1000).toString()
           console.log(`\t${startDate} ${endDate}`)
           for (const attachment of topic.attachments) {
+            if (attachment.title) console.log(`\t\ttitle: ${attachment.title}`)
             if (attachment.description) console.log(`\t\tdescription: ${attachment.description}`)
             if (attachment.getDescription) console.log(`\t\tdescription: ${await attachment.getDescription()}`)
             if (attachment.getHaveGrade) console.log(`\t\thaveGrade: ${await attachment.getHaveGrade()}`)
