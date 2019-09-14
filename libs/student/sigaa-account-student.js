@@ -30,7 +30,7 @@ class SigaaAccountStudent extends SigaaAccount {
                 classData.numberOfStudents = self._removeTagsHtml(cellElements.eq(2).html())
                 classData.schedule = self._removeTagsHtml(cellElements.eq(4).html())
                 classData.period = period
-                classData.form = self._extractJSFCLJS(buttonClassPage.attr('onclick'), page.body)
+                classData.form = self._extractJSFCLJS(buttonClassPage.attr('onclick'), $)
                 classData.id = classData.form.postOptions['idTurma']
                 listClasses.push(new SigaaClassStudent(classData, self._sigaaSession))
               }
@@ -72,7 +72,7 @@ class SigaaAccountStudent extends SigaaAccount {
 
               const titleElement = cells.first().find('a')
               const title = this._removeTagsHtml(titleElement.html())
-              const form = this._extractJSFCLJS(titleElement.attr('onclick'), page.body)
+              const form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
               const id = form.postOptions['idTurma']
               const location = this._removeTagsHtml(cells.eq(1).html())
               const schedule = this._removeTagsHtml(cells.eq(2).children().first().html())

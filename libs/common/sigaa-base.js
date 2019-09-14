@@ -34,7 +34,8 @@ class sigaaBase {
   _post (path, postOptions, params) {
     const link = new URL(path, this._sigaaSession.url)
     const options = this._requestBasicOptions('POST', link)
-
+    const body = querystring.stringify(postOptions)
+    options.headers['Content-Length'] = Buffer.byteLength(body)
     return new Promise((resolve, reject) => {
       if (!(params && params.noCache === true)) {
         var cachePage = this._sigaaSession.getPage(
@@ -47,7 +48,7 @@ class sigaaBase {
       if (cachePage) {
         resolve(cachePage)
       } else {
-        resolve(this._request(link, options, postOptions))
+        resolve(this._request(link, options, postOptions, body))
       }
     })
   }
@@ -69,12 +70,8 @@ class sigaaBase {
     })
   }
 
-  _request (link, options, postOptions) {
+  _request (link, options, postOptions, body) {
     return new Promise((resolve, reject) => {
-      if (postOptions) {
-        var postOptionsString = querystring.stringify(postOptions)
-        options.headers['Content-Length'] = Buffer.byteLength(postOptionsString)
-      }
       const req = https.request(options, res => {
         res.setEncoding('utf8')
         res.url = link
@@ -111,7 +108,8 @@ class sigaaBase {
               requestHeaders: options.headers,
               responseHeaders: res.headers,
               body: res.body,
-              viewState: responseViewState
+              viewState: responseViewState,
+              postOptions
             })
           }
           resolve(res)
@@ -127,7 +125,7 @@ class sigaaBase {
         reject(response)
       })
 
-      if (options.method === 'POST') req.write(postOptionsString)
+      if (options.method === 'POST') req.write(body)
       req.end()
     })
   }
@@ -146,11 +144,7 @@ class sigaaBase {
     }
   }
 
-  _extractJSFCLJS (javaScriptCode, htmlBody) {
-    const $ = cheerio.load(htmlBody, {
-      normalizeWhitespace: true
-    })
-
+  _extractJSFCLJS (javaScriptCode, $) {
     if (javaScriptCode.includes('getElementById')) {
       const formQuery = javaScriptCode.replace(
         /if([\S\s]*?)getElementById\('|'([\S\s]*?)false/gm,

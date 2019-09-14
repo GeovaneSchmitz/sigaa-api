@@ -23,6 +23,14 @@ class SigaaAccount extends SigaaBase {
       })
   }
 
+  toJSON () {
+    return this._sigaaSession.toJSON()
+  }
+
+  finish () {
+    return this._sigaaSession.finish()
+  }
+
   get status () {
     return this._sigaaSession.status
   }
@@ -53,9 +61,7 @@ class SigaaAccount extends SigaaBase {
             page.statusCode === 200 &&
             page.url.href.includes('usuario/alterar_dados.jsf')
           ) {
-            const $ = cheerio.load(page.body, {
-              normalizeWhitespace: true
-            })
+            const $ = cheerio.load(page.body)
             const formElement = $('form[name="form"]')
             const action = new URL(formElement.attr('action'), this._sigaaSession.url).href
             const postOptions = {}
@@ -73,9 +79,7 @@ class SigaaAccount extends SigaaBase {
       .then(page => {
         return new Promise((resolve, reject) => {
           if (page.statusCode === 200) {
-            const $ = cheerio.load(page.body, {
-              normalizeWhitespace: true
-            })
+            const $ = cheerio.load(page.body)
             const formElement = $('form[name="form"]')
             const formAction = new URL(formElement.attr('action'), this._sigaaSession.url).href
             const postOptions = {}

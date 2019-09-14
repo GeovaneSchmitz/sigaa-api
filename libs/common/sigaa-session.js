@@ -9,6 +9,47 @@ class SigaaSession {
     this._tokens = {}
   }
 
+  toJSON () {
+    const sessionObj = {}
+    sessionObj.tokens = this._tokens
+    sessionObj.timeout = this.timeout
+    sessionObj.userType = this.userType
+    sessionObj.url = this.url
+    sessionObj.cachePages = this._cachePages
+    sessionObj.status = this.status
+    sessionObj.formLoginAction = this.formLoginAction
+    sessionObj.formLoginPostOptions = this.formLoginPostOptions
+    return sessionObj
+  }
+
+  parseJSON (sessionObj) {
+    if (sessionObj.tokens !== undefined &&
+      sessionObj.timeout !== undefined &&
+      sessionObj.url !== undefined &&
+      sessionObj.cachePages !== undefined) {
+      for (const key of Object.keys(sessionObj.tokens)) {
+        this.setToken(key, sessionObj.tokens[key])
+      }
+      if (sessionObj.userType !== undefined) {
+        this.userType = sessionObj.userType
+      }
+      if (sessionObj.status !== undefined) {
+        this.status = sessionObj.status
+      }
+      if (sessionObj.formLoginAction !== undefined) {
+        this.formLoginAction = sessionObj.formLoginAction
+      }
+      if (sessionObj.formLoginPostOptions !== undefined) {
+        this.formLoginPostOptions = sessionObj.formLoginPostOptions
+      }
+      this.timeout = sessionObj.timeout
+      this.url = sessionObj.url
+      this._cachePages = sessionObj.cachePages
+    } else {
+      throw new Error('INVALID_JSON_OBJECT')
+    }
+  }
+
   get timeout () {
     return this._timeout
   }
@@ -46,10 +87,37 @@ class SigaaSession {
   }
 
   setToken (domain, token) {
+    if (typeof domain !== 'string') {
+      throw new Error('DOMAIN_IS_NOT_A_STRING')
+    }
     if (typeof token === 'string') {
       this._tokens[domain] = token
     } else {
       throw new Error('TOKEN_IS_NOT_A_STRING')
+    }
+  }
+
+  get formLoginAction () {
+    return this._formLoginAction
+  }
+
+  set formLoginAction (data) {
+    if (typeof data === 'string') {
+      this._formLoginAction = data
+    } else {
+      throw new Error('FORM_LOGIN_ACTION_IS_NOT_A_STRING')
+    }
+  }
+
+  get formLoginPostOptions () {
+    return this._formLoginPostOptions
+  }
+
+  set formLoginPostOptions (data) {
+    if (typeof data === 'object') {
+      this._formLoginPostOptions = data
+    } else {
+      throw new Error('FORM_LOGIN_POST_OPTIONS_IS_NOT_A_OBJECT')
     }
   }
 
