@@ -330,7 +330,7 @@ class SigaaClassStudent extends SigaaBase {
   _extractAttachmentQuiz (attachmentElement, page) {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
-    attachment.title = this._removeTagsHtml(titleElement.innerHTML.html())
+    attachment.title = this._removeTagsHtml(titleElement.html())
     const form = this._extractJSFCLJS(titleElement.attr('onclick'), page.body)
     attachment.id = form.postOptions.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
