@@ -22,7 +22,7 @@ let account
 sigaa.login(username, password) // login
   .then(sigaaAccount => {
     account = sigaaAccount
-    return account.getAllClasses() // this return a array with all current classes
+    return account.getClasses() // this return a array with all current classes
   })
   .then(classes => {
     return (async () => {

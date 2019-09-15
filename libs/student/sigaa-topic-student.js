@@ -4,13 +4,13 @@ class SigaaTopic {
     if (options.title !== undefined &&
       options.contentText !== undefined &&
       options.attachments !== undefined &&
-      options.startTimestamp !== undefined &&
-      options.endTimestamp !== undefined &&
+      options.startDate !== undefined &&
+      options.endDate !== undefined &&
       options.attachments !== undefined) {
       this._title = options.title
       this._contextText = options.contentText
-      this._startTimestamp = options.startTimestamp
-      this._endTimestamp = options.endTimestamp
+      this._startDate = options.startDate
+      this._endDate = options.endDate
       this._attachments = options.attachments
       this._finish = false
     } else {
@@ -28,14 +28,14 @@ class SigaaTopic {
     return this._contextText
   }
 
-  get endTimestamp () {
+  get endDate () {
     this._checkIfItWasFinalized()
-    return this._endTimestamp
+    return this._endDate
   }
 
-  get startTimestamp () {
+  get startDate () {
     this._checkIfItWasFinalized()
-    return this._startTimestamp
+    return this._startDate
   }
 
   get attachments () {

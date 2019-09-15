@@ -14,10 +14,8 @@ class SigaaNews extends SigaaBase {
 
   update (newsParams) {
     if (newsParams.title !== undefined &&
-      newsParams.date !== undefined &&
       newsParams.form !== undefined) {
       this._title = newsParams.title
-      this._date = newsParams.date
       this._form = newsParams.form
     } else {
       throw new Error('INVALID_NEWS_OPTIONS')
@@ -25,11 +23,6 @@ class SigaaNews extends SigaaBase {
     if (this._awaitUpdate) {
       this._awaitUpdate()
     }
-  }
-
-  get date () {
-    this._checkIfItWasFinalized()
-    return this._date
   }
 
   get title () {
@@ -57,16 +50,16 @@ class SigaaNews extends SigaaBase {
     }
   }
 
-  getTime () {
+  getDate () {
     return new Promise((resolve) => {
       this._checkIfItWasFinalized()
-      if (this._time === undefined) {
+      if (this._date === undefined) {
         resolve(this._getFullNews()
           .then(() => new Promise(resolve => {
-            resolve(this._time)
+            resolve(this._date)
           })))
       } else {
-        resolve(this._time)
+        resolve(this._date)
       }
     })
   }
@@ -80,35 +73,36 @@ class SigaaNews extends SigaaBase {
     return this._form.postOptions.id
   }
 
-  _getFullNews (retry = true) {
-    return this._post(this._form.action, this._form.postOptions)
-      .then(res => {
-        return new Promise((resolve, reject) => {
-          switch (res.statusCode) {
-            case 200:
-              var $ = cheerio.load(res.body, {
-                normalizeWhitespace: true
-              })
-              var newsElement = $('ul.form')
-              if (newsElement.length === 0) reject(new Error('NEWS_ELEMENT_NOT_FOUND'))
-              var els = newsElement.find('span')
-              this._time = this._removeTagsHtml(els.eq(1).html()).split(' ')[1]
-              this._content = this._removeTagsHtml(newsElement.find('div').html())
-              resolve()
-              break
-            default:
-              if (retry) {
-                this._awaitUpdate = () => {
-                  this._awaitUpdate = undefined
-                  resolve(this._getFullNews(false))
-                }
-                this._callUpdate()
-              } else {
-                reject(new Error(`SIGAA_STATECODE_${res.statusCode}`))
-              }
-          }
-        })
+  async _getFullNews (retry = true) {
+    const page = await this._post(this._form.action, this._form.postOptions)
+    if (page.statusCode === 200) {
+      var $ = cheerio.load(page.body, {
+        normalizeWhitespace: true
       })
+      var newsElement = $('ul.form')
+      if (newsElement.length === 0) throw new Error('NEWS_ELEMENT_NOT_FOUND')
+      var els = newsElement.find('span')
+      const datetime = this._removeTagsHtml(els.eq(1).html()).split(' ')
+      const date = datetime[0].split('/')
+      const time = datetime[1].split(':')
+      const year = parseInt(date[2], 10)
+      const monthIndex = parseInt(date[1], 10) - 1
+      const day = parseInt(date[0], 10)
+      const hours = parseInt(time[0], 10)
+      const minutes = parseInt(time[1], 10)
+      this._date = new Date(year, monthIndex, day, hours, minutes)
+      this._content = this._removeTagsHtml(newsElement.find('div').html())
+    } else {
+      if (retry) {
+        this._awaitUpdate = () => {
+          this._awaitUpdate = undefined
+          return this._getFullNews(false)
+        }
+        this._callUpdate()
+      } else {
+        throw new Error(`SIGAA_STATECODE_${page.statusCode}`)
+      }
+    }
   }
 }
 

@@ -17,12 +17,12 @@ class SigaaHomework extends SigaaBase {
 
   update (options) {
     if (options.title !== undefined &&
-      options.startTimestamp !== undefined &&
+      options.startDate !== undefined &&
       options.id !== undefined &&
-      options.endTimestamp !== undefined) {
+      options.endDate !== undefined) {
       this._title = options.title
-      this._startTimestamp = options.startTimestamp
-      this._endTimestamp = options.endTimestamp
+      this._startDate = options.startDate
+      this._endDate = options.endDate
       this._id = options.id
       this._finish = false
 
@@ -66,14 +66,14 @@ class SigaaHomework extends SigaaBase {
     })
   }
 
-  get endTimestamp () {
+  get endDate () {
     this._checkIfItWasFinalized()
-    return this._endTimestamp
+    return this._endDate
   }
 
-  get startTimestamp () {
+  get startDate () {
     this._checkIfItWasFinalized()
-    return this._startTimestamp
+    return this._startDate
   }
 
   get id () {

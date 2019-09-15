@@ -20,7 +20,7 @@ class SigaaWebcontent extends SigaaBase {
     if (options.title !== undefined &&
         options.form !== undefined) {
       this._title = options.title
-      this._timestamp = options.timestamp
+      this._date = options.date
       this._form = options.form
       this._finish = false
     } else {
@@ -28,8 +28,8 @@ class SigaaWebcontent extends SigaaBase {
     }
   }
 
-  get timestamp () {
-    return this._timestamp
+  get date () {
+    return this._date
   }
 
   get title () {

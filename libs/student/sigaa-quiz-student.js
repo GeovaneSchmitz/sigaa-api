@@ -17,13 +17,13 @@ class SigaaQuiz extends SigaaBase {
 
   update (options) {
     if (options.title !== undefined &&
-        options.startTimestamp !== undefined &&
-        options.endTimestamp !== undefined &&
+        options.startDate !== undefined &&
+        options.endDate !== undefined &&
         options.id !== undefined) {
       this._title = options.title
       this._id = options.id
-      this._startTimestamp = options.startTimestamp
-      this._endTimestamp = options.endTimestamp
+      this._startDate = options.startDate
+      this._endDate = options.endDate
       this._finish = false
       this._formSendAnswers = options.formSendAnswers
       this._formViewAnswersSubmitted = options.formViewAnswersSubmitted
@@ -37,9 +37,9 @@ class SigaaQuiz extends SigaaBase {
     return this._title
   }
 
-  get endTimestamp () {
+  get endDate () {
     this._checkIfItWasFinalized()
-    return this._endTimestamp
+    return this._endDate
   }
 
   getAnswersSubmitted (retry = true) {
@@ -82,9 +82,9 @@ class SigaaQuiz extends SigaaBase {
     })
   }
 
-  get startTimestamp () {
+  get startDate () {
     this._checkIfItWasFinalized()
-    return this._startTimestamp
+    return this._startDate
   }
 
   get id () {

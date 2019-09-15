@@ -171,14 +171,14 @@ class SigaaClassStudent extends SigaaBase {
     const topicDates = titleFull.slice(titleFull.lastIndexOf('(') + 1, titleFull.lastIndexOf(')'))
     if (topicDates.includes(' ')) {
       const startDate = topicDates.slice(0, topicDates.indexOf(' ')).split('/')
-      topic.startTimestamp = Math.trunc(new Date(`${startDate[1]}/${startDate[0]}/${startDate[2]}`) / 1000)
+      topic.startDate = new Date(`${startDate[1]}/${startDate[0]}/${startDate[2]}`)
       const endDate = topicDates.slice(topicDates.lastIndexOf(' ') + 1).split('/')
-      topic.endTimestamp = Math.trunc(new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`) / 1000)
+      topic.endDate = new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`)
     } else {
-      const date = topicDates.split('/')
-      const timestamp = Math.trunc(new Date(`${date[1]}/${date[0]}/${date[2]}`) / 1000)
-      topic.startTimestamp = timestamp
-      topic.endTimestamp = timestamp
+      const dateString = topicDates.split('/')
+      const date = new Date(`${dateString[1]}/${dateString[0]}/${dateString[2]}`)
+      topic.startDate = date
+      topic.endDate = date
     }
     topic.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
     const topicContentElement = $(topicElement).find('.conteudotopico')
@@ -310,9 +310,9 @@ class SigaaClassStudent extends SigaaBase {
     attachment.title = this._removeTagsHtml(titleElement.html())
     const descriptionElement = attachmentElement.find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
-    const dates = this._extractDateTimestamps(description)
-    attachment.startTimestamp = dates[0]
-    attachment.endTimestamp = dates[1]
+    const dates = this._extractDates(description)
+    attachment.startDate = dates[0]
+    attachment.endDate = dates[1]
     return attachment
   }
 
@@ -335,13 +335,13 @@ class SigaaClassStudent extends SigaaBase {
     attachment.id = form.postOptions.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
-    const dates = this._extractDateTimestamps(description)
-    attachment.startTimestamp = dates[0]
-    attachment.endTimestamp = dates[1]
+    const dates = this._extractDates(description)
+    attachment.startDate = dates[0]
+    attachment.endDate = dates[1]
     return attachment
   }
 
-  _extractDateTimestamps (description) {
+  _extractDates (description) {
     const dateStrings = description.match(/[0-9]+[\S\s]+?[0-9]((?= )|(?=$))/g)
     const createDateFromString = (dataString, timeString) => {
       const dateSplited = dataString.match(/[0-9]+/g)
@@ -357,16 +357,16 @@ class SigaaClassStudent extends SigaaBase {
       if (dateStrings[i].includes('/')) {
         currentDate = dateStrings[i]
         if (dateStrings[i + 1] && (dateStrings[i + 1].includes(':') || dateStrings[i + 1].includes('h'))) {
-          dates.push(createDateFromString(dateStrings[i], dateStrings[i + 1]).valueOf() / 1000)
+          dates.push(createDateFromString(dateStrings[i], dateStrings[i + 1]))
           i++
           continue
         } else {
-          dates.push(createDateFromString(dateStrings[i]).valueOf() / 1000)
+          dates.push(createDateFromString(dateStrings[i]))
           continue
         }
       }
       if (currentDate && (dateStrings[i].includes(':') || dateStrings[i].includes('h'))) {
-        dates.push(createDateFromString(currentDate, dateStrings[i]).valueOf() / 1000)
+        dates.push(createDateFromString(currentDate, dateStrings[i]))
       }
     }
     return dates
@@ -386,7 +386,7 @@ class SigaaClassStudent extends SigaaBase {
             const usedNewsIndex = []
 
             for (const row of rows) {
-              const cell = row.children()
+              const cell = $(row).children()
               const title = this._removeTagsHtml(cell.first().html())
               const date = this._removeTagsHtml(cell.eq(1).html())
 
@@ -503,10 +503,26 @@ class SigaaClassStudent extends SigaaBase {
     const card = await this._getRightSidebarCard($, 'Avaliações')
     const examElements = card.find('li').toArray()
     const examList = []
+    const yearString = this.period.split('.')[0]
+    const year = parseInt(yearString, 10)
     for (const examElement of examElements) {
       const exam = {}
       exam.description = this._removeTagsHtml($(examElement).find('span.descricao').html())
-      exam.date = this._removeTagsHtml($(examElement).find('span.data').html())
+      const dateString = this._removeTagsHtml($(examElement).find('span.data').html())
+      const dateStrings = dateString.match(/[0-9]+/g)
+      if (dateStrings && dateStrings.length >= 2) {
+        const monthIndex = parseInt(dateStrings[1], 10) - 1
+        const day = parseInt(dateStrings[0], 10)
+        if (dateStrings.length === 4) {
+          const hours = parseInt(dateStrings[2], 10)
+          const minutes = parseInt(dateStrings[3], 10)
+          exam.date = new Date(year, monthIndex, day, hours, minutes)
+        } else {
+          exam.date = new Date(year, monthIndex, day)
+        }
+      } else {
+        exam.date = null
+      }
       examList.push(exam)
     }
     return examList
@@ -528,7 +544,7 @@ class SigaaClassStudent extends SigaaBase {
         const title = this._removeTagsHtml(cells.first().html())
         const startDate = this._removeTagsHtml(cells.eq(1).html())
         const endDate = this._removeTagsHtml(cells.eq(2).html())
-        const timestamps = this._extractDateTimestamps(`${startDate} ${endDate}`)
+        const dates = this._extractDates(`${startDate} ${endDate}`)
         const buttonSendAnswersElement = cells.eq(3).find('a[onclick]')
         if (buttonSendAnswersElement) {
           var formSendAnswers = this._extractJSFCLJS(buttonSendAnswersElement.attr('onclick'), $)
@@ -542,8 +558,8 @@ class SigaaClassStudent extends SigaaBase {
 
         const quizOptions = {
           title,
-          startTimestamp: timestamps[0],
-          endTimestamp: timestamps[1],
+          startDate: dates[0],
+          endDate: dates[1],
           id,
           formSendAnswers,
           formViewAnswersSubmitted
@@ -579,12 +595,12 @@ class SigaaClassStudent extends SigaaBase {
         const cells = row.find('td')
         const title = this._removeTagsHtml(cells.first().html())
         const dateString = this._removeTagsHtml(cells.eq(1).html())
-        const timestamp = this._extractDateTimestamps(dateString)[0]
+        const date = this._extractDates(dateString)[0]
         const form = this._extractJSFCLJS(cells[2].find('a[onclick]').attr('onclick'), $)
         const id = form.postOptions.id
         const webContentOptions = {
           title,
-          timestamp,
+          date,
           form
         }
 
@@ -626,7 +642,7 @@ class SigaaClassStudent extends SigaaBase {
             const title = this._removeTagsHtml(cells.eq(1).html())
             const description = this._removeTagsHtml(cellDescription.html())
             const date = this._removeTagsHtml(cells.eq(2).html())
-            const timestamps = this._extractDateTimestamps(date)
+            const dates = this._extractDates(date)
             let haveGrade = true
             if (this._removeTagsHtml(cells.eq(3).html()) === 'Não') haveGrade = false
             const buttonSendHomeworkElement = $(cells.eq(5).find('a[onclick]'))
@@ -641,8 +657,8 @@ class SigaaClassStudent extends SigaaBase {
             const id = form.postOptions.id
             const homeworkOptions = {
               title,
-              startTimestamp: timestamps[0],
-              endTimestamp: timestamps[1],
+              startDate: dates[0],
+              endDate: dates[1],
               description,
               id,
               formSendHomework,
