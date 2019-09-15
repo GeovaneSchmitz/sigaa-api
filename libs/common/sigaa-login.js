@@ -47,6 +47,9 @@ class SigaaLogin extends SigaaBase {
         formElement.find('input').each(function () {
           postOptions[$(this).attr('name')] = $(this).val()
         })
+        const postOptionsKeys = Object.keys(postOptions)
+        postOptions[postOptionsKeys[1]] = ''
+        postOptions[postOptionsKeys[2]] = ''
         this._sigaaSession.formLoginAction = action
         this._sigaaSession.formLoginPostOptions = postOptions
       }
