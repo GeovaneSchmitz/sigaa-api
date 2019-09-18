@@ -18,7 +18,6 @@ sigaa.login(username, password) // login
   .then(classes => {
     return (async () => {
       for (const classStudent of classes) {
-        if (classStudent.id !== '148558') continue
         console.log(classStudent.title)
         const newsList = await classStudent.getNews()
         for (const news of newsList) {

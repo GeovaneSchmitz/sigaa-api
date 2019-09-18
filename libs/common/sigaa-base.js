@@ -136,8 +136,8 @@ class sigaaBase {
       const textWithoutBreakLinesHtmlAndTabs = text.replace(/\n|\xA0|\t/gm, ' ')
       const textWithBreakLines = textWithoutBreakLinesHtmlAndTabs.replace(/<p>|<br\/>|<br>/gm, '\n')
       const textWithoutHtmlTags = textWithBreakLines.replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm, '')
-      const textWithHtmlEncoded = htmlEntities.escape(htmlEntities.decode(textWithoutHtmlTags))
-      const textWithoutNbsp = textWithHtmlEncoded.replace(removeNbsp, ' ')
+      const textWithHtmlParsed = htmlEntities.decode(textWithoutHtmlTags)
+      const textWithoutNbsp = textWithHtmlParsed.replace(removeNbsp, ' ')
       return textWithoutNbsp.replace(/^(\s|\n)*|(\s|\n)*$/gm, '').trim()
     } catch (err) {
       return ''
