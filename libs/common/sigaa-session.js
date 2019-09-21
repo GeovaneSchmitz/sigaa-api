@@ -4,7 +4,7 @@ class SigaaSession {
     if (timeout) {
       this.timeout = timeout
     } else {
-      this.timeout = 5 * 60 // 5min
+      this.timeout = 5 * 60 * 1000 // 5min
     }
     this._tokens = {}
   }
@@ -158,7 +158,7 @@ class SigaaSession {
         if (this._cachePages.length === 0) {
           clearInterval(this._intervalId)
         }
-      }, 15000)
+      }, 1800000)
     }
     if (method === 'POST') page.postOptions = params.postOptions
     var replace = false

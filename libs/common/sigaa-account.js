@@ -39,7 +39,7 @@ class SigaaAccount extends SigaaBase {
     return this._sigaaSession.userType
   }
 
-  setNewPassword (oldPassword, newPassword) {
+  changePassword (oldPassword, newPassword) {
     return this._get('/sigaa/alterar_dados.jsf')
       .then(page => {
         return new Promise((resolve, reject) => {
@@ -63,12 +63,13 @@ class SigaaAccount extends SigaaBase {
           ) {
             const $ = cheerio.load(page.body)
             const formElement = $('form[name="form"]')
-            const action = new URL(formElement.attr('action'), this._sigaaSession.url).href
+            const action = new URL(formElement.attr('action'), page.url.href).href
             const postOptions = {}
 
-            formElement.find("input[name]:not([type='submit'])").each(() => {
-              postOptions[$(this).attr('name')] = $(this).val()
-            })
+            const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
+            for (const input of inputs) {
+              postOptions[$(input).attr('name')] = $(input).val()
+            }
             postOptions['form:alterarSenha'] = 'form:alterarSenha'
             resolve(this._post(action, postOptions))
           } else {
@@ -76,40 +77,46 @@ class SigaaAccount extends SigaaBase {
           }
         })
       })
-      .then(page => this._checkPageStatusCodeAndExpired())
       .then(page => {
         return new Promise((resolve, reject) => {
           const $ = cheerio.load(page.body)
           const formElement = $('form[name="form"]')
-          const formAction = new URL(formElement.attr('action'), this._sigaaSession.url).href
+          const formAction = new URL(formElement.attr('action'), page.url.href).href
           const postOptions = {}
-          formElement.find("input[name]:not([type='submit'])").each(() => {
-            postOptions[$(this).attr('name')] = $(this).val()
-          })
+          const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
+          for (const input of inputs) {
+            postOptions[$(input).attr('name')] = $(input).val()
+          }
           postOptions['form:senhaAtual'] = oldPassword
           postOptions['form:novaSenha'] = newPassword
           postOptions['form:repetnNovaSenha'] = newPassword
+          postOptions['form:alterarDados'] = 'Alterar Dados'
           resolve(this._post(formAction, postOptions))
         })
       })
-      .then(page => this._checkPageStatusCodeAndExpired(page))
       .then(page => {
         return new Promise((resolve, reject) => {
-          const $ = cheerio.load(page.body, {
-            normalizeWhitespace: true
-          })
-          const errorMsg = $('.erros li').html()
-          const response = {
-            status: 'ERROR',
-            errorCode: 'UNKNOWN',
-            errorMsg
+          if (page.statusCode === 200) {
+            const $ = cheerio.load(page.body, {
+              normalizeWhitespace: true
+            })
+            const errorMsg = this._removeTagsHtml($('.erros li').html())
+            const response = {
+              status: 'ERROR',
+              errorCode: 'UNKNOWN',
+              errorMsg
+            }
+            if (errorMsg.includes('A senha digitada é muito simples.')) {
+              response.errorCode = 'INSUFFICIENT_PASSWORD_COMPLEXITY'
+            } else if (errorMsg.includes('Senha Atual digitada não confere')) {
+              response.errorCode = 'WRONG_PASSWORD'
+            }
+            reject(response)
+          } else if (page.statusCode === 302) {
+            resolve({
+              status: 'SUCCESS'
+            })
           }
-          if (errorMsg.includes('A senha digitada é muito simples.')) {
-            response.errorCode = 'INSUFFICIENT_PASSWORD_COMPLEXITY'
-          } else if (errorMsg.includes('Senha Atual digitada não confere')) {
-            response.errorCode = 'WRONG_PASSWORD'
-          }
-          reject(response)
         })
       })
   }
