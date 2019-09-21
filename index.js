@@ -2,6 +2,7 @@ const SigaaAccount = require('./libs/common/sigaa-account')
 const SigaaAccountStudent = require('./libs/student/sigaa-account-student')
 const SigaaLogin = require('./libs/common/sigaa-login')
 const SigaaSession = require('./libs/common/sigaa-session')
+const SigaaSearch = require('./libs/public/sigaa-search')
 
 class Sigaa {
   constructor (params) {
@@ -35,6 +36,10 @@ class Sigaa {
       .then(() => new Promise((resolve, reject) => {
         resolve(this.createAccount())
       }))
+  }
+
+  get search () {
+    return new SigaaSearch(this._sigaaSession)
   }
 
   createAccount () {

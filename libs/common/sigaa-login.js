@@ -9,9 +9,7 @@ class SigaaLogin extends SigaaBase {
           const $ = cheerio.load(page.body)
           const buttonPageLogin = $('#form-lista-public-index\\:acessar')
           const form = this._extractJSFCLJS(buttonPageLogin.attr('onclick'), $)
-          return this._post(form.action, form.postOptions).then(page => {
-            return page
-          })
+          return this._post(form.action, form.postOptions)
         } else {
           throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
         }

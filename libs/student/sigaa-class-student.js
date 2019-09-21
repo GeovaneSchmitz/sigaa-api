@@ -473,17 +473,7 @@ class SigaaClassStudent extends SigaaBase {
         const form = this._extractJSFCLJS($(getBtnEl).parent().attr('onclick'), $)
         resolve(this._post(form.action, form.postOptions))
       }))
-      .then((page) => {
-        return new Promise((resolve, reject) => {
-          if (page.statusCode === 200) {
-            resolve(page)
-          } else if (page.statusCode === 302 && page.headers.location.includes('/sigaa/expirada.jsp')) {
-            reject(new Error('ACCOUNT_SESSION_EXPIRED'))
-          } else {
-            reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
-          }
-        })
-      })
+      .then(page => this._checkPageStatusCodeAndExpired(page))
   }
 
   async _getRightSidebarCard ($, cardTitle) {

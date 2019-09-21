@@ -144,6 +144,18 @@ class sigaaBase {
     }
   }
 
+  _checkPageStatusCodeAndExpired (page) {
+    return new Promise((resolve, reject) => {
+      if (page.statusCode === 200) {
+        resolve(page)
+      } else if (page.statusCode === 302 && page.headers.location.includes('/sigaa/expirada.jsp')) {
+        reject(new Error('ACCOUNT_SESSION_EXPIRED'))
+      } else {
+        reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
+      }
+    })
+  }
+
   _extractJSFCLJS (javaScriptCode, $) {
     if (javaScriptCode.includes('getElementById')) {
       const formQuery = javaScriptCode.replace(
