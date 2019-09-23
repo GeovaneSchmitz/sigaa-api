@@ -23,11 +23,18 @@ class SigaaSearchTeacherResult extends SigaaBase {
       .then(page => this._checkPageStatusCodeAndExpired(page))
     const $ = cheerio.load(page.body)
     const contactElements = $('#contato').children().toArray()
+    let email
     for (const contactElement of contactElements) {
       const name = this._removeTagsHtml($(contactElement).find('dt').html())
       if (name === 'Endereço eletrônico') {
-        return this._removeTagsHtml($(contactElement).find('dd').html())
+        email = this._removeTagsHtml($(contactElement).find('dd').html())
+        break
       }
+    }
+    if (email && email !== 'não informado') {
+      return email
+    } else {
+      return null
     }
   }
 
