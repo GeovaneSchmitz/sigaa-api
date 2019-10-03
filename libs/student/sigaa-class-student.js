@@ -806,8 +806,14 @@ class SigaaClassStudent extends SigaaBase {
           ]
 
           const $ = cheerio.load(page.body)
-          var theadTrs = $('thead tr').toArray()
-          var valueCells = $('tbody tr').children()
+
+          const table = $('table.tabelaRelatorio')
+          if (table.length === 0) {
+            throw new Error('SIGAA_INVALID_RESPONSE')
+          }
+
+          const theadTrs = $('thead tr').toArray()
+          const valueCells = $('tbody tr').children()
 
           const grades = []
 
