@@ -46,8 +46,10 @@ class SigaaLogin extends SigaaBase {
           postOptions[$(this).attr('name')] = $(this).val()
         })
         const postOptionsKeys = Object.keys(postOptions)
-        postOptions[postOptionsKeys[1]] = ''
-        postOptions[postOptionsKeys[2]] = ''
+        const usernameFormIndex = 1
+        const passwordFormIndex = 2
+        postOptions[postOptionsKeys[usernameFormIndex]] = ''
+        postOptions[postOptionsKeys[passwordFormIndex]] = ''
         this._sigaaSession.formLoginAction = action
         this._sigaaSession.formLoginPostOptions = postOptions
       }
@@ -61,8 +63,10 @@ class SigaaLogin extends SigaaBase {
       await this._extractLoginForm()
     }
     const postOptionsKeys = Object.keys(this._sigaaSession.formLoginPostOptions)
-    this._sigaaSession.formLoginPostOptions[postOptionsKeys[1]] = username
-    this._sigaaSession.formLoginPostOptions[postOptionsKeys[2]] = password
+    const usernameFormIndex = 1
+    const passwordFormIndex = 2
+    this._sigaaSession.formLoginPostOptions[postOptionsKeys[usernameFormIndex]] = username
+    this._sigaaSession.formLoginPostOptions[postOptionsKeys[passwordFormIndex]] = password
     return this._post(this._sigaaSession.formLoginAction, this._sigaaSession.formLoginPostOptions)
       .then(page => this._extractLogin(page))
   }
