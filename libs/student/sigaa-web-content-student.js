@@ -1,5 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 
 class SigaaWebcontent extends SigaaBase {
   constructor (options, updateAttachment, sigaaSession) {
@@ -46,7 +46,7 @@ class SigaaWebcontent extends SigaaBase {
       const page = await this._post(this._form.action, this._form.postOptions)
       if (page.statusCode === 200) {
         this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
-        const $ = cheerio.load(page.body, {
+        const $ = Cheerio.load(page.body, {
           normalizeWhitespace: true
         })
         const rows = $('table.formAva > tr')

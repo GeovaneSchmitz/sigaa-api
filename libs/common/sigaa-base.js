@@ -1,6 +1,6 @@
 const https = require('https')
 const querystring = require('querystring')
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 const htmlEntities = require('he')
 
 class sigaaBase {
@@ -91,7 +91,7 @@ class sigaaBase {
 
         res.on('end', () => {
           if (res.statusCode === 200) {
-            const $ = cheerio.load(res.body, {
+            const $ = Cheerio.load(res.body, {
               normalizeWhitespace: true
             })
             const responseViewStateEl = $("input[name='javax.faces.ViewState']")

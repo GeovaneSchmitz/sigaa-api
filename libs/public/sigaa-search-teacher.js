@@ -1,4 +1,4 @@
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 
 const SigaaBase = require('../common/sigaa-base')
 const SigaaSearchTeacherResult = require('./sigaa-search-teacher-result')
@@ -7,7 +7,7 @@ class SigaaSearchTeacher extends SigaaBase {
   async loadSearchPage () {
     if (!this.searchPage) {
       const page = await this._get('/sigaa/public/docente/busca_docentes.jsf')
-      this.$ = cheerio.load(page.body)
+      this.$ = Cheerio.load(page.body)
     }
   }
 
@@ -47,7 +47,7 @@ class SigaaSearchTeacher extends SigaaBase {
   }
 
   async _extractSearchResults (page) {
-    this.$ = cheerio.load(page.body)
+    this.$ = Cheerio.load(page.body)
     const rowElements = this.$('table.listagem > tbody > tr[class]').toArray()
     const results = []
     for (const rowElement of rowElements) {

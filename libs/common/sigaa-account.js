@@ -1,4 +1,4 @@
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 
 const SigaaBase = require('./sigaa-base')
 
@@ -61,7 +61,7 @@ class SigaaAccount extends SigaaBase {
             page.statusCode === 200 &&
             page.url.href.includes('usuario/alterar_dados.jsf')
           ) {
-            const $ = cheerio.load(page.body)
+            const $ = Cheerio.load(page.body)
             const formElement = $('form[name="form"]')
             const action = new URL(formElement.attr('action'), page.url.href).href
             const postOptions = {}
@@ -79,7 +79,7 @@ class SigaaAccount extends SigaaBase {
       })
       .then(page => {
         return new Promise((resolve, reject) => {
-          const $ = cheerio.load(page.body)
+          const $ = Cheerio.load(page.body)
           const formElement = $('form[name="form"]')
           const formAction = new URL(formElement.attr('action'), page.url.href).href
           const postOptions = {}
@@ -97,7 +97,7 @@ class SigaaAccount extends SigaaBase {
       .then(page => {
         return new Promise((resolve, reject) => {
           if (page.statusCode === 200) {
-            const $ = cheerio.load(page.body, {
+            const $ = Cheerio.load(page.body, {
               normalizeWhitespace: true
             })
             const errorMsg = this._removeTagsHtml($('.erros li').html())

@@ -1,5 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 
 class SigaaNews extends SigaaBase {
   constructor (newsParams, newsUpdate, sigaaSession) {
@@ -76,7 +76,7 @@ class SigaaNews extends SigaaBase {
   async _getFullNews (retry = true) {
     const page = await this._post(this._form.action, this._form.postOptions)
     if (page.statusCode === 200) {
-      var $ = cheerio.load(page.body, {
+      var $ = Cheerio.load(page.body, {
         normalizeWhitespace: true
       })
       var newsElement = $('ul.form')

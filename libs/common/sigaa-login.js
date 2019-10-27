@@ -1,12 +1,12 @@
 const SigaaBase = require('./sigaa-base')
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 
 class SigaaLogin extends SigaaBase {
   _loadLoginPage () {
     this._loginPage = this._get('/sigaa/mobile/touch/public/principal.jsf')
       .then(page => {
         if (page.statusCode === 200) {
-          const $ = cheerio.load(page.body)
+          const $ = Cheerio.load(page.body)
           const buttonPageLogin = $('#form-lista-public-index\\:acessar')
           const form = this._extractJSFCLJS(buttonPageLogin.attr('onclick'), $)
           return this._post(form.action, form.postOptions)
@@ -36,7 +36,7 @@ class SigaaLogin extends SigaaBase {
           throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
         }
       } else {
-        const $ = cheerio.load(page.body, {
+        const $ = Cheerio.load(page.body, {
           normalizeWhitespace: true
         })
         const formElement = $('#form-login')

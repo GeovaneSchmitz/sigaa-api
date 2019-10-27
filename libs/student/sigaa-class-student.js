@@ -1,5 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 
 const SigaaTopic = require('./sigaa-topic-student')
 const SigaaNews = require('./sigaa-news-student')
@@ -80,7 +80,7 @@ class SigaaClassStudent extends SigaaBase {
     return this._get('/sigaa/portais/discente/turmas.jsf')
       .then(page => new Promise((resolve, reject) => {
         if (page.statusCode === 200) {
-          const $ = cheerio.load(page.body)
+          const $ = Cheerio.load(page.body)
           const table = $('listagem')
           let currentPeriod
           for (const rowElement of table.find('tbody > tr').toArray()) {
@@ -142,7 +142,7 @@ class SigaaClassStudent extends SigaaBase {
         })
         this._videos = []
         this._topics = []
-        const $ = cheerio.load(page.body)
+        const $ = Cheerio.load(page.body)
         const topicsElements = this._topicGetElements($)
         for (const topicElement of topicsElements) {
           const topicOptions = this._topicExtractor($, topicElement, page)
@@ -191,7 +191,7 @@ class SigaaClassStudent extends SigaaBase {
     return this._clickLeftSidebarButton('Arquivos')
       .then(page => {
         return new Promise((resolve, reject) => {
-          const $ = cheerio.load(page.body)
+          const $ = Cheerio.load(page.body)
 
           const table = $('.listing')
 
@@ -376,7 +376,7 @@ class SigaaClassStudent extends SigaaBase {
     return this._clickLeftSidebarButton('Notícias')
       .then(res => {
         return new Promise((resolve, reject) => {
-          const $ = cheerio.load(res.body)
+          const $ = Cheerio.load(res.body)
 
           const table = $('.listing')
 
@@ -431,7 +431,7 @@ class SigaaClassStudent extends SigaaBase {
   getAbsence () {
     return this._clickLeftSidebarButton('Frequência')
       .then(res => new Promise((resolve, reject) => {
-        const $ = cheerio.load(res.body)
+        const $ = Cheerio.load(res.body)
         const table = $('.listing')
         const absences = {
           list: []
@@ -466,7 +466,7 @@ class SigaaClassStudent extends SigaaBase {
   _clickLeftSidebarButton (buttonLabel) {
     return this._requestClassPage()
       .then(page => new Promise((resolve, reject) => {
-        const $ = cheerio.load(page.body)
+        const $ = Cheerio.load(page.body)
         const getBtnEl = $('div.itemMenu').toArray().find((buttonEl) => {
           return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
         })
@@ -489,7 +489,7 @@ class SigaaClassStudent extends SigaaBase {
 
   async getExamCalendar () {
     const page = await this._requestClassPage()
-    const $ = cheerio.load(page.body)
+    const $ = Cheerio.load(page.body)
     const card = await this._getRightSidebarCard($, 'Avaliações')
     const examElements = card.find('li').toArray()
     const examList = []
@@ -521,7 +521,7 @@ class SigaaClassStudent extends SigaaBase {
   async getQuizzes () {
     const page = await this._clickLeftSidebarButton('Questionários')
     return new Promise((resolve, reject) => {
-      const $ = cheerio.load(page.body)
+      const $ = Cheerio.load(page.body)
 
       const table = $('.listing')
 
@@ -573,7 +573,7 @@ class SigaaClassStudent extends SigaaBase {
   async getWebContents () {
     const page = await this._clickLeftSidebarButton('Conteúdo/Página web')
     return new Promise((resolve, reject) => {
-      const $ = cheerio.load(page.body)
+      const $ = Cheerio.load(page.body)
 
       const table = $('.listing')
 
@@ -618,7 +618,7 @@ class SigaaClassStudent extends SigaaBase {
     return this._clickLeftSidebarButton('Tarefas')
       .then(page => {
         return new Promise((resolve, reject) => {
-          const $ = cheerio.load(page.body)
+          const $ = Cheerio.load(page.body)
 
           const table = $('.listing')
 
@@ -690,7 +690,7 @@ class SigaaClassStudent extends SigaaBase {
 
   async getMembers () {
     const page = await this._clickLeftSidebarButton('Participantes')
-    const $ = cheerio.load(page.body)
+    const $ = Cheerio.load(page.body)
     const tables = $('table.participantes').toArray()
     if (tables.length !== 2) {
       throw new Error('SIGAA_MEMBERS_PAGE_INVALID')
@@ -805,7 +805,7 @@ class SigaaClassStudent extends SigaaBase {
             'Faltas'
           ]
 
-          const $ = cheerio.load(page.body)
+          const $ = Cheerio.load(page.body)
 
           const table = $('table.tabelaRelatorio')
           if (table.length === 0) {

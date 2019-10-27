@@ -1,4 +1,4 @@
-const cheerio = require('cheerio')
+const Cheerio = require('cheerio')
 
 const SigaaBase = require('../common/sigaa-base')
 
@@ -21,7 +21,7 @@ class SigaaSearchTeacherResult extends SigaaBase {
   async getEmail () {
     const page = await this._get(this.pageURL)
       .then(page => this._checkPageStatusCodeAndExpired(page))
-    const $ = cheerio.load(page.body)
+    const $ = Cheerio.load(page.body)
     const contactElements = $('#contato').children().toArray()
     let email
     for (const contactElement of contactElements) {
