@@ -3,34 +3,6 @@ const SigaaAccount = require('../common/sigaa-account')
 const SigaaClassStudent = require('./sigaa-class-student')
 
 class SigaaAccountStudent extends SigaaAccount {
-  async getCertificateEnrollmentPDF (basepath) {
-    const pageStudentHome = await this._get('/sigaa/portais/discente/discente.jsf')
-    if (pageStudentHome.statusCode === 200) {
-      const $ = Cheerio.load(pageStudentHome.body, {
-        normalizeWhitespace: true
-      })
-      const formElement = $('#menu\\:form_menu_discente')
-      const action = new URL(formElement.attr('action'), this._sigaaSession.url).href
-      const postOptions = {}
-      formElement.find('input').each(function () {
-        postOptions[$(this).attr('name')] = $(this).val()
-      })
-      postOptions['jscook_action'] = 'menu_form_menu_discente_j_id_jsp_1383391995_85_menu:A]#{ portalDiscente.atestadoMatricula }'
-      this._sigaaSession.formLoginAction = action
-      this._sigaaSession.formLoginPostOptions = postOptions
-      const pageCertificateEnrollment = await this._post(action, postOptions)
-      if (pageCertificateEnrollment.statusCode === 302) {
-        throw new Error('SESSION_EXPIRED')
-      } else if (pageCertificateEnrollment.statusCode !== 200) {
-        throw new Error(`SIGAA_STATUSCODE_${pageCertificateEnrollment.statusCode}`)
-      }
-      return pageCertificateEnrollment
-    } else if (pageStudentHome.statusCode === 302) {
-      throw new Error('SESSION_EXPIRED')
-    } else {
-      throw new Error(`SIGAA_STATUSCODE_${pageStudentHome.statusCode}`)
-    }
-  }
 
   getClasses (allPeriods) {
     return this._get('/sigaa/portais/discente/turmas.jsf')
