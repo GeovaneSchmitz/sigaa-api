@@ -863,7 +863,7 @@ class SigaaClassStudent extends SigaaBase {
               grades.push(gradeGroup)
             }
           }
-          resolve([grades, page])
+          resolve(grades)
         })
       })
   }
