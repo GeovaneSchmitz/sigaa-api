@@ -808,13 +808,15 @@ class SigaaClassStudent extends SigaaBase {
           const $ = Cheerio.load(page.body)
 
           const table = $('table.tabelaRelatorio')
-          if (table.length === 0) {
+          if (table.length !== 1) {
             throw new Error('SIGAA_INVALID_RESPONSE')
           }
 
           const theadTrs = $('thead tr').toArray()
-          const valueCells = $('tbody tr').children()
-
+          const valueCells = $(table).find('tbody tr').children()
+          if (valueCells.length === 0) {
+            throw new Error('SIGAA_INVALID_RESPONSE')
+          }
           const grades = []
 
           const theadElements = []
@@ -861,7 +863,7 @@ class SigaaClassStudent extends SigaaBase {
               grades.push(gradeGroup)
             }
           }
-          resolve(grades)
+          resolve([grades, page])
         })
       })
   }
