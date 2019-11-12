@@ -3,17 +3,19 @@ const Cheerio = require('cheerio')
 
 class SigaaLogin extends SigaaBase {
   _loadLoginPage () {
-    this._loginPage = this._get('/sigaa/mobile/touch/public/principal.jsf')
+    this._loginPage = this._get('/sigaa/mobile/touch/login.jsf')
       .then(page => {
         if (page.statusCode === 200) {
-          const $ = Cheerio.load(page.body)
-          const buttonPageLogin = $('#form-lista-public-index\\:acessar')
-          const form = this._extractJSFCLJS(buttonPageLogin.attr('onclick'), $)
-          return this._post(form.action, form.postOptions)
+          return page
         } else {
           throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
         }
-      }).catch(err => new Promise(resolve => resolve(err)))
+      })
+      .catch((err) => {
+        return new Promise((resolve) => {
+          resolve(err)
+        })
+      })
     return this._loginPage.then(() => {
       return true
     })
@@ -80,7 +82,11 @@ class SigaaLogin extends SigaaBase {
         } else if (page.body.includes('form-login')) {
           this._loginPage = new Promise((resolve) => resolve(page))
           this._extractLoginForm()
-          reject(new Error('WRONG_CREDENTIALS'))
+          if (page.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
+            reject(new Error('WRONG_CREDENTIALS'))
+          } else {
+            reject(new Error('SIGAA_UNAVAILABLE_LOGIN'))
+          }
         } else {
           if (page.body.includes('form-portal-discente')) {
             this._sigaaSession.status = 'LOGGED'
