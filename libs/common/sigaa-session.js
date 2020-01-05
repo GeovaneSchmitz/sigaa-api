@@ -134,6 +134,8 @@ class SigaaSession {
   }
 
   finish () {
+    this.status = 'LOGOFF'
+    this.userType = 'UNKNOWN'
     if (this._intervalId) {
       clearInterval(this._intervalId)
     }

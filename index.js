@@ -31,23 +31,28 @@ class Sigaa {
     return this._sigaaSession.toJSON()
   }
 
-  login (username, password) {
-    return this._sigaaLogin.login(username, password)
-      .then(() => new Promise((resolve, reject) => {
-        resolve(this.createAccount())
-      }))
+  async login (username, password) {
+    if (this._sigaaSession.status !== 'LOGGED') {
+      await this._sigaaLogin.login(username, password)
+    } else {
+      throw new Error('ALREADY_LOGGED_IN')
+    }
+    return this.account
+  }
+
+  get account () {
+    if (this._sigaaSession.status === 'LOGGED') {
+      if (this._sigaaSession.userType === 'STUDENT') {
+        return new SigaaAccountStudent(this._sigaaSession)
+      } else {
+        return new SigaaAccount(this._sigaaSession)
+      }
+    }
+    return null
   }
 
   get search () {
     return new SigaaSearch(this._sigaaSession)
-  }
-
-  createAccount () {
-    if (this._sigaaSession.userType === 'STUDENT') {
-      return new SigaaAccountStudent(this._sigaaSession)
-    } else {
-      return new SigaaAccount(this._sigaaSession)
-    }
   }
 }
 
