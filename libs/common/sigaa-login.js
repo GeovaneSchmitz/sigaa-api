@@ -54,6 +54,7 @@ class SigaaLogin extends SigaaBase {
         postOptions[postOptionsKeys[passwordFormIndex]] = ''
         this._sigaaSession.formLoginAction = action
         this._sigaaSession.formLoginPostOptions = postOptions
+        this._loginPage = null
       }
     } else {
       throw page
@@ -70,40 +71,70 @@ class SigaaLogin extends SigaaBase {
     this._sigaaSession.formLoginPostOptions[postOptionsKeys[usernameFormIndex]] = username
     this._sigaaSession.formLoginPostOptions[postOptionsKeys[passwordFormIndex]] = password
     return this._post(this._sigaaSession.formLoginAction, this._sigaaSession.formLoginPostOptions)
-      .then(page => this._extractLogin(page))
+      .then(page => this._extractLoginMobile(page))
   }
 
-  _extractLogin (page) {
-    return new Promise((resolve, reject) => {
-      if (!page) throw new Error('PAGE_ERROR', page)
-      if (page.statusCode === 200) {
-        if (page.url.search.includes('?expirada=true')) {
-          reject(new Error('SIGAA_EXPIRED_PAGE'))
-        } else if (page.body.includes('form-login')) {
-          this._loginPage = new Promise((resolve) => resolve(page))
-          this._extractLoginForm()
-          if (page.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
-            reject(new Error('WRONG_CREDENTIALS'))
-          } else {
-            reject(new Error('SIGAA_UNAVAILABLE_LOGIN'))
-          }
+  async _extractLoginDesktop (page) {
+    const pageProfile = await this.followAllRedirect(page)
+    if (pageProfile.statusCode === 200) {
+      if (pageProfile.url.pathname.includes('/sigaa/expirada.jsp')) {
+        throw new Error('SIGAA_EXPIRED_PAGE')
+      } else if (pageProfile.url.pathname.includes('logar.do')) {
+        this._loadLoginPage()
+        if (pageProfile.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
+          throw new Error('WRONG_CREDENTIALS')
         } else {
-          if (page.body.includes('form-portal-discente')) {
-            this._sigaaSession.status = 'LOGGED'
-            this._sigaaSession.userType = 'STUDENT'
-            resolve(true)
-          } else if (page.body.includes('form-portal-docente')) {
-            this._sigaaSession.status = 'LOGGED'
-            this._sigaaSession.userType = 'TEACHER'
-            resolve(true)
-          } else {
-            reject(new Error('UNKNOWN_USER_TYPE'))
-          }
+          throw new Error('SIGAA_UNAVAILABLE_LOGIN')
         }
       } else {
-        reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
+        if (pageProfile.url.pathname.includes('discente')) {
+          this._sigaaSession.status = 'LOGGED'
+          this._sigaaSession.userType = 'STUDENT'
+        } else if (pageProfile.url.pathname.includes('docente')) {
+          this._sigaaSession.status = 'LOGGED'
+          this._sigaaSession.userType = 'TEACHER'
+        } else {
+          this._sigaaSession.status = 'LOGGED'
+          this._sigaaSession.userType = 'UNKNOWN'
+        }
+        return true
       }
-    })
+    } else {
+      throw new Error(`SIGAA_STATUSCODE_${pageProfile.statusCode}`)
+    }
+  }
+
+  async _extractLoginMobile (page) {
+    if (!page) throw new Error('PAGE_ERROR', page)
+    if (page.statusCode === 200) {
+      if (page.url.search.includes('?expirada=true')) {
+        throw new Error('SIGAA_EXPIRED_PAGE')
+      } else if (page.body.includes('form-login')) {
+        this._loginPage = Promise.resolve(page)
+        this._extractLoginForm()
+        if (page.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
+          throw new Error('WRONG_CREDENTIALS')
+        } else {
+          throw new Error('SIGAA_UNAVAILABLE_LOGIN')
+        }
+      } else {
+        if (page.body.includes('form-portal-discente')) {
+          this._sigaaSession.status = 'LOGGED'
+          this._sigaaSession.userType = 'STUDENT'
+          return true
+        } else if (page.body.includes('form-portal-docente')) {
+          this._sigaaSession.status = 'LOGGED'
+          this._sigaaSession.userType = 'TEACHER'
+          return true
+        } else {
+          throw new Error('UNKNOWN_USER_TYPE')
+        }
+      }
+    } else if (page.statusCode === 302) {
+      return this._extractLoginDesktop(page)
+    } else {
+      throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
+    }
   }
 }
 module.exports = SigaaLogin
