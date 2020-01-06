@@ -5,7 +5,7 @@ const sigaa = new Sigaa({
 })
 
 // put your crendecias
-const username = ''''
+const username = ''
 const password = ''
 
 const main = async () => {
