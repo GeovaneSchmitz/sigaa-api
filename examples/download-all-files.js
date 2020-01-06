@@ -7,8 +7,8 @@ const sigaa = new Sigaa({
 })
 
 // put your crendecias
-var username = ''
-var password = ''
+const username = ''
+const password = ''
 
 const BaseDestiny = path.join('.', 'downloads')
 
@@ -28,7 +28,7 @@ sigaa.login(username, password) // login
     return (async () => {
       for (const classStudent of classes) { // for each class
         console.log(classStudent.title)
-        var files = await classStudent.getFiles() // this lists all topics
+        const files = await classStudent.getFiles() // this lists all topics
         if (files.length !== 0) {
           const pathPeriod = path.join(BaseDestiny, classStudent.period)
           const pathClass = path.join(pathPeriod, classStudent.title)

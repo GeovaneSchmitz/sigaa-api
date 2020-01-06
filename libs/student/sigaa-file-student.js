@@ -76,13 +76,13 @@ class SigaaFile extends SigaaBase {
 
         // makes request
         try {
-          var request = https.request(options, (response) => {
+          const request = https.request(options, (response) => {
             switch (response.statusCode) {
               case 200:
                 try {
                   this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
-                  var len = 0
-                  var filepath
+                  let len = 0
+                  let filepath
                   if (fileStats.isDirectory()) {
                     try {
                       const filename = response.headers['content-disposition']

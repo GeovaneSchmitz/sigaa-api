@@ -163,7 +163,7 @@ class SigaaSession {
       }, 1800000)
     }
     if (method === 'POST') page.postOptions = params.postOptions
-    var replace = false
+    let replace = false
     this._cachePages = this._cachePages.map(cachePage => {
       if (cachePage.url === page.url && cachePage.requestHeaders === page.requestHeaders) {
         if (method === 'POST') {

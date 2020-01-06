@@ -20,7 +20,7 @@ const sigaa = new Sigaa ({
 * Preencher com seu usuário e senha do sigaa
 ```javascript
 // put your crendecias
-var username = 'usuario';
-var password = 'senha';
+const username = 'usuario';
+const password = 'senha';
 ```
 * Executar o arquivo com o nodejs

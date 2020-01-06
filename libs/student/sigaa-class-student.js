@@ -536,12 +536,14 @@ class SigaaClassStudent extends SigaaBase {
         const endDate = this._removeTagsHtml(cells.eq(2).html())
         const dates = this._extractDates(`${startDate} ${endDate}`)
         const buttonSendAnswersElement = cells.eq(3).find('a[onclick]')
+        let formSendAnswers = null
         if (buttonSendAnswersElement) {
-          var formSendAnswers = this._extractJSFCLJS(buttonSendAnswersElement.attr('onclick'), $)
+          formSendAnswers = this._extractJSFCLJS(buttonSendAnswersElement.attr('onclick'), $)
         }
         const buttonViewAnswersSubmittedElement = cells.eq(4).find('a[onclick]')
+        let formViewAnswersSubmitted = null
         if (buttonViewAnswersSubmittedElement) {
-          var formViewAnswersSubmitted = this._extractJSFCLJS(buttonViewAnswersSubmittedElement.attr('onclick'), $)
+          formViewAnswersSubmitted = this._extractJSFCLJS(buttonViewAnswersSubmittedElement.attr('onclick'), $)
         }
         const form = formSendAnswers || formViewAnswersSubmitted
         const id = form.postOptions.id
@@ -636,12 +638,14 @@ class SigaaClassStudent extends SigaaBase {
             let haveGrade = true
             if (this._removeTagsHtml(cells.eq(3).html()) === 'Não') haveGrade = false
             const buttonSendHomeworkElement = $(cells.eq(5).find('a[onclick]'))
+            let formSendHomework = null
             if (buttonSendHomeworkElement.length !== 0) {
-              var formSendHomework = this._extractJSFCLJS(buttonSendHomeworkElement.attr('onclick'), $)
+              formSendHomework = this._extractJSFCLJS(buttonSendHomeworkElement.attr('onclick'), $)
             }
             const buttonViewHomeworkSubmittedElement = $(cells.eq(6).find('a[onclick]'))
+            let formViewHomeworkSubmitted = null
             if (buttonViewHomeworkSubmittedElement.length !== 0) {
-              var formViewHomeworkSubmitted = this._extractJSFCLJS(buttonViewHomeworkSubmittedElement.attr('onclick'), $)
+              formViewHomeworkSubmitted = this._extractJSFCLJS(buttonViewHomeworkSubmittedElement.attr('onclick'), $)
             }
             const form = formSendHomework || formViewHomeworkSubmitted
             const id = form.postOptions.id
@@ -742,28 +746,36 @@ class SigaaClassStudent extends SigaaBase {
         const label = this._removeTagsHtml(information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0])
         const informationContent = this._removeTagsHtml(information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0])
         switch (label) {
-          case 'Matrícula':
+          case 'Matrícula': {
             student.registration = informationContent
             break
-          case 'Usuário':
+          }
+          case 'Usuário': {
             student.username = informationContent
             break
-          case 'Curso':
+          }
+          case 'Curso': {
             student.course = informationContent
             break
-          case 'Data Matrícula':
-            var informationDateSplited = informationContent.split('-')
-            var year = parseInt(informationDateSplited[2], 10)
-            var month = parseInt(informationDateSplited[1], 10) - 1
-            var day = parseInt(informationDateSplited[0], 10)
+          }
+          case 'Data Matrícula': {
+            const informationDateSplited = informationContent.split('-')
+            const year = parseInt(informationDateSplited[2], 10)
+            const month = parseInt(informationDateSplited[1], 10) - 1
+            const day = parseInt(informationDateSplited[0], 10)
             student.registrationDate = new Date(year, month, day)
             break
+          }
           case 'E-mail':
           case 'E-Mail':
+          {
             student.email = informationContent
             break
+          }
           default:
+          {
             console.log('WARNING:Student information label not recognized:' + label)
+          }
         }
       }
       const photoHREF = $(studentElement).find('img').attr('src')
@@ -787,7 +799,7 @@ class SigaaClassStudent extends SigaaBase {
       .then(page => {
         return new Promise((resolve, reject) => {
           const getPositionByCellColSpan = ($, ths, cell) => {
-            var i = 0
+            let i = 0
             for (const tr of ths.toArray()) {
               if (cell === tr) {
                 return i

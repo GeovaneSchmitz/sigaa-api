@@ -76,12 +76,12 @@ class SigaaNews extends SigaaBase {
   async _getFullNews (retry = true) {
     const page = await this._post(this._form.action, this._form.postOptions)
     if (page.statusCode === 200) {
-      var $ = Cheerio.load(page.body, {
+      const $ = Cheerio.load(page.body, {
         normalizeWhitespace: true
       })
-      var newsElement = $('ul.form')
+      const newsElement = $('ul.form')
       if (newsElement.length === 0) throw new Error('NEWS_ELEMENT_NOT_FOUND')
-      var els = newsElement.find('span')
+      const els = newsElement.find('span')
       const datetime = this._removeTagsHtml(els.eq(1).html()).split(' ')
       const date = datetime[0].split('/')
       const time = datetime[1].split(':')

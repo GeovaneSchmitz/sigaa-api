@@ -5,8 +5,8 @@ const sigaa = new Sigaa({
 })
 
 // put your crendecias
-var username = ''
-var password = ''
+const username = ''
+const password = ''
 
 sigaa.login(username, password) // return SigaaAccount
   .then(sigaaAccount => {

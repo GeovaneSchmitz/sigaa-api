@@ -37,8 +37,9 @@ class sigaaBase {
     const body = querystring.stringify(postOptions)
     options.headers['Content-Length'] = Buffer.byteLength(body)
     return new Promise((resolve, reject) => {
+      let cachePage = null
       if (!(params && params.noCache === true)) {
-        var cachePage = this._sigaaSession.getPage(
+        cachePage = this._sigaaSession.getPage(
           'POST',
           link.href,
           options.headers,
@@ -59,8 +60,9 @@ class sigaaBase {
     const options = this._requestBasicOptions('GET', link)
 
     return new Promise(resolve => {
+      let cachePage = null
       if (!(params && params.noCache === true)) {
-        var cachePage = this._sigaaSession.getPage('GET', link.href, options.headers)
+        cachePage = this._sigaaSession.getPage('GET', link.href, options.headers)
       }
       if (cachePage) {
         resolve(cachePage)
@@ -95,10 +97,9 @@ class sigaaBase {
               normalizeWhitespace: true
             })
             const responseViewStateEl = $("input[name='javax.faces.ViewState']")
+            let responseViewState = null
             if (responseViewStateEl) {
-              var responseViewState = responseViewStateEl.val()
-            } else {
-              responseViewState = false
+              responseViewState = responseViewStateEl.val()
             }
             if (postOptions && postOptions['javax.faces.ViewState']) {
               this._sigaaSession.reactivateCachePageByViewState(postOptions['javax.faces.ViewState'])

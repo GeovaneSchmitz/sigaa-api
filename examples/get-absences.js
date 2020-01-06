@@ -5,8 +5,8 @@ const sigaa = new Sigaa({
 })
 
 // put your crendecias
-var username = ''
-var password = ''
+const username = ''''
+const password = ''
 
 const main = async () => {
   const account = await sigaa.login(username, password) // login
