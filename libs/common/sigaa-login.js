@@ -3,7 +3,7 @@ const Cheerio = require('cheerio')
 
 class SigaaLogin extends SigaaBase {
   _loadLoginPage () {
-    this._loginPage = this._get('/sigaa/mobile/touch/login.jsf')
+    this._loginPage = this._get('/sigaa/mobile/touch/login.jsf', { noCache: true })
       .then(page => {
         if (page.statusCode === 200) {
           return page
