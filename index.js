@@ -2,8 +2,12 @@ const SigaaAccount = require('./libs/common/sigaa-account')
 const SigaaAccountStudent = require('./libs/student/sigaa-account-student')
 const SigaaLogin = require('./libs/common/sigaa-login')
 const SigaaSession = require('./libs/common/sigaa-session')
+const SigaaErrors = require('./libs/common/sigaa-errors')
 const SigaaSearch = require('./libs/public/sigaa-search')
-
+const SigaaTypes = require('./libs/common/sigaa-types')
+/**
+ * @class Sigaa
+ */
 class Sigaa {
   constructor (params) {
     if (params) {
@@ -32,17 +36,17 @@ class Sigaa {
   }
 
   async login (username, password) {
-    if (this._sigaaSession.status !== 'LOGGED') {
+    if (this._sigaaSession.userLoginState !== SigaaTypes.userLoginStates.AUTHENTICATED) {
       await this._sigaaLogin.login(username, password)
     } else {
-      throw new Error('ALREADY_LOGGED_IN')
+      throw new Error(SigaaErrors.SIGAA_ALREADY_LOGGED_IN)
     }
     return this.account
   }
 
   get account () {
-    if (this._sigaaSession.status === 'LOGGED') {
-      if (this._sigaaSession.userType === 'STUDENT') {
+    if (this._sigaaSession.userLoginState === SigaaTypes.userLoginStates.AUTHENTICATED) {
+      if (this._sigaaSession.userType === SigaaTypes.userTypes.STUDENT) {
         return new SigaaAccountStudent(this._sigaaSession)
       } else {
         return new SigaaAccount(this._sigaaSession)
@@ -55,5 +59,17 @@ class Sigaa {
     return new SigaaSearch(this._sigaaSession)
   }
 }
+/**
+ * Enum with all errors
+ * @enum {String} Errors
+ * @readonly
+ */
+Sigaa.errors = SigaaErrors
 
+/**
+ * Enum with types
+ * @enum {Object} Types
+ * @readonly
+ */
+Sigaa.types = SigaaTypes
 module.exports = Sigaa

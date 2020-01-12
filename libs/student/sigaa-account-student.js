@@ -1,9 +1,7 @@
 const Cheerio = require('cheerio')
 const SigaaAccount = require('../common/sigaa-account')
 const SigaaClassStudent = require('./sigaa-class-student')
-
 class SigaaAccountStudent extends SigaaAccount {
-
   getClasses (allPeriods) {
     return this._get('/sigaa/portais/discente/turmas.jsf')
       .then(page =>
@@ -41,7 +39,7 @@ class SigaaAccountStudent extends SigaaAccount {
                 classData.schedule = this._removeTagsHtml(cellElements.eq(4).html())
                 classData.period = period
                 classData.form = this._extractJSFCLJS(buttonClassPage.attr('onclick'), $)
-                classData.id = classData.form.postOptions['idTurma']
+                classData.id = classData.form.postValues['idTurma']
                 listClasses.push(new SigaaClassStudent(classData, this._sigaaSession))
               }
             }
@@ -61,7 +59,7 @@ class SigaaAccountStudent extends SigaaAccount {
     } else if (page.statusCode === 302) {
       throw new Error('SESSION_EXPIRED')
     } else {
-      throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
+      throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
     }
   }
 }

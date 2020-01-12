@@ -51,11 +51,11 @@ class SigaaQuiz extends SigaaBase {
         if (this._formViewAnswersSubmitted === undefined) {
           throw new Error('QUIZ_FORM_IS_UNDEFINED')
         }
-        this._post(this._formViewAnswersSubmitted.action, this._formViewAnswersSubmitted.postOptions)
+        this._post(this._formViewAnswersSubmitted.action, this._formViewAnswersSubmitted.postValues)
           .then(page => {
             switch (page.statusCode) {
               case 200:
-                this._sigaaSession.reactivateCachePageByViewState(this._formViewAnswersSubmitted.postOptions['javax.faces.ViewState'])
+                this._sigaaSession.reactivateCachePageByViewState(this._formViewAnswersSubmitted.postValues['javax.faces.ViewState'])
                 if (page.body.includes('Acabou o prazo para visualizar as respostas.')) {
                   reject(new Error('QUIZ_DEADLINE_TO_READ_ANSWERS'))
                 }
@@ -65,7 +65,7 @@ class SigaaQuiz extends SigaaBase {
                 reject(new Error('QUIZ_EXPIRED'))
                 break
               default:
-                reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
+                reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
             }
           })
       } catch (err) {

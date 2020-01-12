@@ -43,7 +43,7 @@ class SigaaSurvey extends SigaaBase {
 
   get id () {
     this._checkIfItWasFinalized()
-    return this._form.postOptions.id
+    return this._form.postValues.id
   }
 
   finish () {

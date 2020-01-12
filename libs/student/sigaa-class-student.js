@@ -90,7 +90,7 @@ class SigaaClassStudent extends SigaaBase {
             } else if (currentPeriod) {
               const JSFCLJSCode = cellElements.eq(5).find('a[onclick]').attr('onclick')
               const form = this._extractJSFCLJS(JSFCLJSCode, $)
-              const id = form.postOptions['idTurma']
+              const id = form.postValues['idTurma']
               if (id === this.id) {
                 const fullname = this._removeTagsHtml(cellElements.first().html())
                 this._name = fullname.slice(fullname.indexOf(' - ') + 3)
@@ -107,13 +107,13 @@ class SigaaClassStudent extends SigaaBase {
         } else if (page.statusCode === 302 && page.headers.location.includes('/sigaa/expirada.jsp')) {
           reject(new Error('ACCOUNT_SESSION_EXPIRED'))
         } else {
-          reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
+          reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
         }
       }))
   }
 
   _requestClassPageUsingForm () {
-    return this._post(this._form.action, this._form.postOptions)
+    return this._post(this._form.action, this._form.postValues)
       .then(page => new Promise((resolve, reject) => {
         if (page.statusCode === 200) {
           if (page.body.includes('Comportamento Inesperado!')) {
@@ -121,7 +121,7 @@ class SigaaClassStudent extends SigaaBase {
           }
           resolve(page)
         } else {
-          reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
+          reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
         }
       }))
   }
@@ -205,7 +205,7 @@ class SigaaClassStudent extends SigaaBase {
 
             const buttonElement = cells.eq(3).find('a[onclick]')
             const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
-            const id = form.postOptions['id']
+            const id = form.postValues['id']
             const fileOptions = { title, description, form }
             const [files, index] = this._updateList(fileOptions, id, SigaaFile, this._files, this.getFiles.bind(this))
             this._files = files
@@ -276,7 +276,7 @@ class SigaaClassStudent extends SigaaBase {
     const titleElement = attachmentElement.find('span').children().first()
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
-    attachment.id = attachment.form.postOptions.id
+    attachment.id = attachment.form.postValues.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
@@ -287,7 +287,7 @@ class SigaaClassStudent extends SigaaBase {
     const titleElement = attachmentElement.find('span').children().first()
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
-    attachment.id = attachment.form.postOptions.id
+    attachment.id = attachment.form.postValues.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
@@ -298,7 +298,7 @@ class SigaaClassStudent extends SigaaBase {
     const titleElement = attachmentElement.find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
-    attachment.id = attachment.form.postOptions.id
+    attachment.id = attachment.form.postValues.id
     return attachment
   }
 
@@ -306,7 +306,7 @@ class SigaaClassStudent extends SigaaBase {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
     const form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
-    attachment.id = form.postOptions.id
+    attachment.id = form.postValues.id
     attachment.title = this._removeTagsHtml(titleElement.html())
     const descriptionElement = attachmentElement.find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
@@ -332,7 +332,7 @@ class SigaaClassStudent extends SigaaBase {
     const titleElement = attachmentElement.find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
     const form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
-    attachment.id = form.postOptions.id
+    attachment.id = form.postValues.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
     const dates = this._extractDates(description)
@@ -374,9 +374,9 @@ class SigaaClassStudent extends SigaaBase {
 
   getNews () {
     return this._clickLeftSidebarButton('Notícias')
-      .then(res => {
+      .then(page => {
         return new Promise((resolve, reject) => {
-          const $ = Cheerio.load(res.body)
+          const $ = Cheerio.load(page.body)
 
           const table = $('.listing')
 
@@ -392,7 +392,7 @@ class SigaaClassStudent extends SigaaBase {
 
               const buttonElement = cell.eq(2).children().first()
               const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
-              const id = form.postOptions.id
+              const id = form.postValues.id
               const newsOptions = { title, date, form }
               const [news, index] = this._updateList(newsOptions, id, SigaaNews, this._news, this.getNews.bind(this))
               this._news = news
@@ -430,8 +430,8 @@ class SigaaClassStudent extends SigaaBase {
 
   getAbsence () {
     return this._clickLeftSidebarButton('Frequência')
-      .then(res => new Promise((resolve, reject) => {
-        const $ = Cheerio.load(res.body)
+      .then(page => new Promise((resolve, reject) => {
+        const $ = Cheerio.load(page.body)
         const table = $('.listing')
         const absences = {
           list: []
@@ -471,7 +471,7 @@ class SigaaClassStudent extends SigaaBase {
           return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
         })
         const form = this._extractJSFCLJS($(getBtnEl).parent().attr('onclick'), $)
-        resolve(this._post(form.action, form.postOptions))
+        resolve(this._post(form.action, form.postValues))
       }))
       .then(page => this._checkPageStatusCodeAndExpired(page))
   }
@@ -546,7 +546,7 @@ class SigaaClassStudent extends SigaaBase {
           formViewAnswersSubmitted = this._extractJSFCLJS(buttonViewAnswersSubmittedElement.attr('onclick'), $)
         }
         const form = formSendAnswers || formViewAnswersSubmitted
-        const id = form.postOptions.id
+        const id = form.postValues.id
 
         const quizOptions = {
           title,
@@ -589,7 +589,7 @@ class SigaaClassStudent extends SigaaBase {
         const dateString = this._removeTagsHtml(cells.eq(1).html())
         const date = this._extractDates(dateString)[0]
         const form = this._extractJSFCLJS(cells[2].find('a[onclick]').attr('onclick'), $)
-        const id = form.postOptions.id
+        const id = form.postValues.id
         const webContentOptions = {
           title,
           date,
@@ -648,7 +648,7 @@ class SigaaClassStudent extends SigaaBase {
               formViewHomeworkSubmitted = this._extractJSFCLJS(buttonViewHomeworkSubmittedElement.attr('onclick'), $)
             }
             const form = formSendHomework || formViewHomeworkSubmitted
-            const id = form.postOptions.id
+            const id = form.postValues.id
             const homeworkOptions = {
               title,
               startDate: dates[0],

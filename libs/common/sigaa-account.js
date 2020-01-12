@@ -1,34 +1,40 @@
 const Cheerio = require('cheerio')
 
 const SigaaBase = require('./sigaa-base')
-
+const sigaaErrors = require('./sigaa-errors')
+/**
+ * Account Class
+ * @class SigaaAccount
+ * @extends SigaaBase
+ */
 class SigaaAccount extends SigaaBase {
+  /**
+   * Makes logoff
+   * @returns {Boolean} true
+   * @async
+   * @throws {SIGAA_UNEXPECTED_RESPONSE}
+   */
   logoff () {
     return this._get('/sigaa/logar.do?dispatch=logOff')
-      .then(res => {
-        return this.followAllRedirect(res)
+      .then(page => {
+        return this.followAllRedirect(page)
       })
-      .then(res => {
-        if (res.statusCode === 200) {
+      .then(page => {
+        if (page.statusCode === 200) {
           this._sigaaSession.finish()
-          return {
-            status: 'UNLOGGED'
-          }
+          return true
         } else {
-          return {
-            status: 'ERROR',
-            errorCode: res.statusCode
-          }
+          throw new Error(sigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
         }
       })
   }
 
+  /**
+   * Save the account/session in object JSON
+   * @returns {Object}
+   */
   toJSON () {
     return this._sigaaSession.toJSON()
-  }
-
-  finish () {
-    return this._sigaaSession.finish()
   }
 
   get status () {
@@ -39,6 +45,16 @@ class SigaaAccount extends SigaaBase {
     return this._sigaaSession.userType
   }
 
+  /**
+   * Change the password of account
+   * @async
+   * @param {String} oldPassword current Password
+   * @param {String} newPassword new password
+   * @throws {SIGAA_UNEXPECTED_RESPONSE}
+   * @throws {SIGAA_EXPIRED_PAGE}
+   * @throws {SIGAA_WRONG_CREDENTIALS} If current password is not correct
+   * @throws {INSUFFICIENT_PASSWORD_COMPLEXITY} If the new password does not have the complexity requirement
+   */
   changePassword (oldPassword, newPassword) {
     return this._get('/sigaa/alterar_dados.jsf')
       .then(page => {
@@ -46,9 +62,9 @@ class SigaaAccount extends SigaaBase {
           if (page.statusCode === 302) {
             resolve(page)
           } else if (page.statusCode === 200) {
-            reject(new Error('SESSION_EXPIRED'))
+            reject(new Error(sigaaErrors.SIGAA_EXPIRED_PAGE))
           } else {
-            reject(new Error(`SIGAA_STATUSCODE_${page.statusCode}`))
+            reject(new Error(sigaaErrors.SIGAA_UNEXPECTED_RESPONSE))
           }
         })
       })
@@ -64,14 +80,14 @@ class SigaaAccount extends SigaaBase {
             const $ = Cheerio.load(page.body)
             const formElement = $('form[name="form"]')
             const action = new URL(formElement.attr('action'), page.url.href).href
-            const postOptions = {}
+            const postValues = {}
 
             const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
             for (const input of inputs) {
-              postOptions[$(input).attr('name')] = $(input).val()
+              postValues[$(input).attr('name')] = $(input).val()
             }
-            postOptions['form:alterarSenha'] = 'form:alterarSenha'
-            resolve(this._post(action, postOptions))
+            postValues['form:alterarSenha'] = 'form:alterarSenha'
+            resolve(this._post(action, postValues))
           } else {
             reject(new Error(page.statusCode))
           }
@@ -82,16 +98,16 @@ class SigaaAccount extends SigaaBase {
           const $ = Cheerio.load(page.body)
           const formElement = $('form[name="form"]')
           const formAction = new URL(formElement.attr('action'), page.url.href).href
-          const postOptions = {}
+          const postValues = {}
           const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
           for (const input of inputs) {
-            postOptions[$(input).attr('name')] = $(input).val()
+            postValues[$(input).attr('name')] = $(input).val()
           }
-          postOptions['form:senhaAtual'] = oldPassword
-          postOptions['form:novaSenha'] = newPassword
-          postOptions['form:repetnNovaSenha'] = newPassword
-          postOptions['form:alterarDados'] = 'Alterar Dados'
-          resolve(this._post(formAction, postOptions))
+          postValues['form:senhaAtual'] = oldPassword
+          postValues['form:novaSenha'] = newPassword
+          postValues['form:repetnNovaSenha'] = newPassword
+          postValues['form:alterarDados'] = 'Alterar Dados'
+          resolve(this._post(formAction, postValues))
         })
       })
       .then(page => {
@@ -101,25 +117,16 @@ class SigaaAccount extends SigaaBase {
               normalizeWhitespace: true
             })
             const errorMsg = this._removeTagsHtml($('.erros li').html())
-            const response = {
-              status: 'ERROR',
-              errorCode: 'UNKNOWN',
-              errorMsg
-            }
             if (errorMsg.includes('A senha digitada é muito simples.')) {
-              response.errorCode = 'INSUFFICIENT_PASSWORD_COMPLEXITY'
+              reject(new Error(sigaaErrors.INSUFFICIENT_PASSWORD_COMPLEXITY))
             } else if (errorMsg.includes('Senha Atual digitada não confere')) {
-              response.errorCode = 'WRONG_PASSWORD'
+              reject(new Error(sigaaErrors.SIGAA_WRONG_CREDENTIALS))
             }
-            reject(response)
           } else if (page.statusCode === 302) {
-            resolve({
-              status: 'SUCCESS'
-            })
+            resolve(true)
           }
         })
       })
   }
 }
-
 module.exports = SigaaAccount

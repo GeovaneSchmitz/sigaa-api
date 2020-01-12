@@ -34,15 +34,15 @@ class SigaaSearchTeacher extends SigaaBase {
     }
     const formElement = this.$('form[name="form"]')
     const action = formElement.attr('action')
-    const postOptions = {}
+    const postValues = {}
     const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
     for (const input of inputs) {
-      postOptions[this.$(input).attr('name')] = this.$(input).val()
+      postValues[this.$(input).attr('name')] = this.$(input).val()
     }
-    postOptions['form:nome'] = teacherName
-    postOptions['form:departamento'] = campusValue
-    postOptions['form:buscar'] = 'Buscar'
-    return this._post(action, postOptions)
+    postValues['form:nome'] = teacherName
+    postValues['form:departamento'] = campusValue
+    postValues['form:buscar'] = 'Buscar'
+    return this._post(action, postValues)
       .then(page => this._extractSearchResults(page))
   }
 

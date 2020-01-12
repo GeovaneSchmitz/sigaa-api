@@ -44,7 +44,7 @@ class SigaaFile extends SigaaBase {
 
   get id () {
     this._checkIfItWasFinalized()
-    return this._form.postOptions.id
+    return this._form.postValues.id
   }
 
   finish () {
@@ -67,12 +67,12 @@ class SigaaFile extends SigaaBase {
           reject(new Error('FILE_PATH_NOT_EXISTS'))
         }
         const link = new URL(this._form.action)
-        const options = this._requestBasicOptions('POST', link)
+        const options = this._makeRequestBasicOptions('POST', link)
         // this converts post parameters to string
-        const postOptionsString = querystring.stringify(this._form.postOptions)
+        const postValuesString = querystring.stringify(this._form.postValues)
         // this inserts post parameters length to  header http
 
-        options.headers['Content-Length'] = Buffer.byteLength(postOptionsString)
+        options.headers['Content-Length'] = Buffer.byteLength(postValuesString)
 
         // makes request
         try {
@@ -80,7 +80,7 @@ class SigaaFile extends SigaaBase {
             switch (response.statusCode) {
               case 200:
                 try {
-                  this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
+                  this._sigaaSession.reactivateCachePageByViewState(this._form.postValues['javax.faces.ViewState'])
                   let len = 0
                   let filepath
                   if (fileStats.isDirectory()) {
@@ -152,7 +152,7 @@ class SigaaFile extends SigaaBase {
                 reject(new Error(`SIGAA_STATUSCODE_${response.statusCode}`))
             }
           })
-          request.write(postOptionsString)
+          request.write(postValuesString)
           request.end()
         } catch (err) {
           reject(err)

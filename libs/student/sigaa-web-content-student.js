@@ -43,9 +43,9 @@ class SigaaWebcontent extends SigaaBase {
       return this._description
     }
     try {
-      const page = await this._post(this._form.action, this._form.postOptions)
+      const page = await this._post(this._form.action, this._form.postValues)
       if (page.statusCode === 200) {
-        this._sigaaSession.reactivateCachePageByViewState(this._form.postOptions['javax.faces.ViewState'])
+        this._sigaaSession.reactivateCachePageByViewState(this._form.postValues['javax.faces.ViewState'])
         const $ = Cheerio.load(page.body, {
           normalizeWhitespace: true
         })
@@ -55,7 +55,7 @@ class SigaaWebcontent extends SigaaBase {
       } else if (page.statusCode === 302) {
         throw new Error('WEBCONTENT_EXPIRED')
       } else {
-        throw new Error(`SIGAA_STATUSCODE_${page.statusCode}`)
+        throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
       }
     } catch (err) {
       if (retry) {
@@ -69,7 +69,7 @@ class SigaaWebcontent extends SigaaBase {
 
   get id () {
     this._checkIfItWasFinalized()
-    return this._form.postOptions.id
+    return this._form.postValues.id
   }
 
   finish () {

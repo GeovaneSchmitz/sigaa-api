@@ -70,11 +70,11 @@ class SigaaNews extends SigaaBase {
 
   get id () {
     this._checkIfItWasFinalized()
-    return this._form.postOptions.id
+    return this._form.postValues.id
   }
 
   async _getFullNews (retry = true) {
-    const page = await this._post(this._form.action, this._form.postOptions)
+    const page = await this._post(this._form.action, this._form.postValues)
     if (page.statusCode === 200) {
       const $ = Cheerio.load(page.body, {
         normalizeWhitespace: true
