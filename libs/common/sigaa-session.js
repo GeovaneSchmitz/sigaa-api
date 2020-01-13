@@ -227,8 +227,8 @@ class SigaaSession {
    * @description flush states of instance
    */
   finish () {
-    this.userLoginState = SigaaSession.userLoginStates.UNAUTHENTICATED
-    this.userType = SigaaSession.userTypes.UNAUTHENTICATED
+    this.userLoginState = SigaaTypes.userLoginStates.UNAUTHENTICATED
+    this.userType = SigaaTypes.userTypes.UNAUTHENTICATED
     this._tokens = {}
     if (this._intervalId) {
       clearInterval(this._intervalId)
