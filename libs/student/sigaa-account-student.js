@@ -2,6 +2,12 @@ const Cheerio = require('cheerio')
 const SigaaAccount = require('../common/sigaa-account')
 const SigaaClassStudent = require('./sigaa-class-student')
 class SigaaAccountStudent extends SigaaAccount {
+  /**
+   * Get all classes
+   * @param {Boolean} [allPeriods=false]
+   * @returns {Promise.<Array.<SigaaClassStudent>>}
+   * @async
+   */
   getClasses (allPeriods) {
     return this._get('/sigaa/portais/discente/turmas.jsf')
       .then(page =>

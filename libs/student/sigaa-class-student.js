@@ -341,8 +341,8 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractDates (description) {
-    const dateStrings = description.match(/[0-9]+[\S\s]+?[0-9]((?= )|(?=$))/g)
+  _extractDates (dateString) {
+    const dateStrings = dateString.match(/[0-9]+[\S\s]+?[0-9]((?= )|(?=$))/g)
     const createDateFromString = (dataString, timeString) => {
       const dateSplited = dataString.match(/[0-9]+/g)
       if (!timeString) {
@@ -443,11 +443,15 @@ class SigaaClassStudent extends SigaaBase {
           const date = this._removeTagsHtml(cells.first().html())
           const absenceString = this._removeTagsHtml(cells.eq(1).html())
           let absence
-          if (absenceString === '') continue
-          else if (absenceString === 'Presente') absence = 0
-          else absence = parseInt(absenceString.replace(/\D/gm, ''), 10)
+          if (absenceString === '' || absenceString === 'Não Informada') {
+            continue
+          } else if (absenceString === 'Presente') {
+            absence = 0
+          } else {
+            absence = parseInt(absenceString.replace(/\D/gm, ''), 10)
+          }
           absences.list.push({
-            date,
+            date: this._extractDates(date)[0],
             absence
           })
         }
