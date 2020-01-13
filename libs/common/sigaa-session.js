@@ -17,7 +17,6 @@ class SigaaSession {
      * @property {Object}
      */
     this._tokens = {}
-    console.log(SigaaTypes)
     this.userLoginState = SigaaTypes.userLoginStates.UNAUTHENTICATED
     this.userType = SigaaTypes.userTypes.UNAUTHENTICATED
   }
