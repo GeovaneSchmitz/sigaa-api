@@ -88,9 +88,9 @@ class SigaaLogin extends SigaaBase {
     return this._post(this._sigaaSession.formLoginAction, this._sigaaSession.formLoginPostValues)
       .then(page => this._extractLogin(page))
       .catch(error => {
-        if (error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS ||
+        if (!retry || error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS ||
           error.message === SigaaErrors.SIGAA_UNAVAILABLE_LOGIN) {
-          return Promise.catch(error)
+          throw error
         } else {
           return this.login(username, password, false)
         }
@@ -119,7 +119,7 @@ class SigaaLogin extends SigaaBase {
           this._sigaaSession.userType = SigaaTypes.userTypes.TEACHER
           return true
         } else {
-          throw new Error('SIGAA_UNKNOWN_USER_TYPE')
+          throw new Error(SigaaErrors.SIGAA_UNKNOWN_USER_TYPE)
         }
       }
     } else {
