@@ -173,7 +173,7 @@ class SigaaSession {
   toJSON () {
     const sessionObj = {}
     sessionObj.tokens = this._tokens
-    sessionObj.timeout = this.timeout
+    sessionObj.timeoutCache = this.timeoutCache
     sessionObj.userType = this.userType
     sessionObj.url = this.url
     sessionObj.cachePages = this._cachePages
@@ -195,7 +195,7 @@ class SigaaSession {
    */
   parseJSON (sessionObject) {
     if (sessionObject.tokens !== undefined &&
-      sessionObject.timeout !== undefined &&
+      sessionObject.timeoutCache !== undefined &&
       sessionObject.userType !== undefined &&
       sessionObject.url !== undefined &&
       sessionObject.cachePages !== undefined) {
@@ -214,7 +214,7 @@ class SigaaSession {
       if (sessionObject.formLoginPostValues !== undefined) {
         this.formLoginPostValues = sessionObject.formLoginPostValues
       }
-      this.timeoutCache = sessionObject.timeout
+      this.timeoutCache = sessionObject.timeoutCache
       this.url = sessionObject.url
       this._cachePages = sessionObject.cachePages
     } else {
@@ -259,7 +259,7 @@ class SigaaSession {
     if (!this._intervalId) {
       this._intervalId = setInterval(() => {
         this._cachePages = this._cachePages.filter(cachePage => {
-          return !(cachePage.modifiedAt < Date.now() - this.timeout)
+          return !(cachePage.modifiedAt < Date.now() - this.timeoutCache)
         })
         if (this._cachePages.length === 0) {
           clearInterval(this._intervalId)
