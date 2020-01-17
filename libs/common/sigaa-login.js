@@ -83,8 +83,8 @@ class SigaaLogin extends SigaaBase {
 
   async login(username, password, retry = true) {
     if (
-      this._sigaaSession.formLoginAction === undefined ||
-      this._sigaaSession.formLoginPostValues === undefined
+      this._sigaaSession.formLoginAction === null ||
+      this._sigaaSession.formLoginPostValues === null
     ) {
       await this._loadLoginForm()
     }
@@ -97,10 +97,11 @@ class SigaaLogin extends SigaaBase {
     this._sigaaSession.formLoginPostValues[
       postValuesKeys[passwordFormIndex]
     ] = password
-    return this._post(
-      this._sigaaSession.formLoginAction,
-      this._sigaaSession.formLoginPostValues
-    )
+    const formLoginAction = this._sigaaSession.formLoginAction
+    const formLoginPostValues = this._sigaaSession.formLoginPostValues
+    this._sigaaSession.formLoginAction = null
+    this._sigaaSession.formLoginPostValues = null
+    return this._post(formLoginAction, formLoginPostValues)
       .then((page) => this._extractLogin(page))
       .catch((error) => {
         if (

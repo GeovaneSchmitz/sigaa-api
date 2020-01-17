@@ -19,6 +19,8 @@ class SigaaSession {
     this._tokens = {}
     this.userLoginState = SigaaTypes.userLoginStates.UNAUTHENTICATED
     this.userType = SigaaTypes.userTypes.UNAUTHENTICATED
+    this.formLoginPostValues = null
+    this.formLoginAction = null
   }
 
   /**
@@ -26,9 +28,9 @@ class SigaaSession {
    * @type {string}
    * @throws {SIGAA_FORM_LOGIN_ACTION_IS_NOT_A_STRING}
    */
-  set formLoginAction(data) {
-    if (typeof data === 'string') {
-      this._formLoginAction = data
+  set formLoginAction(action) {
+    if (typeof action === 'string' || action === null) {
+      this._formLoginAction = action
     } else {
       throw new Error(SigaaErrors.SIGAA_FORM_LOGIN_ACTION_IS_NOT_A_STRING)
     }
@@ -43,9 +45,9 @@ class SigaaSession {
    * @type {object}
    * @throws {SIGAA_FORM_LOGIN_POST_VALUES_IS_NOT_A_OBJECT}
    */
-  set formLoginPostValues(data) {
-    if (typeof data === 'object') {
-      this._formLoginPostValues = data
+  set formLoginPostValues(postValues) {
+    if (typeof postValues === 'object' || postValues === null) {
+      this._formLoginPostValues = postValues
     } else {
       throw new Error(SigaaErrors.SIGAA_FORM_LOGIN_POST_VALUES_IS_NOT_A_OBJECT)
     }
