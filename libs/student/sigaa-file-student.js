@@ -5,7 +5,7 @@ const path = require('path')
 const querystring = require('querystring')
 
 class SigaaFile extends SigaaBase {
-  constructor (options, fileUpdater, sigaaSession) {
+  constructor(options, fileUpdater, sigaaSession) {
     super(sigaaSession)
     this.update(options)
     if (fileUpdater !== undefined) {
@@ -15,14 +15,16 @@ class SigaaFile extends SigaaBase {
     }
   }
 
-  get type () {
+  get type() {
     return 'file'
   }
 
-  update (options) {
-    if (options.title !== undefined &&
-            options.description !== undefined &&
-            options.form !== undefined) {
+  update(options) {
+    if (
+      options.title !== undefined &&
+      options.description !== undefined &&
+      options.form !== undefined
+    ) {
       this._title = options.title
       this._description = options.description
       this._form = options.form
@@ -32,32 +34,32 @@ class SigaaFile extends SigaaBase {
     }
   }
 
-  get title () {
+  get title() {
     this._checkIfItWasFinalized()
     return this._title
   }
 
-  get description () {
+  get description() {
     this._checkIfItWasFinalized()
     return this._description
   }
 
-  get id () {
+  get id() {
     this._checkIfItWasFinalized()
     return this._form.postValues.id
   }
 
-  finish () {
+  finish() {
     this._finish = true
   }
 
-  _checkIfItWasFinalized () {
+  _checkIfItWasFinalized() {
     if (this._finish) {
       throw new Error('FILE_HAS_BEEN_FINISHED')
     }
   }
 
-  download (basepath, callback, retry = true) {
+  download(basepath, callback, retry = true) {
     return new Promise((resolve, reject) => {
       new Promise((resolve, reject) => {
         this._checkIfItWasFinalized()
@@ -80,15 +82,17 @@ class SigaaFile extends SigaaBase {
             switch (response.statusCode) {
               case 200:
                 try {
-                  this._sigaaSession.reactivateCachePageByViewState(this._form.postValues['javax.faces.ViewState'])
-                  let len = 0
+                  this._sigaaSession.reactivateCachePageByViewState(
+                    this._form.postValues['javax.faces.ViewState']
+                  )
                   let filepath
                   if (fileStats.isDirectory()) {
-                    try {
+                    if (response.headers['content-disposition']) {
                       const filename = response.headers['content-disposition']
-                        .replace(/([\S\s]*?)filename="/gm, '').slice(0, -1)
+                        .replace(/([\S\s]*?)filename="/gm, '')
+                        .slice(0, -1)
                       filepath = path.join(basepath, filename)
-                    } catch (e) {
+                    } else {
                       reject(new Error('FILE_DOWNLOAD_EXPIRED'))
                     }
                   } else {
@@ -100,45 +104,23 @@ class SigaaFile extends SigaaBase {
 
                   if (callback) {
                     response.on('data', (chunk) => {
-                      len += chunk.byteLength
-                      callback(len)
+                      callback(file.bytesWritten)
                     })
                   }
 
                   file.on('finish', () => {
-                    file.close((err) => {
-                      if (err) {
-                        fs.unlink(filepath, (err) => {
-                          if (err) reject(err.message)
-                          reject(err)
-                        })
-                      }
-                    }) // close() is async, call resolve after close completes.
+                    file.close() // close() is async, call resolve after close completes.
                     resolve(filepath)
                   })
+
                   response.on('error', (err) => {
-                    file.close((err) => {
-                      if (err) {
-                        reject(err)
-                      }
-                    })
-                    fs.unlink(filepath, (err) => {
-                      if (err) reject(err.message)
-                    })
+                    file.close()
+                    fs.unlinkSync(filepath)
                     reject(err)
                   })
                   file.on('error', (err) => {
-                    file.close((err) => {
-                      if (err) {
-                        fs.unlink(filepath, (err) => {
-                          if (err) reject(err)
-                        })
-                        reject(err)
-                      }
-                    })
-                    fs.unlink(filepath, (err) => {
-                      if (err) reject(err)
-                    })
+                    file.close()
+                    fs.unlinkSync(filepath)
                     reject(err)
                   })
                 } catch (err) {
@@ -158,11 +140,14 @@ class SigaaFile extends SigaaBase {
           reject(err)
         }
       })
-        .then(data => resolve(data))
+        .then((data) => resolve(data))
         .catch((err) => {
           if (retry) {
-            resolve(this._updateFile()
-              .then(() => this.download(basepath, callback, false)))
+            resolve(
+              this._updateFile().then(() =>
+                this.download(basepath, callback, false)
+              )
+            )
           } else {
             reject(err)
           }
