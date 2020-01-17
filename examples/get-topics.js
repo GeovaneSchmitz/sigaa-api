@@ -8,13 +8,15 @@ const sigaa = new Sigaa({
 const username = ''
 const password = ''
 
-sigaa.login(username, password) // return SigaaAccount
-  .then(sigaaAccount => {
+sigaa
+  .login(username, password) // return SigaaAccount
+  .then((sigaaAccount) => {
     return sigaaAccount.getClasses() // this return a array with all current classes
   })
-  .then(classes => {
+  .then((classes) => {
     return (async () => {
-      for (const classStudent of classes) { // for each class
+      for (const classStudent of classes) {
+        // for each class
         console.log(' > ' + classStudent.title)
         const topics = await classStudent.getTopics() // this lists all topics
         for (const topic of topics) {
@@ -25,19 +27,26 @@ sigaa.login(username, password) // return SigaaAccount
           console.log(`\tstartDate:${startDate}, endDate:${endDate}`)
           for (const attachment of topic.attachments) {
             if (attachment.title) console.log(`\t\ttitle: ${attachment.title}`)
-            if (attachment.description) console.log(`\t\tdescription: ${attachment.description}`)
-            if (attachment.getDescription) console.log(`\t\tdescription: ${await attachment.getDescription()}`)
-            if (attachment.getHaveGrade) console.log(`\t\thaveGrade: ${await attachment.getHaveGrade()}`)
+            if (attachment.description)
+              console.log(`\t\tdescription: ${attachment.description}`)
+            if (attachment.getDescription)
+              console.log(
+                `\t\tdescription: ${await attachment.getDescription()}`
+              )
+            if (attachment.getHaveGrade)
+              console.log(`\t\thaveGrade: ${await attachment.getHaveGrade()}`)
             if (attachment.src) console.log(`\t\tsrc: ${attachment.src}`)
             if (attachment.id) console.log(`\t\tid: ${attachment.id}`)
-            if (attachment.start) console.log(`\t\tstartDate: ${attachment.startDate.toString()}`)
-            if (attachment.end) console.log(`\t\tendDate: ${attachment.endDate.toString()}`)
+            if (attachment.start)
+              console.log(`\t\tstartDate: ${attachment.startDate.toString()}`)
+            if (attachment.end)
+              console.log(`\t\tendDate: ${attachment.endDate.toString()}`)
           }
         }
       }
       process.exit()
     })()
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err)
   })

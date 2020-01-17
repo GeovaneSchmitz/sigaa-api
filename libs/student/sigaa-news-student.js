@@ -2,7 +2,7 @@ const SigaaBase = require('../common/sigaa-base')
 const Cheerio = require('cheerio')
 
 class SigaaNews extends SigaaBase {
-  constructor (newsParams, newsUpdate, sigaaSession) {
+  constructor(newsParams, newsUpdate, sigaaSession) {
     super(sigaaSession)
     this.update(newsParams)
     if (newsUpdate !== undefined) {
@@ -12,9 +12,8 @@ class SigaaNews extends SigaaBase {
     }
   }
 
-  update (newsParams) {
-    if (newsParams.title !== undefined &&
-      newsParams.form !== undefined) {
+  update(newsParams) {
+    if (newsParams.title !== undefined && newsParams.form !== undefined) {
       this._title = newsParams.title
       this._form = newsParams.form
     } else {
@@ -25,55 +24,63 @@ class SigaaNews extends SigaaBase {
     }
   }
 
-  get title () {
+  get title() {
     this._checkIfItWasFinalized()
     return this._title
   }
 
-  getContent () {
+  getContent() {
     return new Promise((resolve) => {
       this._checkIfItWasFinalized()
       if (this._content === undefined) {
-        resolve(this._getFullNews()
-          .then(() => new Promise(resolve => {
-            resolve(this._content)
-          })))
+        resolve(
+          this._getFullNews().then(
+            () =>
+              new Promise((resolve) => {
+                resolve(this._content)
+              })
+          )
+        )
       } else {
         resolve(this._content)
       }
     })
   }
 
-  _checkIfItWasFinalized () {
+  _checkIfItWasFinalized() {
     if (this._finish) {
       throw new Error('NEWS_HAS_BEEN_FINISHED')
     }
   }
 
-  getDate () {
+  getDate() {
     return new Promise((resolve) => {
       this._checkIfItWasFinalized()
       if (this._date === undefined) {
-        resolve(this._getFullNews()
-          .then(() => new Promise(resolve => {
-            resolve(this._date)
-          })))
+        resolve(
+          this._getFullNews().then(
+            () =>
+              new Promise((resolve) => {
+                resolve(this._date)
+              })
+          )
+        )
       } else {
         resolve(this._date)
       }
     })
   }
 
-  finish () {
+  finish() {
     this._finish = true
   }
 
-  get id () {
+  get id() {
     this._checkIfItWasFinalized()
     return this._form.postValues.id
   }
 
-  async _getFullNews (retry = true) {
+  async _getFullNews(retry = true) {
     const page = await this._post(this._form.action, this._form.postValues)
     if (page.statusCode === 200) {
       const $ = Cheerio.load(page.body, {

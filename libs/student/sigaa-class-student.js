@@ -11,11 +11,13 @@ const SigaaSurvey = require('./sigaa-survey-student')
 const SigaaWebContent = require('./sigaa-web-content-student')
 
 class SigaaClassStudent extends SigaaBase {
-  constructor (params, sigaaSession) {
+  constructor(params, sigaaSession) {
     super(sigaaSession)
-    if (params.title !== undefined &&
+    if (
+      params.title !== undefined &&
       params.id !== undefined &&
-      params.form !== undefined) {
+      params.form !== undefined
+    ) {
       this._title = params.title
       this._id = params.id
       this._form = params.form
@@ -48,112 +50,132 @@ class SigaaClassStudent extends SigaaBase {
     this._news = []
   }
 
-  get title () {
+  get title() {
     return this._title
   }
 
-  get id () {
+  get id() {
     return this._id
   }
 
-  get location () {
+  get location() {
     return this._location
   }
 
-  get period () {
+  get period() {
     return this._period
   }
 
-  get scheduleSIGAAnotation () {
+  get scheduleSIGAAnotation() {
     return this._schedule
   }
 
-  get abbreviation () {
+  get abbreviation() {
     return this._abbreviation
   }
 
-  get numberOfStudents () {
+  get numberOfStudents() {
     return this._numberOfStudents
   }
 
-  _requestClassPageUsingId () {
-    return this._get('/sigaa/portais/discente/turmas.jsf')
-      .then(page => new Promise((resolve, reject) => {
-        if (page.statusCode === 200) {
-          const $ = Cheerio.load(page.body)
-          const table = $('listagem')
-          let currentPeriod
-          for (const rowElement of table.find('tbody > tr').toArray()) {
-            const cellElements = $(rowElement).find('td')
-            if (cellElements.first().hasClass('periodo')) {
-              currentPeriod = this._removeTagsHtml(cellElements.eq(0).html())
-            } else if (currentPeriod) {
-              const JSFCLJSCode = cellElements.eq(5).find('a[onclick]').attr('onclick')
-              const form = this._extractJSFCLJS(JSFCLJSCode, $)
-              const id = form.postValues['idTurma']
-              if (id === this.id) {
-                const fullname = this._removeTagsHtml(cellElements.first().html())
-                this._name = fullname.slice(fullname.indexOf(' - ') + 3)
-                this._abbreviation = fullname.slice(0, fullname.indexOf(' - '))
-                this._numberOfStudents = this._removeTagsHtml(cellElements.eq(2).html())
-                this._schedule = this._removeTagsHtml(cellElements.eq(4).html())
-                this._form = form
-                resolve(this._requestClassPageUsingForm())
-                break
+  _requestClassPageUsingId() {
+    return this._get('/sigaa/portais/discente/turmas.jsf').then(
+      (page) =>
+        new Promise((resolve, reject) => {
+          if (page.statusCode === 200) {
+            const $ = Cheerio.load(page.body)
+            const table = $('listagem')
+            let currentPeriod
+            for (const rowElement of table.find('tbody > tr').toArray()) {
+              const cellElements = $(rowElement).find('td')
+              if (cellElements.first().hasClass('periodo')) {
+                currentPeriod = this._removeTagsHtml(cellElements.eq(0).html())
+              } else if (currentPeriod) {
+                const JSFCLJSCode = cellElements
+                  .eq(5)
+                  .find('a[onclick]')
+                  .attr('onclick')
+                const form = this._extractJSFCLJS(JSFCLJSCode, $)
+                const id = form.postValues['idTurma']
+                if (id === this.id) {
+                  const fullname = this._removeTagsHtml(
+                    cellElements.first().html()
+                  )
+                  this._name = fullname.slice(fullname.indexOf(' - ') + 3)
+                  this._abbreviation = fullname.slice(
+                    0,
+                    fullname.indexOf(' - ')
+                  )
+                  this._numberOfStudents = this._removeTagsHtml(
+                    cellElements.eq(2).html()
+                  )
+                  this._schedule = this._removeTagsHtml(
+                    cellElements.eq(4).html()
+                  )
+                  this._form = form
+                  resolve(this._requestClassPageUsingForm())
+                  break
+                }
               }
             }
+            reject(new Error('CLASS_NOT_FOUND'))
+          } else if (
+            page.statusCode === 302 &&
+            page.headers.location.includes('/sigaa/expirada.jsp')
+          ) {
+            reject(new Error('ACCOUNT_SESSION_EXPIRED'))
+          } else {
+            reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
           }
-          reject(new Error('CLASS_NOT_FOUND'))
-        } else if (page.statusCode === 302 && page.headers.location.includes('/sigaa/expirada.jsp')) {
-          reject(new Error('ACCOUNT_SESSION_EXPIRED'))
-        } else {
-          reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
-        }
-      }))
-  }
-
-  _requestClassPageUsingForm () {
-    return this._post(this._form.action, this._form.postValues)
-      .then(page => new Promise((resolve, reject) => {
-        if (page.statusCode === 200) {
-          if (page.body.includes('Comportamento Inesperado!')) {
-            reject(new Error('INVALID_CLASS_ID'))
-          }
-          resolve(page)
-        } else {
-          reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
-        }
-      }))
-  }
-
-  _requestClassPage () {
-    return this._requestClassPageUsingForm()
-      .catch(() => {
-        return this._requestClassPageUsingId()
-      })
-  }
-
-  getTopics () {
-    return this._requestClassPage()
-      .then(page => new Promise((resolve, reject) => {
-        this._topics.forEach((topic) => {
-          topic.finish()
-          return false
         })
-        this._videos = []
-        this._topics = []
-        const $ = Cheerio.load(page.body)
-        const topicsElements = this._topicGetElements($)
-        for (const topicElement of topicsElements) {
-          const topicOptions = this._topicExtractor($, topicElement, page)
-          const topic = new SigaaTopic(topicOptions)
-          this._topics.push(topic)
-        }
-        resolve(this._topics)
-      }))
+    )
   }
 
-  _topicGetElements ($) {
+  _requestClassPageUsingForm() {
+    return this._post(this._form.action, this._form.postValues).then(
+      (page) =>
+        new Promise((resolve, reject) => {
+          if (page.statusCode === 200) {
+            if (page.body.includes('Comportamento Inesperado!')) {
+              reject(new Error('INVALID_CLASS_ID'))
+            }
+            resolve(page)
+          } else {
+            reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
+          }
+        })
+    )
+  }
+
+  _requestClassPage() {
+    return this._requestClassPageUsingForm().catch(() => {
+      return this._requestClassPageUsingId()
+    })
+  }
+
+  getTopics() {
+    return this._requestClassPage().then(
+      (page) =>
+        new Promise((resolve, reject) => {
+          this._topics.forEach((topic) => {
+            topic.finish()
+            return false
+          })
+          this._videos = []
+          this._topics = []
+          const $ = Cheerio.load(page.body)
+          const topicsElements = this._topicGetElements($)
+          for (const topicElement of topicsElements) {
+            const topicOptions = this._topicExtractor($, topicElement, page)
+            const topic = new SigaaTopic(topicOptions)
+            this._topics.push(topic)
+          }
+          resolve(this._topics)
+        })
+    )
+  }
+
+  _topicGetElements($) {
     const contentElement = $('#conteudo')
     let topicsElements
     if (contentElement) {
@@ -164,77 +186,110 @@ class SigaaClassStudent extends SigaaBase {
     return topicsElements
   }
 
-  _topicExtractor ($, topicElement, page) {
+  _topicExtractor($, topicElement, page) {
     const topic = {}
     const titleElement = $(topicElement).find('.titulo')
     const titleFull = this._removeTagsHtml(titleElement.html())
-    const topicDates = titleFull.slice(titleFull.lastIndexOf('(') + 1, titleFull.lastIndexOf(')'))
+    const topicDates = titleFull.slice(
+      titleFull.lastIndexOf('(') + 1,
+      titleFull.lastIndexOf(')')
+    )
     if (topicDates.includes(' ')) {
       const startDate = topicDates.slice(0, topicDates.indexOf(' ')).split('/')
-      topic.startDate = new Date(`${startDate[1]}/${startDate[0]}/${startDate[2]}`)
-      const endDate = topicDates.slice(topicDates.lastIndexOf(' ') + 1).split('/')
+      topic.startDate = new Date(
+        `${startDate[1]}/${startDate[0]}/${startDate[2]}`
+      )
+      const endDate = topicDates
+        .slice(topicDates.lastIndexOf(' ') + 1)
+        .split('/')
       topic.endDate = new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`)
     } else {
       const dateString = topicDates.split('/')
-      const date = new Date(`${dateString[1]}/${dateString[0]}/${dateString[2]}`)
+      const date = new Date(
+        `${dateString[1]}/${dateString[0]}/${dateString[2]}`
+      )
       topic.startDate = date
       topic.endDate = date
     }
     topic.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
     const topicContentElement = $(topicElement).find('.conteudotopico')
-    topic.contentText = decodeURI(this._removeTagsHtml(topicContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')))
-    topic.attachments = this._extractAttachmentsFromTopic($, topicContentElement, page)
+    topic.contentText = decodeURI(
+      this._removeTagsHtml(
+        topicContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
+      )
+    )
+    topic.attachments = this._extractAttachmentsFromTopic(
+      $,
+      topicContentElement,
+      page
+    )
     return topic
   }
 
-  getFiles () {
-    return this._clickLeftSidebarButton('Arquivos')
-      .then(page => {
-        return new Promise((resolve, reject) => {
-          const $ = Cheerio.load(page.body)
+  getFiles() {
+    return this._clickLeftSidebarButton('Arquivos').then((page) => {
+      return new Promise((resolve, reject) => {
+        const $ = Cheerio.load(page.body)
 
-          const table = $('.listing')
+        const table = $('.listing')
 
-          if (table.length === 0) resolve([])
-          const rows = table.find('tr[class]').toArray()
-          const usedFilesIndex = []
-          for (const row of rows) {
-            const cells = $(row).children()
-            const title = this._removeTagsHtml(cells.first().html())
-            const description = this._removeTagsHtml(cells.eq(1).html())
+        if (table.length === 0) resolve([])
+        const rows = table.find('tr[class]').toArray()
+        const usedFilesIndex = []
+        for (const row of rows) {
+          const cells = $(row).children()
+          const title = this._removeTagsHtml(cells.first().html())
+          const description = this._removeTagsHtml(cells.eq(1).html())
 
-            const buttonElement = cells.eq(3).find('a[onclick]')
-            const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
-            const id = form.postValues['id']
-            const fileOptions = { title, description, form }
-            const [files, index] = this._updateList(fileOptions, id, SigaaFile, this._files, this.getFiles.bind(this))
-            this._files = files
-            usedFilesIndex.push(index)
+          const buttonElement = cells.eq(3).find('a[onclick]')
+          const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
+          const id = form.postValues['id']
+          const fileOptions = { title, description, form }
+          const [files, index] = this._updateList(
+            fileOptions,
+            id,
+            SigaaFile,
+            this._files,
+            this.getFiles.bind(this)
+          )
+          this._files = files
+          usedFilesIndex.push(index)
+        }
+        this._files = this._files.filter((file, index) => {
+          if (usedFilesIndex.indexOf(index) > -1) {
+            return true
+          } else {
+            file.finish()
+            return false
           }
-          this._files = this._files.filter((file, index) => {
-            if (usedFilesIndex.indexOf(index) > -1) {
-              return true
-            } else {
-              file.finish()
-              return false
-            }
-          })
-          resolve(this._files)
         })
+        resolve(this._files)
       })
+    })
   }
 
-  _extractAttachmentsFromTopic ($, topicContentElement, page) {
+  _extractAttachmentsFromTopic($, topicContentElement, page) {
     const topicAttachments = []
-    const attachmentElements = topicContentElement.find('span[id] > div.item').toArray()
+    const attachmentElements = topicContentElement
+      .find('span[id] > div.item')
+      .toArray()
     if (attachmentElements.length !== 0) {
       for (const attachmentElement of attachmentElements) {
         const iconElement = $(attachmentElement).find('img')
         const iconSrc = iconElement.attr('src')
         if (iconSrc.includes('questionario.png')) {
-          const quizOptions = this._extractAttachmentQuiz($(attachmentElement), $)
+          const quizOptions = this._extractAttachmentQuiz(
+            $(attachmentElement),
+            $
+          )
           const id = quizOptions.id
-          const [quizzes, index] = this._updateList(quizOptions, id, SigaaQuiz, this._quizzes, this.getQuizzes.bind(this))
+          const [quizzes, index] = this._updateList(
+            quizOptions,
+            id,
+            SigaaQuiz,
+            this._quizzes,
+            this.getQuizzes.bind(this)
+          )
           this._quizzes = quizzes
           topicAttachments.push(this._quizzes[index])
         } else if (iconSrc.includes('video.png')) {
@@ -242,27 +297,63 @@ class SigaaClassStudent extends SigaaBase {
           this._videos.push(videoOptions)
           topicAttachments.push(videoOptions)
         } else if (iconSrc.includes('tarefa.png')) {
-          const homeworkOptions = this._extractAttachmentHomework($(attachmentElement), $)
+          const homeworkOptions = this._extractAttachmentHomework(
+            $(attachmentElement),
+            $
+          )
           const id = homeworkOptions.id
-          const [homeworks, index] = this._updateList(homeworkOptions, id, SigaaHomework, this._homeworks, this.getHomeworks.bind(this))
+          const [homeworks, index] = this._updateList(
+            homeworkOptions,
+            id,
+            SigaaHomework,
+            this._homeworks,
+            this.getHomeworks.bind(this)
+          )
           this._homeworks = homeworks
           topicAttachments.push(this._homeworks[index])
         } else if (iconSrc.includes('pesquisa.png')) {
-          const surveyOptions = this._extractAttacmentSurvey($(attachmentElement), $)
+          const surveyOptions = this._extractAttacmentSurvey(
+            $(attachmentElement),
+            $
+          )
           const id = surveyOptions.id
-          const [surveys, index] = this._updateList(surveyOptions, id, SigaaSurvey, this._surveys, this.getSurveys.bind(this))
+          const [surveys, index] = this._updateList(
+            surveyOptions,
+            id,
+            SigaaSurvey,
+            this._surveys,
+            this.getSurveys.bind(this)
+          )
           this._surveys = surveys
           topicAttachments.push(this._surveys[index])
         } else if (iconSrc.includes('conteudo.png')) {
-          const webContentOptions = this._extractAttachmentWebContent($(attachmentElement), $)
+          const webContentOptions = this._extractAttachmentWebContent(
+            $(attachmentElement),
+            $
+          )
           const id = webContentOptions.id
-          const [webContents, index] = this._updateList(webContentOptions, id, SigaaWebContent, this._webContents, this.getWebContents.bind(this))
+          const [webContents, index] = this._updateList(
+            webContentOptions,
+            id,
+            SigaaWebContent,
+            this._webContents,
+            this.getWebContents.bind(this)
+          )
           this._webContents = webContents
           topicAttachments.push(this._webContents[index])
         } else {
-          const fileOptions = this._extractAttachmentFile($(attachmentElement), $)
+          const fileOptions = this._extractAttachmentFile(
+            $(attachmentElement),
+            $
+          )
           const id = fileOptions.id
-          const [files, index] = this._updateList(fileOptions, id, SigaaFile, this._files, this.getFiles.bind(this))
+          const [files, index] = this._updateList(
+            fileOptions,
+            id,
+            SigaaFile,
+            this._files,
+            this.getFiles.bind(this)
+          )
           this._files = files
           topicAttachments.push(this._files[index])
         }
@@ -271,9 +362,12 @@ class SigaaClassStudent extends SigaaBase {
     return topicAttachments
   }
 
-  _extractAttachmentFile (attachmentElement, $) {
+  _extractAttachmentFile(attachmentElement, $) {
     const attachment = {}
-    const titleElement = attachmentElement.find('span').children().first()
+    const titleElement = attachmentElement
+      .find('span')
+      .children()
+      .first()
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
@@ -282,9 +376,12 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractAttachmentWebContent (attachmentElement, $) {
+  _extractAttachmentWebContent(attachmentElement, $) {
     const attachment = {}
-    const titleElement = attachmentElement.find('span').children().first()
+    const titleElement = attachmentElement
+      .find('span')
+      .children()
+      .first()
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
@@ -293,7 +390,7 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractAttacmentSurvey (attachmentElement, $) {
+  _extractAttacmentSurvey(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
@@ -302,7 +399,7 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractAttachmentHomework (attachmentElement, $) {
+  _extractAttachmentHomework(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
     const form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
@@ -316,7 +413,7 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractAtachmentVideo (attachmentElement) {
+  _extractAtachmentVideo(attachmentElement) {
     const attachment = {}
     attachment.type = 'video'
     attachment.src = attachmentElement.find('iframe').attr('src')
@@ -327,7 +424,7 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractAttachmentQuiz (attachmentElement, $) {
+  _extractAttachmentQuiz(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
@@ -341,7 +438,7 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractDates (dateString) {
+  _extractDates(dateString) {
     const dateStrings = dateString.match(/[0-9]+[\S\s]+?[0-9]((?= )|(?=$))/g)
     const createDateFromString = (dataString, timeString) => {
       const dateSplited = dataString.match(/[0-9]+/g)
@@ -349,14 +446,21 @@ class SigaaClassStudent extends SigaaBase {
         timeString = '00:00'
       }
       const timeSplited = timeString.match(/[0-9]+/g)
-      return new Date(`${dateSplited[2]}-${dateSplited[1]}-${dateSplited[0]}T${('0' + timeSplited[0]).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000-03:00`)
+      return new Date(
+        `${dateSplited[2]}-${dateSplited[1]}-${dateSplited[0]}T${(
+          '0' + timeSplited[0]
+        ).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000-03:00`
+      )
     }
     const dates = []
     let currentDate
     for (let i = 0; i < dateStrings.length; i++) {
       if (dateStrings[i].includes('/')) {
         currentDate = dateStrings[i]
-        if (dateStrings[i + 1] && (dateStrings[i + 1].includes(':') || dateStrings[i + 1].includes('h'))) {
+        if (
+          dateStrings[i + 1] &&
+          (dateStrings[i + 1].includes(':') || dateStrings[i + 1].includes('h'))
+        ) {
           dates.push(createDateFromString(dateStrings[i], dateStrings[i + 1]))
           i++
           continue
@@ -365,133 +469,168 @@ class SigaaClassStudent extends SigaaBase {
           continue
         }
       }
-      if (currentDate && (dateStrings[i].includes(':') || dateStrings[i].includes('h'))) {
+      if (
+        currentDate &&
+        (dateStrings[i].includes(':') || dateStrings[i].includes('h'))
+      ) {
         dates.push(createDateFromString(currentDate, dateStrings[i]))
       }
     }
     return dates
   }
 
-  getNews () {
-    return this._clickLeftSidebarButton('Notícias')
-      .then(page => {
-        return new Promise((resolve, reject) => {
-          const $ = Cheerio.load(page.body)
+  getNews() {
+    return this._clickLeftSidebarButton('Notícias').then((page) => {
+      return new Promise((resolve, reject) => {
+        const $ = Cheerio.load(page.body)
 
-          const table = $('.listing')
+        const table = $('.listing')
 
-          if (table.length === 0) resolve([])
-          const rows = table.find('tr[class]').toArray()
-          if (this._news.length !== 0) {
-            const usedNewsIndex = []
+        if (table.length === 0) resolve([])
+        const rows = table.find('tr[class]').toArray()
+        if (this._news.length !== 0) {
+          const usedNewsIndex = []
 
-            for (const row of rows) {
-              const cell = $(row).children()
-              const title = this._removeTagsHtml(cell.first().html())
-              const date = this._removeTagsHtml(cell.eq(1).html())
+          for (const row of rows) {
+            const cell = $(row).children()
+            const title = this._removeTagsHtml(cell.first().html())
+            const date = this._removeTagsHtml(cell.eq(1).html())
 
-              const buttonElement = cell.eq(2).children().first()
-              const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
-              const id = form.postValues.id
-              const newsOptions = { title, date, form }
-              const [news, index] = this._updateList(newsOptions, id, SigaaNews, this._news, this.getNews.bind(this))
-              this._news = news
-              usedNewsIndex.push(index)
+            const buttonElement = cell
+              .eq(2)
+              .children()
+              .first()
+            const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
+            const id = form.postValues.id
+            const newsOptions = { title, date, form }
+            const [news, index] = this._updateList(
+              newsOptions,
+              id,
+              SigaaNews,
+              this._news,
+              this.getNews.bind(this)
+            )
+            this._news = news
+            usedNewsIndex.push(index)
+          }
+          this._news = this._news.filter((news, index) => {
+            if (usedNewsIndex.indexOf(index) > -1) {
+              return true
+            } else {
+              news.finish()
+              return false
             }
-            this._news = this._news.filter((news, index) => {
-              if (usedNewsIndex.indexOf(index) > -1) {
-                return true
-              } else {
-                news.finish()
-                return false
-              }
-            })
-          } else {
-            for (const row of rows) {
-              const cell = $(row).children()
-              const title = this._removeTagsHtml(cell.first().html())
-              const date = this._removeTagsHtml(cell.eq(1).html())
-              const buttonEl = cell.eq(2).children().first()
-              const form = this._extractJSFCLJS(buttonEl.attr('onclick'), $)
-              this._news.push(new SigaaNews(
+          })
+        } else {
+          for (const row of rows) {
+            const cell = $(row).children()
+            const title = this._removeTagsHtml(cell.first().html())
+            const date = this._removeTagsHtml(cell.eq(1).html())
+            const buttonEl = cell
+              .eq(2)
+              .children()
+              .first()
+            const form = this._extractJSFCLJS(buttonEl.attr('onclick'), $)
+            this._news.push(
+              new SigaaNews(
                 {
                   title,
                   date,
                   form
                 },
                 this.getNews.bind(this),
-                this._sigaaSession))
-            }
-            resolve(this._news)
+                this._sigaaSession
+              )
+            )
           }
-        })
+          resolve(this._news)
+        }
       })
-  }
-
-  getAbsence () {
-    return this._clickLeftSidebarButton('Frequência')
-      .then(page => new Promise((resolve, reject) => {
-        const $ = Cheerio.load(page.body)
-        const table = $('.listing')
-        const absences = {
-          list: []
-        }
-        if (table.length === 0) resolve(absences)
-        const rows = table.find('tr[class]').toArray()
-        for (const row of rows) {
-          const cells = $(row).children()
-          const date = this._removeTagsHtml(cells.first().html())
-          const absenceString = this._removeTagsHtml(cells.eq(1).html())
-          let absence
-          if (absenceString === '' || absenceString === 'Não Informada') {
-            continue
-          } else if (absenceString === 'Presente') {
-            absence = 0
-          } else {
-            absence = parseInt(absenceString.replace(/\D/gm, ''), 10)
-          }
-          absences.list.push({
-            date: this._extractDates(date)[0],
-            absence
-          })
-        }
-        const details = this._removeTagsHtml($('.botoes-show').html()).split('\n')
-        for (const detail of details) {
-          if (detail.includes('Total de Faltas')) {
-            absences.totalAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
-          } else if (detail.includes('Máximo de Faltas Permitido')) {
-            absences.maxAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
-          }
-        }
-        resolve(absences)
-      }))
-  }
-
-  _clickLeftSidebarButton (buttonLabel) {
-    return this._requestClassPage()
-      .then(page => new Promise((resolve, reject) => {
-        const $ = Cheerio.load(page.body)
-        const getBtnEl = $('div.itemMenu').toArray().find((buttonEl) => {
-          return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
-        })
-        const form = this._extractJSFCLJS($(getBtnEl).parent().attr('onclick'), $)
-        resolve(this._post(form.action, form.postValues))
-      }))
-      .then(page => this._checkPageStatusCodeAndExpired(page))
-  }
-
-  async _getRightSidebarCard ($, cardTitle) {
-    const titleElement = $('.rich-stglpanel-header.headerBloco').toArray().find((titleElement) => {
-      return this._removeTagsHtml($(titleElement).html()) === cardTitle
     })
+  }
+
+  getAbsence() {
+    return this._clickLeftSidebarButton('Frequência').then(
+      (page) =>
+        new Promise((resolve, reject) => {
+          const $ = Cheerio.load(page.body)
+          const table = $('.listing')
+          const absences = {
+            list: []
+          }
+          if (table.length === 0) resolve(absences)
+          const rows = table.find('tr[class]').toArray()
+          for (const row of rows) {
+            const cells = $(row).children()
+            const date = this._removeTagsHtml(cells.first().html())
+            const absenceString = this._removeTagsHtml(cells.eq(1).html())
+            let absence
+            if (absenceString === '' || absenceString === 'Não Informada') {
+              continue
+            } else if (absenceString === 'Presente') {
+              absence = 0
+            } else {
+              absence = parseInt(absenceString.replace(/\D/gm, ''), 10)
+            }
+            absences.list.push({
+              date: this._extractDates(date)[0],
+              absence
+            })
+          }
+          const details = this._removeTagsHtml($('.botoes-show').html()).split(
+            '\n'
+          )
+          for (const detail of details) {
+            if (detail.includes('Total de Faltas')) {
+              absences.totalAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
+            } else if (detail.includes('Máximo de Faltas Permitido')) {
+              absences.maxAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
+            }
+          }
+          resolve(absences)
+        })
+    )
+  }
+
+  _clickLeftSidebarButton(buttonLabel) {
+    return this._requestClassPage()
+      .then(
+        (page) =>
+          new Promise((resolve, reject) => {
+            const $ = Cheerio.load(page.body)
+            const getBtnEl = $('div.itemMenu')
+              .toArray()
+              .find((buttonEl) => {
+                return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
+              })
+            const form = this._extractJSFCLJS(
+              $(getBtnEl)
+                .parent()
+                .attr('onclick'),
+              $
+            )
+            resolve(this._post(form.action, form.postValues))
+          })
+      )
+      .then((page) => this._checkPageStatusCodeAndExpired(page))
+  }
+
+  async _getRightSidebarCard($, cardTitle) {
+    const titleElement = $('.rich-stglpanel-header.headerBloco')
+      .toArray()
+      .find((titleElement) => {
+        return this._removeTagsHtml($(titleElement).html()) === cardTitle
+      })
     if (!titleElement) {
       throw new Error('CARD_TITLE_NOT_FOUND')
     } else {
-      return $(titleElement).parent().parent()
+      return $(titleElement)
+        .parent()
+        .parent()
     }
   }
 
-  async getExamCalendar () {
+  async getExamCalendar() {
     const page = await this._requestClassPage()
     const $ = Cheerio.load(page.body)
     const card = await this._getRightSidebarCard($, 'Avaliações')
@@ -501,8 +640,16 @@ class SigaaClassStudent extends SigaaBase {
     const year = parseInt(yearString, 10)
     for (const examElement of examElements) {
       const exam = {}
-      exam.description = this._removeTagsHtml($(examElement).find('span.descricao').html())
-      const dateString = this._removeTagsHtml($(examElement).find('span.data').html())
+      exam.description = this._removeTagsHtml(
+        $(examElement)
+          .find('span.descricao')
+          .html()
+      )
+      const dateString = this._removeTagsHtml(
+        $(examElement)
+          .find('span.data')
+          .html()
+      )
       const dateStrings = dateString.match(/[0-9]+/g)
       if (dateStrings && dateStrings.length >= 2) {
         const monthIndex = parseInt(dateStrings[1], 10) - 1
@@ -522,7 +669,7 @@ class SigaaClassStudent extends SigaaBase {
     return examList
   }
 
-  async getQuizzes () {
+  async getQuizzes() {
     const page = await this._clickLeftSidebarButton('Questionários')
     return new Promise((resolve, reject) => {
       const $ = Cheerio.load(page.body)
@@ -542,12 +689,18 @@ class SigaaClassStudent extends SigaaBase {
         const buttonSendAnswersElement = cells.eq(3).find('a[onclick]')
         let formSendAnswers = null
         if (buttonSendAnswersElement) {
-          formSendAnswers = this._extractJSFCLJS(buttonSendAnswersElement.attr('onclick'), $)
+          formSendAnswers = this._extractJSFCLJS(
+            buttonSendAnswersElement.attr('onclick'),
+            $
+          )
         }
         const buttonViewAnswersSubmittedElement = cells.eq(4).find('a[onclick]')
         let formViewAnswersSubmitted = null
         if (buttonViewAnswersSubmittedElement) {
-          formViewAnswersSubmitted = this._extractJSFCLJS(buttonViewAnswersSubmittedElement.attr('onclick'), $)
+          formViewAnswersSubmitted = this._extractJSFCLJS(
+            buttonViewAnswersSubmittedElement.attr('onclick'),
+            $
+          )
         }
         const form = formSendAnswers || formViewAnswersSubmitted
         const id = form.postValues.id
@@ -560,7 +713,13 @@ class SigaaClassStudent extends SigaaBase {
           formSendAnswers,
           formViewAnswersSubmitted
         }
-        const [quizzes, index] = this._updateList(quizOptions, id, SigaaQuiz, this._quizzes, this.getQuizzes.bind(this))
+        const [quizzes, index] = this._updateList(
+          quizOptions,
+          id,
+          SigaaQuiz,
+          this._quizzes,
+          this.getQuizzes.bind(this)
+        )
         usedQuizzesIndex.push(index)
         this._quizzes = quizzes
       }
@@ -576,7 +735,7 @@ class SigaaClassStudent extends SigaaBase {
     })
   }
 
-  async getWebContents () {
+  async getWebContents() {
     const page = await this._clickLeftSidebarButton('Conteúdo/Página web')
     return new Promise((resolve, reject) => {
       const $ = Cheerio.load(page.body)
@@ -592,7 +751,10 @@ class SigaaClassStudent extends SigaaBase {
         const title = this._removeTagsHtml(cells.first().html())
         const dateString = this._removeTagsHtml(cells.eq(1).html())
         const date = this._extractDates(dateString)[0]
-        const form = this._extractJSFCLJS(cells[2].find('a[onclick]').attr('onclick'), $)
+        const form = this._extractJSFCLJS(
+          cells[2].find('a[onclick]').attr('onclick'),
+          $
+        )
         const id = form.postValues.id
         const webContentOptions = {
           title,
@@ -600,7 +762,13 @@ class SigaaClassStudent extends SigaaBase {
           form
         }
 
-        const [webContents, index] = this._updateList(webContentOptions, id, SigaaWebContent, this._webContents, this.getWebContents.bind(this))
+        const [webContents, index] = this._updateList(
+          webContentOptions,
+          id,
+          SigaaWebContent,
+          this._webContents,
+          this.getWebContents.bind(this)
+        )
         usedwebContentsIndex.push(index)
         this._webContents = webContents
       }
@@ -616,72 +784,86 @@ class SigaaClassStudent extends SigaaBase {
     })
   }
 
-  async getSurveys () {
+  async getSurveys() {
     // TODO
   }
 
-  async getHomeworks () {
-    return this._clickLeftSidebarButton('Tarefas')
-      .then(page => {
-        return new Promise((resolve, reject) => {
-          const $ = Cheerio.load(page.body)
+  async getHomeworks() {
+    return this._clickLeftSidebarButton('Tarefas').then((page) => {
+      return new Promise((resolve, reject) => {
+        const $ = Cheerio.load(page.body)
 
-          const table = $('.listing')
+        const table = $('.listing')
 
-          if (!table) resolve([])
-          const rows = table.find('tr[class]').toArray()
-          const usedHomeworksIndex = []
+        if (!table) resolve([])
+        const rows = table.find('tr[class]').toArray()
+        const usedHomeworksIndex = []
 
-          for (let i = 0; i < rows.length; i += 2) {
-            const cells = $(rows[i]).find('td')
-            const cellDescription = $(rows[i + 1]).find('td')
-            const title = this._removeTagsHtml(cells.eq(1).html())
-            const description = this._removeTagsHtml(cellDescription.html())
-            const date = this._removeTagsHtml(cells.eq(2).html())
-            const dates = this._extractDates(date)
-            let haveGrade = true
-            if (this._removeTagsHtml(cells.eq(3).html()) === 'Não') haveGrade = false
-            const buttonSendHomeworkElement = $(cells.eq(5).find('a[onclick]'))
-            let formSendHomework = null
-            if (buttonSendHomeworkElement.length !== 0) {
-              formSendHomework = this._extractJSFCLJS(buttonSendHomeworkElement.attr('onclick'), $)
-            }
-            const buttonViewHomeworkSubmittedElement = $(cells.eq(6).find('a[onclick]'))
-            let formViewHomeworkSubmitted = null
-            if (buttonViewHomeworkSubmittedElement.length !== 0) {
-              formViewHomeworkSubmitted = this._extractJSFCLJS(buttonViewHomeworkSubmittedElement.attr('onclick'), $)
-            }
-            const form = formSendHomework || formViewHomeworkSubmitted
-            const id = form.postValues.id
-            const homeworkOptions = {
-              title,
-              startDate: dates[0],
-              endDate: dates[1],
-              description,
-              id,
-              formSendHomework,
-              formViewHomeworkSubmitted,
-              haveGrade
-            }
-
-            const [homeworks, index] = this._updateList(homeworkOptions, id, SigaaHomework, this._homeworks, this.getHomeworks.bind(this))
-            usedHomeworksIndex.push(index)
-            this._homeworks = homeworks
+        for (let i = 0; i < rows.length; i += 2) {
+          const cells = $(rows[i]).find('td')
+          const cellDescription = $(rows[i + 1]).find('td')
+          const title = this._removeTagsHtml(cells.eq(1).html())
+          const description = this._removeTagsHtml(cellDescription.html())
+          const date = this._removeTagsHtml(cells.eq(2).html())
+          const dates = this._extractDates(date)
+          let haveGrade = true
+          if (this._removeTagsHtml(cells.eq(3).html()) === 'Não')
+            haveGrade = false
+          const buttonSendHomeworkElement = $(cells.eq(5).find('a[onclick]'))
+          let formSendHomework = null
+          if (buttonSendHomeworkElement.length !== 0) {
+            formSendHomework = this._extractJSFCLJS(
+              buttonSendHomeworkElement.attr('onclick'),
+              $
+            )
           }
-          this._homeworks = this._homeworks.filter((homework, index) => {
-            if (usedHomeworksIndex.indexOf(index) > -1) {
-              return true
-            } else {
-              homework.finish()
-              return false
-            }
-          })
-          resolve(this._homeworks)
+          const buttonViewHomeworkSubmittedElement = $(
+            cells.eq(6).find('a[onclick]')
+          )
+          let formViewHomeworkSubmitted = null
+          if (buttonViewHomeworkSubmittedElement.length !== 0) {
+            formViewHomeworkSubmitted = this._extractJSFCLJS(
+              buttonViewHomeworkSubmittedElement.attr('onclick'),
+              $
+            )
+          }
+          const form = formSendHomework || formViewHomeworkSubmitted
+          const id = form.postValues.id
+          const homeworkOptions = {
+            title,
+            startDate: dates[0],
+            endDate: dates[1],
+            description,
+            id,
+            formSendHomework,
+            formViewHomeworkSubmitted,
+            haveGrade
+          }
+
+          const [homeworks, index] = this._updateList(
+            homeworkOptions,
+            id,
+            SigaaHomework,
+            this._homeworks,
+            this.getHomeworks.bind(this)
+          )
+          usedHomeworksIndex.push(index)
+          this._homeworks = homeworks
+        }
+        this._homeworks = this._homeworks.filter((homework, index) => {
+          if (usedHomeworksIndex.indexOf(index) > -1) {
+            return true
+          } else {
+            homework.finish()
+            return false
+          }
         })
+        resolve(this._homeworks)
       })
+    })
   }
 
-  _updateList (options, id, SigaaClass, classList, updateMethod) {
+  _updateList(options, id, SigaaClass, classList, updateMethod) {
     const classIndex = classList.findIndex((classItem) => {
       return id === classItem.id
     })
@@ -696,7 +878,7 @@ class SigaaClassStudent extends SigaaBase {
     }
   }
 
-  async getMembers () {
+  async getMembers() {
     const page = await this._clickLeftSidebarButton('Participantes')
     const $ = Cheerio.load(page.body)
     const tables = $('table.participantes').toArray()
@@ -704,14 +886,22 @@ class SigaaClassStudent extends SigaaBase {
       throw new Error('SIGAA_MEMBERS_PAGE_INVALID')
     }
     const teachers = []
-    const teacherElements = $(tables[0]).find('tr').toArray()
+    const teacherElements = $(tables[0])
+      .find('tr')
+      .toArray()
     for (const teacherElement of teacherElements) {
       const teacher = {}
-      const informationsString = $(teacherElement).find('td[valign]').html()
+      const informationsString = $(teacherElement)
+        .find('td[valign]')
+        .html()
       const informations = informationsString.split('<br>').slice(1, -1)
       for (const information of informations) {
-        const label = this._removeTagsHtml(information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0])
-        const informationContent = this._removeTagsHtml(information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0])
+        const label = this._removeTagsHtml(
+          information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
+        )
+        const informationContent = this._removeTagsHtml(
+          information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
+        )
         switch (label) {
           case 'Departamento':
             teacher.department = informationContent
@@ -727,11 +917,19 @@ class SigaaClassStudent extends SigaaBase {
             teacher.email = informationContent
             break
           default:
-            console.log('WARNING:Teacher information label not recognized:' + label)
+            console.log(
+              'WARNING:Teacher information label not recognized:' + label
+            )
         }
       }
-      const photoHREF = $(teacherElement).find('img').attr('src')
-      const name = this._removeTagsHtml($(teacherElement).find('strong > a').html())
+      const photoHREF = $(teacherElement)
+        .find('img')
+        .attr('src')
+      const name = this._removeTagsHtml(
+        $(teacherElement)
+          .find('strong > a')
+          .html()
+      )
       let photoURL = new URL(photoHREF, page.url.href).href
       if (photoURL.includes('no_picture.png')) {
         photoURL = null
@@ -741,14 +939,22 @@ class SigaaClassStudent extends SigaaBase {
       teachers.push(teacher)
     }
     const students = []
-    const studentElements = $(tables[1]).find('tr').toArray()
+    const studentElements = $(tables[1])
+      .find('tr')
+      .toArray()
     for (const studentElement of studentElements) {
       const student = {}
-      const informationsString = $(studentElement).find('td[valign]').html()
+      const informationsString = $(studentElement)
+        .find('td[valign]')
+        .html()
       const informations = informationsString.split('<br>').slice(1)
       for (const information of informations) {
-        const label = this._removeTagsHtml(information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0])
-        const informationContent = this._removeTagsHtml(information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0])
+        const label = this._removeTagsHtml(
+          information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
+        )
+        const informationContent = this._removeTagsHtml(
+          information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
+        )
         switch (label) {
           case 'Matrícula': {
             student.registration = informationContent
@@ -771,19 +977,25 @@ class SigaaClassStudent extends SigaaBase {
             break
           }
           case 'E-mail':
-          case 'E-Mail':
-          {
+          case 'E-Mail': {
             student.email = informationContent
             break
           }
-          default:
-          {
-            console.log('WARNING:Student information label not recognized:' + label)
+          default: {
+            console.log(
+              'WARNING:Student information label not recognized:' + label
+            )
           }
         }
       }
-      const photoHREF = $(studentElement).find('img').attr('src')
-      const name = this._removeTagsHtml($(studentElement).find('strong').html())
+      const photoHREF = $(studentElement)
+        .find('img')
+        .attr('src')
+      const name = this._removeTagsHtml(
+        $(studentElement)
+          .find('strong')
+          .html()
+      )
       let photoURL = new URL(photoHREF, page.url.href).href
       if (photoURL.includes('no_picture.png')) {
         photoURL = null
@@ -798,90 +1010,114 @@ class SigaaClassStudent extends SigaaBase {
     }
   }
 
-  getGrades () {
-    return this._clickLeftSidebarButton('Ver Notas')
-      .then(page => {
-        return new Promise((resolve, reject) => {
-          const getPositionByCellColSpan = ($, ths, cell) => {
-            let i = 0
-            for (const tr of ths.toArray()) {
-              if (cell === tr) {
-                return i
-              }
-              i += parseInt($(tr).attr('colspan') || 1, 10)
+  getGrades() {
+    return this._clickLeftSidebarButton('Ver Notas').then((page) => {
+      return new Promise((resolve, reject) => {
+        const getPositionByCellColSpan = ($, ths, cell) => {
+          let i = 0
+          for (const tr of ths.toArray()) {
+            if (cell === tr) {
+              return i
             }
-            return false
+            i += parseInt($(tr).attr('colspan') || 1, 10)
           }
+          return false
+        }
 
-          const removeCellsWithName = [
-            '',
-            'Matrícula',
-            'Nome',
-            'Sit.',
-            'Faltas'
-          ]
+        const removeCellsWithName = ['', 'Matrícula', 'Nome', 'Sit.', 'Faltas']
 
-          const $ = Cheerio.load(page.body)
+        const $ = Cheerio.load(page.body)
 
-          const table = $('table.tabelaRelatorio')
-          if (table.length !== 1) {
-            throw new Error('SIGAA_INVALID_RESPONSE')
-          }
+        const table = $('table.tabelaRelatorio')
+        if (table.length !== 1) {
+          throw new Error('SIGAA_INVALID_RESPONSE')
+        }
 
-          const theadTrs = $('thead tr').toArray()
-          const valueCells = $(table).find('tbody tr').children()
-          if (valueCells.length === 0) {
-            throw new Error('SIGAA_INVALID_RESPONSE')
-          }
-          const grades = []
+        const theadTrs = $('thead tr').toArray()
+        const valueCells = $(table)
+          .find('tbody tr')
+          .children()
+        if (valueCells.length === 0) {
+          throw new Error('SIGAA_INVALID_RESPONSE')
+        }
+        const grades = []
 
-          const theadElements = []
-          for (const theadTr of theadTrs) {
-            theadElements.push($(theadTr).find('th'))
-          }
+        const theadElements = []
+        for (const theadTr of theadTrs) {
+          theadElements.push($(theadTr).find('th'))
+        }
 
-          for (let i = 0; i < theadElements[0].length; i++) {
-            const gradeGroupName = this._removeTagsHtml(theadElements[0].eq(i).html())
-            if (removeCellsWithName.indexOf(gradeGroupName) === -1) {
-              const gradeGroup = {
-                name: gradeGroupName
-              }
-              const index = getPositionByCellColSpan($, theadElements[0], theadElements[0][i])
-              const theadElementColspan = parseInt(theadElements[0].eq(i).attr('colspan') || 1, 10)
-              if (theadElementColspan === 1) {
-                let value = parseFloat(this._removeTagsHtml(valueCells.eq(index).html()).replace(/,/g, '.'))
-                if (!value) value = null
-                gradeGroup.value = value
-              } else {
-                gradeGroup.grades = []
-                for (let j = index; j < index + theadElementColspan; j++) {
-                  const gradeId = theadElements[1].eq(j).attr('id').slice(5)
+        for (let i = 0; i < theadElements[0].length; i++) {
+          const gradeGroupName = this._removeTagsHtml(
+            theadElements[0].eq(i).html()
+          )
+          if (removeCellsWithName.indexOf(gradeGroupName) === -1) {
+            const gradeGroup = {
+              name: gradeGroupName
+            }
+            const index = getPositionByCellColSpan(
+              $,
+              theadElements[0],
+              theadElements[0][i]
+            )
+            const theadElementColspan = parseInt(
+              theadElements[0].eq(i).attr('colspan') || 1,
+              10
+            )
+            if (theadElementColspan === 1) {
+              let value = parseFloat(
+                this._removeTagsHtml(valueCells.eq(index).html()).replace(
+                  /,/g,
+                  '.'
+                )
+              )
+              if (!value) value = null
+              gradeGroup.value = value
+            } else {
+              gradeGroup.grades = []
+              for (let j = index; j < index + theadElementColspan; j++) {
+                const gradeId = theadElements[1]
+                  .eq(j)
+                  .attr('id')
+                  .slice(5)
 
-                  if (gradeId !== '') {
-                    const gradeName = $(`input#denAval_${gradeId}`).val()
-                    const gradeAbbreviation = $(`input#abrevAval_${gradeId}`).val()
-                    const gradeWeight = $(`input#pesoAval_${gradeId}`).val()
-                    let value = parseFloat(this._removeTagsHtml(valueCells.eq(j).html()).replace(/,/g, '.'))
-                    if (!value) value = null
-                    gradeGroup.grades.push({
-                      name: gradeName,
-                      abbreviation: gradeAbbreviation,
-                      weight: gradeWeight,
-                      value
-                    })
-                  } else {
-                    let average = parseFloat(this._removeTagsHtml(valueCells.eq(j).html()).replace(/,/g, '.'))
-                    if (!average) average = null
-                    gradeGroup.average = average
-                  }
+                if (gradeId !== '') {
+                  const gradeName = $(`input#denAval_${gradeId}`).val()
+                  const gradeAbbreviation = $(
+                    `input#abrevAval_${gradeId}`
+                  ).val()
+                  const gradeWeight = $(`input#pesoAval_${gradeId}`).val()
+                  let value = parseFloat(
+                    this._removeTagsHtml(valueCells.eq(j).html()).replace(
+                      /,/g,
+                      '.'
+                    )
+                  )
+                  if (!value) value = null
+                  gradeGroup.grades.push({
+                    name: gradeName,
+                    abbreviation: gradeAbbreviation,
+                    weight: gradeWeight,
+                    value
+                  })
+                } else {
+                  let average = parseFloat(
+                    this._removeTagsHtml(valueCells.eq(j).html()).replace(
+                      /,/g,
+                      '.'
+                    )
+                  )
+                  if (!average) average = null
+                  gradeGroup.average = average
                 }
               }
-              grades.push(gradeGroup)
             }
+            grades.push(gradeGroup)
           }
-          resolve(grades)
-        })
+        }
+        resolve(grades)
       })
+    })
   }
 }
 

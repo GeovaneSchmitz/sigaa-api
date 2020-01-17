@@ -5,7 +5,7 @@ const SigaaTypes = require('./sigaa-types')
  * Store information like: states, cookies, page cache
  */
 class SigaaSession {
-  constructor () {
+  constructor() {
     /**
      * @property {Array} Array of all pages in cache
      * @private
@@ -26,7 +26,7 @@ class SigaaSession {
    * @type {string}
    * @throws {SIGAA_FORM_LOGIN_ACTION_IS_NOT_A_STRING}
    */
-  set formLoginAction (data) {
+  set formLoginAction(data) {
     if (typeof data === 'string') {
       this._formLoginAction = data
     } else {
@@ -34,7 +34,7 @@ class SigaaSession {
     }
   }
 
-  get formLoginAction () {
+  get formLoginAction() {
     return this._formLoginAction
   }
 
@@ -43,7 +43,7 @@ class SigaaSession {
    * @type {object}
    * @throws {SIGAA_FORM_LOGIN_POST_VALUES_IS_NOT_A_OBJECT}
    */
-  set formLoginPostValues (data) {
+  set formLoginPostValues(data) {
     if (typeof data === 'object') {
       this._formLoginPostValues = data
     } else {
@@ -51,7 +51,7 @@ class SigaaSession {
     }
   }
 
-  get formLoginPostValues () {
+  get formLoginPostValues() {
     return this._formLoginPostValues
   }
 
@@ -60,7 +60,7 @@ class SigaaSession {
    * @type {String}
    * @throws {SIGAA_URL_IS_NOT_A_STRING}
    */
-  set url (data) {
+  set url(data) {
     if (typeof data === 'string') {
       this._url = data
     } else {
@@ -68,7 +68,7 @@ class SigaaSession {
     }
   }
 
-  get url () {
+  get url() {
     return this._url
   }
 
@@ -76,11 +76,11 @@ class SigaaSession {
    * @description Timeout in milliseconds to keep page cached
    * @type {Number}
    */
-  set timeoutCache (timeout) {
+  set timeoutCache(timeout) {
     this._timeoutCache = timeout
   }
 
-  get timeoutCache () {
+  get timeoutCache() {
     return this._timeoutCache
   }
 
@@ -89,7 +89,7 @@ class SigaaSession {
    * @type {userLoginStatus}
    * @throws {SIGAA_USER_LOGIN_STATUS_IS_NOT_A_BOOLEAN}
    */
-  set userLoginState (status) {
+  set userLoginState(status) {
     if (typeof status === 'boolean') {
       this._loginState = status
     } else {
@@ -97,7 +97,7 @@ class SigaaSession {
     }
   }
 
-  get userLoginState () {
+  get userLoginState() {
     return this._loginState
   }
 
@@ -120,11 +120,11 @@ class SigaaSession {
    * @type {SigaaAccount.userTypes}
    * @throws {SIGAA_USERTYPE_IS_NOT_A_VALID_VALUE} if the user type is not in the list of valid types
    */
-  get userType () {
+  get userType() {
     return this._userType
   }
 
-  set userType (userType) {
+  set userType(userType) {
     const validUsersTypes = Object.keys(SigaaTypes.userTypes)
     if (validUsersTypes.includes(userType)) {
       this._userType = userType
@@ -138,7 +138,7 @@ class SigaaSession {
    * @param {String} domain domain of cookie
    * @returns {String}
    */
-  getTokenByDomain (domain) {
+  getTokenByDomain(domain) {
     return this._tokens[domain]
   }
 
@@ -149,7 +149,7 @@ class SigaaSession {
    * @throws {DOMAIN_IS_NOT_A_STRING}
    * @throws {TOKEN_IS_NOT_A_STRING}
    */
-  setToken (domain, token) {
+  setToken(domain, token) {
     if (typeof domain !== 'string') {
       throw new Error(SigaaErrors.SIGAA_DOMAIN_IS_NOT_A_STRING)
     }
@@ -170,7 +170,7 @@ class SigaaSession {
    * const sessionObject = newSessionSigaaSession.parseJSON(sessionObject)
    * @returns {Object} Object represents session
    */
-  toJSON () {
+  toJSON() {
     const sessionObj = {}
     sessionObj.tokens = this._tokens
     sessionObj.timeoutCache = this.timeoutCache
@@ -193,12 +193,14 @@ class SigaaSession {
    * @param {Object} sessionObject represents session
    * @throws {SIGAA_INVALID_JSON_OBJECT} if the object does not contain the required properties
    */
-  parseJSON (sessionObject) {
-    if (sessionObject.tokens !== undefined &&
+  parseJSON(sessionObject) {
+    if (
+      sessionObject.tokens !== undefined &&
       sessionObject.timeoutCache !== undefined &&
       sessionObject.userType !== undefined &&
       sessionObject.url !== undefined &&
-      sessionObject.cachePages !== undefined) {
+      sessionObject.cachePages !== undefined
+    ) {
       for (const key of Object.keys(sessionObject.tokens)) {
         this.setToken(key, sessionObject.tokens[key])
       }
@@ -225,7 +227,7 @@ class SigaaSession {
   /**
    * @description flush states of instance
    */
-  finish () {
+  finish() {
     this.userLoginState = SigaaTypes.userLoginStates.UNAUTHENTICATED
     this.userType = SigaaTypes.userTypes.UNAUTHENTICATED
     this._tokens = {}
@@ -246,7 +248,7 @@ class SigaaSession {
    * @param {String} pageObj.body Page body of response
    * @param {string} pageObj.viewState Page viewState is the value of the forms 'javax.faces.ViewState' field.
    */
-  storePage (pageObj) {
+  storePage(pageObj) {
     const page = {
       method: pageObj.method,
       url: pageObj.url.href,
@@ -258,7 +260,7 @@ class SigaaSession {
     }
     if (!this._intervalId) {
       this._intervalId = setInterval(() => {
-        this._cachePages = this._cachePages.filter(cachePage => {
+        this._cachePages = this._cachePages.filter((cachePage) => {
           return !(cachePage.modifiedAt < Date.now() - this.timeoutCache)
         })
         if (this._cachePages.length === 0) {
@@ -268,10 +270,15 @@ class SigaaSession {
     }
     if (pageObj.method === 'POST') page.postValues = pageObj.postValues
     let replace = false
-    this._cachePages = this._cachePages.map(cachePage => {
-      if (cachePage.url === page.url && cachePage.requestHeaders === page.requestHeaders) {
+    this._cachePages = this._cachePages.map((cachePage) => {
+      if (
+        cachePage.url === page.url &&
+        cachePage.requestHeaders === page.requestHeaders
+      ) {
         if (pageObj.method === 'POST') {
-          if (JSON.stringify(page.postValues) === JSON.stringify(cachePage.page)) {
+          if (
+            JSON.stringify(page.postValues) === JSON.stringify(cachePage.page)
+          ) {
             replace = true
             return page
           } else {
@@ -304,7 +311,7 @@ class SigaaSession {
    * This method moves a page to the top of the cache.
    * @param {string} viewState Page viewState is the value of the forms 'javax.faces.ViewState' field.
    */
-  reactivateCachePageByViewState (viewState) {
+  reactivateCachePageByViewState(viewState) {
     const index = this._cachePages.findIndex((cachePage) => {
       return cachePage.viewState === viewState
     })
@@ -321,16 +328,23 @@ class SigaaSession {
    * @param {Object} requestHeaders requestHeaders in format, key as field name, and value as field value.
    * @param {Object} [postValues] Page post values in format, key as field name, and value as field value.
    */
-  getPage (method, url, requestHeaders, postValues) {
+  getPage(method, url, requestHeaders, postValues) {
     const cachePage = this._cachePages.find((cachePage) => {
       if (method === 'GET') {
-        return method === cachePage.method && cachePage.url === url.href &&
-                JSON.stringify(cachePage.requestHeaders) && JSON.stringify(requestHeaders)
+        return (
+          method === cachePage.method &&
+          cachePage.url === url.href &&
+          JSON.stringify(cachePage.requestHeaders) &&
+          JSON.stringify(requestHeaders)
+        )
       } else if (method === 'POST') {
-        return method === cachePage.method &&
-                cachePage.url === url.href &&
-                JSON.stringify(cachePage.requestHeaders) === JSON.stringify(requestHeaders) &&
-                JSON.stringify(cachePage.postValues) === JSON.stringify(postValues)
+        return (
+          method === cachePage.method &&
+          cachePage.url === url.href &&
+          JSON.stringify(cachePage.requestHeaders) ===
+            JSON.stringify(requestHeaders) &&
+          JSON.stringify(cachePage.postValues) === JSON.stringify(postValues)
+        )
       }
     })
     if (cachePage) {

@@ -13,9 +13,11 @@ class SigaaLogin extends SigaaBase {
    * @returns {Promise<http.ClientRequest>}
    * @
    */
-  _getLoginPage () {
-    this._loginPage = this._get('/sigaa/mobile/touch/login.jsf', { noCache: true })
-      .then(page => {
+  _getLoginPage() {
+    this._loginPage = this._get('/sigaa/mobile/touch/login.jsf', {
+      noCache: true
+    })
+      .then((page) => {
         if (page.statusCode === 200) {
           return page
         } else {
@@ -36,11 +38,11 @@ class SigaaLogin extends SigaaBase {
    * @async
    * @returns {Promise<Boolean>}
    */
-  async cacheLoginForm () {
+  async cacheLoginForm() {
     return this._loadLoginForm()
   }
 
-  async _loadLoginForm (retry = true) {
+  async _loadLoginForm(retry = true) {
     if (!this._loginPage) {
       await this._getLoginPage()
     }
@@ -57,9 +59,12 @@ class SigaaLogin extends SigaaBase {
           normalizeWhitespace: true
         })
         const formElement = $('#form-login')
-        const action = new URL(formElement.attr('action'), this._sigaaSession.url).href
+        const action = new URL(
+          formElement.attr('action'),
+          this._sigaaSession.url
+        ).href
         const postValues = {}
-        formElement.find('input').each(function () {
+        formElement.find('input').each(function() {
           postValues[$(this).attr('name')] = $(this).val()
         })
         const postValuesKeys = Object.keys(postValues)
@@ -76,20 +81,33 @@ class SigaaLogin extends SigaaBase {
     }
   }
 
-  async login (username, password, retry = true) {
-    if (this._sigaaSession.formLoginAction === undefined || this._sigaaSession.formLoginPostValues === undefined) {
+  async login(username, password, retry = true) {
+    if (
+      this._sigaaSession.formLoginAction === undefined ||
+      this._sigaaSession.formLoginPostValues === undefined
+    ) {
       await this._loadLoginForm()
     }
     const postValuesKeys = Object.keys(this._sigaaSession.formLoginPostValues)
     const usernameFormIndex = 1
     const passwordFormIndex = 2
-    this._sigaaSession.formLoginPostValues[postValuesKeys[usernameFormIndex]] = username
-    this._sigaaSession.formLoginPostValues[postValuesKeys[passwordFormIndex]] = password
-    return this._post(this._sigaaSession.formLoginAction, this._sigaaSession.formLoginPostValues)
-      .then(page => this._extractLogin(page))
-      .catch(error => {
-        if (!retry || error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS ||
-          error.message === SigaaErrors.SIGAA_UNAVAILABLE_LOGIN) {
+    this._sigaaSession.formLoginPostValues[
+      postValuesKeys[usernameFormIndex]
+    ] = username
+    this._sigaaSession.formLoginPostValues[
+      postValuesKeys[passwordFormIndex]
+    ] = password
+    return this._post(
+      this._sigaaSession.formLoginAction,
+      this._sigaaSession.formLoginPostValues
+    )
+      .then((page) => this._extractLogin(page))
+      .catch((error) => {
+        if (
+          !retry ||
+          error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS ||
+          error.message === SigaaErrors.SIGAA_UNAVAILABLE_LOGIN
+        ) {
           throw error
         } else {
           return this.login(username, password, false)
@@ -97,7 +115,7 @@ class SigaaLogin extends SigaaBase {
       })
   }
 
-  async _extractLogin (page) {
+  async _extractLogin(page) {
     if (page.statusCode === 200) {
       if (page.url.search.includes('?expirada=true')) {
         throw new Error(SigaaErrors.SIGAA_EXPIRED_PAGE)
@@ -111,11 +129,13 @@ class SigaaLogin extends SigaaBase {
         }
       } else {
         if (page.body.includes('form-portal-discente')) {
-          this._sigaaSession.userLoginState = SigaaTypes.userLoginStates.AUTHENTICATED
+          this._sigaaSession.userLoginState =
+            SigaaTypes.userLoginStates.AUTHENTICATED
           this._sigaaSession.userType = SigaaTypes.userTypes.STUDENT
           return true
         } else if (page.body.includes('form-portal-docente')) {
-          this._sigaaSession.userLoginState = SigaaTypes.userLoginStates.AUTHENTICATED
+          this._sigaaSession.userLoginState =
+            SigaaTypes.userLoginStates.AUTHENTICATED
           this._sigaaSession.userType = SigaaTypes.userTypes.TEACHER
           return true
         } else {

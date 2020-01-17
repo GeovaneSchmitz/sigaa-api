@@ -13,13 +13,14 @@ const main = async () => {
   if (account.userType !== 'STUDENT') throw new Error('USER_IS_NOT_A_STUDENT')
   const classes = await account.getClasses() // this return a array with all current classes
   console.log('Loading Absence')
-  for (const classStudent of classes) { // for each class
+  for (const classStudent of classes) {
+    // for each class
     console.log(' > ' + classStudent.title)
     const absencesClass = await classStudent.getAbsence()
     console.log(absencesClass)
   }
   account.logoff()
 }
-main().catch(err => {
+main().catch((err) => {
   if (err) console.log(err)
 })

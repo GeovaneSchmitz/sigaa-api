@@ -9,7 +9,7 @@ const SigaaTypes = require('./libs/common/sigaa-types')
  * @class Sigaa
  */
 class Sigaa {
-  constructor (params) {
+  constructor(params) {
     if (params) {
       if (params.sessionJSON) {
         this._sigaaSession = new SigaaSession()
@@ -27,16 +27,25 @@ class Sigaa {
     }
   }
 
-  cacheLoginForm () {
+  cacheLoginForm() {
     return this._sigaaLogin.cacheLoginForm()
   }
 
-  toJSON () {
+  toJSON() {
     return this._sigaaSession.toJSON()
   }
 
-  async login (username, password) {
-    if (this._sigaaSession.userLoginState !== SigaaTypes.userLoginStates.AUTHENTICATED) {
+  /**
+   * User authentication
+   * @param {String} username
+   * @param {String} password
+   * @returns {Promise<SigaaAccountStudent>}
+   */
+  async login(username, password) {
+    if (
+      this._sigaaSession.userLoginState !==
+      SigaaTypes.userLoginStates.AUTHENTICATED
+    ) {
       await this._sigaaLogin.login(username, password)
     } else {
       throw new Error(SigaaErrors.SIGAA_ALREADY_LOGGED_IN)
@@ -44,8 +53,11 @@ class Sigaa {
     return this.account
   }
 
-  get account () {
-    if (this._sigaaSession.userLoginState === SigaaTypes.userLoginStates.AUTHENTICATED) {
+  get account() {
+    if (
+      this._sigaaSession.userLoginState ===
+      SigaaTypes.userLoginStates.AUTHENTICATED
+    ) {
       if (this._sigaaSession.userType === SigaaTypes.userTypes.STUDENT) {
         return new SigaaAccountStudent(this._sigaaSession)
       } else {
@@ -55,7 +67,7 @@ class Sigaa {
     return null
   }
 
-  get search () {
+  get search() {
     return new SigaaSearch(this._sigaaSession)
   }
 }

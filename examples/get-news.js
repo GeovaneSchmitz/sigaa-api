@@ -10,12 +10,13 @@ const password = ''
 
 let account
 
-sigaa.login(username, password) // login
-  .then(sigaaAccount => {
+sigaa
+  .login(username, password) // login
+  .then((sigaaAccount) => {
     account = sigaaAccount
     return account.getClasses() // this return a array with all current classes
   })
-  .then(classes => {
+  .then((classes) => {
     return (async () => {
       for (const classStudent of classes) {
         console.log(classStudent.title)
@@ -33,6 +34,6 @@ sigaa.login(username, password) // login
   .then(() => {
     return account.logoff() // logoff after finished
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err)
   })

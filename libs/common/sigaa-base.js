@@ -14,7 +14,7 @@ class SigaaBase {
    * @param {SigaaSession} sigaaSession A instance of SigaaSession
    * @throws {SIGAA_SESSION_IS_NECESSARY} If sigaaSession is not an instance of Sigaa Session
    */
-  constructor (sigaaSession) {
+  constructor(sigaaSession) {
     if (sigaaSession instanceof SigaaSession) {
       this._sigaaSession = sigaaSession
     } else {
@@ -29,21 +29,24 @@ class SigaaBase {
    * @returns {Object} The basic options for request
    * @private
    */
-  _makeRequestBasicOptions (method, link) {
+  _makeRequestBasicOptions(method, link) {
     const basicOptions = {
       hostname: link.hostname,
       port: 443,
       path: link.pathname + link.search,
       method: method,
       headers: {
-        'User-Agent': 'SIGAA-Api/1.0 (https://github.com/GeovaneSchmitz/SIGAA-node-interface)'
+        'User-Agent':
+          'SIGAA-Api/1.0 (https://github.com/GeovaneSchmitz/SIGAA-node-interface)'
       }
     }
     if (method === 'POST') {
       basicOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     }
     if (this._sigaaSession.getTokenByDomain(link.hostname)) {
-      basicOptions.headers.Cookie = this._sigaaSession.getTokenByDomain(link.hostname)
+      basicOptions.headers.Cookie = this._sigaaSession.getTokenByDomain(
+        link.hostname
+      )
     }
     return basicOptions
   }
@@ -58,7 +61,7 @@ class SigaaBase {
    * @returns {Promise<Object>}
    * @protected
    */
-  _post (path, postValues, params) {
+  _post(path, postValues, params) {
     const link = new URL(path, this._sigaaSession.url)
     const options = this._makeRequestBasicOptions('POST', link)
     const body = querystring.stringify(postValues)
@@ -86,7 +89,7 @@ class SigaaBase {
    * @static
    * @enum UserTypes
    */
-  static get userTypes () {
+  static get userTypes() {
     return {
       /** 'STUDENT'; user is a student */
       STUDENT: 'STUDENT',
@@ -102,7 +105,7 @@ class SigaaBase {
    * @static
    * @enum userLoginStates {String}
    */
-  static get userLoginStates () {
+  static get userLoginStates() {
     return {
       /** 'STUDENT'; user is a student */
       STUDENT: 'STUDENT',
@@ -122,15 +125,19 @@ class SigaaBase {
    * @returns {Promise<Object>}
    * @protected
    */
-  _get (path, params) {
+  _get(path, params) {
     const link = new URL(path, this._sigaaSession.url)
 
     const options = this._makeRequestBasicOptions('GET', link)
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       let cachePage = null
       if (!(params && params.noCache === true)) {
-        cachePage = this._sigaaSession.getPage('GET', link.href, options.headers)
+        cachePage = this._sigaaSession.getPage(
+          'GET',
+          link.href,
+          options.headers
+        )
       }
       if (cachePage) {
         resolve(cachePage)
@@ -150,9 +157,9 @@ class SigaaBase {
    * @returns {Promise<http.ClientRequest>}
    * @private
    */
-  _request (link, options, postValues, body) {
+  _request(link, options, postValues, body) {
     return new Promise((resolve, reject) => {
-      const req = https.request(options, page => {
+      const req = https.request(options, (page) => {
         page.setEncoding('utf8')
         page.url = link
         if (page.headers['set-cookie']) {
@@ -165,7 +172,7 @@ class SigaaBase {
         }
 
         page.body = ''
-        page.on('data', chunk => {
+        page.on('data', (chunk) => {
           page.body = page.body + chunk
         })
 
@@ -180,7 +187,9 @@ class SigaaBase {
               responseViewState = responseViewStateEl.val()
             }
             if (postValues && postValues['javax.faces.ViewState']) {
-              this._sigaaSession.reactivateCachePageByViewState(postValues['javax.faces.ViewState'])
+              this._sigaaSession.reactivateCachePageByViewState(
+                postValues['javax.faces.ViewState']
+              )
             }
             this._sigaaSession.storePage({
               method: options.method,
@@ -196,7 +205,7 @@ class SigaaBase {
         })
       })
 
-      req.on('error', e => {
+      req.on('error', (e) => {
         const response = {
           status: 'ERROR',
           errorCode: e.code,
@@ -216,12 +225,18 @@ class SigaaBase {
    * @returns {String}
    * @protected
    */
-  _removeTagsHtml (text) {
+  _removeTagsHtml(text) {
     try {
       const removeNbsp = new RegExp(String.fromCharCode(160), 'g')
       const textWithoutBreakLinesHtmlAndTabs = text.replace(/\n|\xA0|\t/gm, ' ')
-      const textWithBreakLines = textWithoutBreakLinesHtmlAndTabs.replace(/<p>|<br\/>|<br>/gm, '\n')
-      const textWithoutHtmlTags = textWithBreakLines.replace(/<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm, '')
+      const textWithBreakLines = textWithoutBreakLinesHtmlAndTabs.replace(
+        /<p>|<br\/>|<br>/gm,
+        '\n'
+      )
+      const textWithoutHtmlTags = textWithBreakLines.replace(
+        /<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
+        ''
+      )
       const textWithHtmlParsed = htmlEntities.decode(textWithoutHtmlTags)
       const textWithoutNbsp = textWithHtmlParsed.replace(removeNbsp, ' ')
       return textWithoutNbsp.replace(/^(\s|\n)*|(\s|\n)*$/gm, '').trim()
@@ -238,10 +253,13 @@ class SigaaBase {
    * @throws {SIGAA_UNEXPECTED_RESPONSE} If page statusCode isn't 200
    * @protected
    */
-  _checkPageStatusCodeAndExpired (page) {
+  _checkPageStatusCodeAndExpired(page) {
     if (page.statusCode === 200) {
       return page
-    } else if (page.statusCode === 302 && page.headers.location.includes('/sigaa/expirada.jsp')) {
+    } else if (
+      page.statusCode === 302 &&
+      page.headers.location.includes('/sigaa/expirada.jsp')
+    ) {
       return new Error(SigaaErrors.SIGAA_SESSION_EXPIRED)
     } else {
       return new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
@@ -258,7 +276,7 @@ class SigaaBase {
    * @param {Function} $ the cheerio context of page
    * @protected
    */
-  _extractJSFCLJS (javaScriptCode, $) {
+  _extractJSFCLJS(javaScriptCode, $) {
     if (javaScriptCode.includes('getElementById')) {
       const formQuery = javaScriptCode.replace(
         /if([\S\s]*?)getElementById\('|'([\S\s]*?)false/gm,
@@ -269,15 +287,15 @@ class SigaaBase {
         throw new Error('FORM_NOT_FOUND')
       }
       const postValuesString =
-      '{' +
-      javaScriptCode
-        .replace(/if([\S\s]*?),{|},([\S\s]*?)false/gm, '')
-        .replace(/'/gm, '"') +
-      '}'
+        '{' +
+        javaScriptCode
+          .replace(/if([\S\s]*?),{|},([\S\s]*?)false/gm, '')
+          .replace(/'/gm, '"') +
+        '}'
       const form = {}
       form.action = new URL(formEl.attr('action'), this._sigaaSession.url).href
       form.postValues = {}
-      formEl.find("input:not([type='submit'])").each(function () {
+      formEl.find("input:not([type='submit'])").each(function() {
         form.postValues[$(this).attr('name')] = $(this).val()
       })
       const postValuesJSFCLJ = JSON.parse(postValuesString)
@@ -295,7 +313,7 @@ class SigaaBase {
    * @async
    * @protected
    */
-  async followAllRedirect (page) {
+  async followAllRedirect(page) {
     while (page.headers.location) {
       page = await this._get(page.headers.location)
     }

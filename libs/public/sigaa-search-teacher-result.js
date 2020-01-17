@@ -3,12 +3,14 @@ const Cheerio = require('cheerio')
 const SigaaBase = require('../common/sigaa-base')
 
 class SigaaSearchTeacherResult extends SigaaBase {
-  constructor (params, sigaaSession) {
+  constructor(params, sigaaSession) {
     super(sigaaSession)
-    if (params.name !== undefined &&
+    if (
+      params.name !== undefined &&
       params.department !== undefined &&
       params.pageURL !== undefined &&
-      params.photoURL !== undefined) {
+      params.photoURL !== undefined
+    ) {
       this._name = params.name
       this._department = params.department
       this._pageURL = params.pageURL
@@ -18,16 +20,27 @@ class SigaaSearchTeacherResult extends SigaaBase {
     }
   }
 
-  async getEmail () {
-    const page = await this._get(this.pageURL)
-      .then(page => this._checkPageStatusCodeAndExpired(page))
+  async getEmail() {
+    const page = await this._get(this.pageURL).then((page) =>
+      this._checkPageStatusCodeAndExpired(page)
+    )
     const $ = Cheerio.load(page.body)
-    const contactElements = $('#contato').children().toArray()
+    const contactElements = $('#contato')
+      .children()
+      .toArray()
     let email
     for (const contactElement of contactElements) {
-      const name = this._removeTagsHtml($(contactElement).find('dt').html())
+      const name = this._removeTagsHtml(
+        $(contactElement)
+          .find('dt')
+          .html()
+      )
       if (name === 'Endereço eletrônico') {
-        email = this._removeTagsHtml($(contactElement).find('dd').html())
+        email = this._removeTagsHtml(
+          $(contactElement)
+            .find('dd')
+            .html()
+        )
         break
       }
     }
@@ -38,19 +51,19 @@ class SigaaSearchTeacherResult extends SigaaBase {
     }
   }
 
-  get name () {
+  get name() {
     return this._name
   }
 
-  get photoURL () {
+  get photoURL() {
     return this._photoURL
   }
 
-  get department () {
+  get department() {
     return this._department
   }
 
-  get pageURL () {
+  get pageURL() {
     return this._pageURL
   }
 }

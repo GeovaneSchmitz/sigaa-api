@@ -1,7 +1,7 @@
 const SigaaBase = require('../common/sigaa-base')
 
 class SigaaHomework extends SigaaBase {
-  constructor (options, homeworkUpdate, sigaaSession) {
+  constructor(options, homeworkUpdate, sigaaSession) {
     super(sigaaSession)
     this.update(options)
     if (homeworkUpdate !== undefined) {
@@ -11,15 +11,17 @@ class SigaaHomework extends SigaaBase {
     }
   }
 
-  get type () {
+  get type() {
     return 'homework'
   }
 
-  update (options) {
-    if (options.title !== undefined &&
+  update(options) {
+    if (
+      options.title !== undefined &&
       options.startDate !== undefined &&
       options.id !== undefined &&
-      options.endDate !== undefined) {
+      options.endDate !== undefined
+    ) {
       this._title = options.title
       this._startDate = options.startDate
       this._endDate = options.endDate
@@ -35,57 +37,55 @@ class SigaaHomework extends SigaaBase {
     }
   }
 
-  get title () {
+  get title() {
     this._checkIfItWasFinalized()
     return this._title
   }
 
-  getHaveGrade () {
-    return new Promise(resolve => {
+  getHaveGrade() {
+    return new Promise((resolve) => {
       if (this._haveGrade !== undefined) {
         resolve(this._haveGrade)
       } else {
-        return this._homeworkUpdate()
-          .then(() => {
-            resolve(this._haveGrade)
-          })
+        return this._homeworkUpdate().then(() => {
+          resolve(this._haveGrade)
+        })
       }
     })
   }
 
-  getDescription () {
-    return new Promise(resolve => {
+  getDescription() {
+    return new Promise((resolve) => {
       if (this._description !== undefined) {
         resolve(this._description)
       } else {
-        return this._homeworkUpdate()
-          .then(() => {
-            resolve(this._description)
-          })
+        return this._homeworkUpdate().then(() => {
+          resolve(this._description)
+        })
       }
     })
   }
 
-  get endDate () {
+  get endDate() {
     this._checkIfItWasFinalized()
     return this._endDate
   }
 
-  get startDate () {
+  get startDate() {
     this._checkIfItWasFinalized()
     return this._startDate
   }
 
-  get id () {
+  get id() {
     this._checkIfItWasFinalized()
     return this._id
   }
 
-  finish () {
+  finish() {
     this._finish = true
   }
 
-  _checkIfItWasFinalized () {
+  _checkIfItWasFinalized() {
     if (this._finish) {
       throw new Error('HOMEWORK_HAS_BEEN_FINISHED')
     }

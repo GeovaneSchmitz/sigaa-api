@@ -4,16 +4,18 @@ const SigaaBase = require('../common/sigaa-base')
 const SigaaSearchTeacherResult = require('./sigaa-search-teacher-result')
 
 class SigaaSearchTeacher extends SigaaBase {
-  async loadSearchPage () {
+  async loadSearchPage() {
     if (!this.searchPage) {
       const page = await this._get('/sigaa/public/docente/busca_docentes.jsf')
       this.$ = Cheerio.load(page.body)
     }
   }
 
-  async getCampusList () {
+  async getCampusList() {
     await this.loadSearchPage()
-    const campusOptionElements = this.$('select#form\\:departamento > option').toArray()
+    const campusOptionElements = this.$(
+      'select#form\\:departamento > option'
+    ).toArray()
     const list = []
     for (const campusOptionElement of campusOptionElements) {
       list.push({
@@ -24,7 +26,7 @@ class SigaaSearchTeacher extends SigaaBase {
     return list
   }
 
-  async search (teacherName, campus) {
+  async search(teacherName, campus) {
     await this.loadSearchPage()
     let campusValue
     if (!campus) {
@@ -35,37 +37,61 @@ class SigaaSearchTeacher extends SigaaBase {
     const formElement = this.$('form[name="form"]')
     const action = formElement.attr('action')
     const postValues = {}
-    const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
+    const inputs = formElement
+      .find("input[name]:not([type='submit'])")
+      .toArray()
     for (const input of inputs) {
       postValues[this.$(input).attr('name')] = this.$(input).val()
     }
     postValues['form:nome'] = teacherName
     postValues['form:departamento'] = campusValue
     postValues['form:buscar'] = 'Buscar'
-    return this._post(action, postValues)
-      .then(page => this._extractSearchResults(page))
+    return this._post(action, postValues).then((page) =>
+      this._extractSearchResults(page)
+    )
   }
 
-  async _extractSearchResults (page) {
+  async _extractSearchResults(page) {
     this.$ = Cheerio.load(page.body)
     const rowElements = this.$('table.listagem > tbody > tr[class]').toArray()
     const results = []
     for (const rowElement of rowElements) {
-      const name = this._removeTagsHtml(this.$(rowElement).find('span.nome').html())
-      const department = this._removeTagsHtml(this.$(rowElement).find('span.departamento').html())
-      const pageHREF = this._removeTagsHtml(this.$(rowElement).find('span.pagina > a').attr('href'))
-      const photoHREF = this._removeTagsHtml(this.$(rowElement).find('img').attr('src'))
+      const name = this._removeTagsHtml(
+        this.$(rowElement)
+          .find('span.nome')
+          .html()
+      )
+      const department = this._removeTagsHtml(
+        this.$(rowElement)
+          .find('span.departamento')
+          .html()
+      )
+      const pageHREF = this._removeTagsHtml(
+        this.$(rowElement)
+          .find('span.pagina > a')
+          .attr('href')
+      )
+      const photoHREF = this._removeTagsHtml(
+        this.$(rowElement)
+          .find('img')
+          .attr('src')
+      )
       const pageURL = new URL(pageHREF, this._sigaaSession.url).href
       let photoURL = new URL(photoHREF, this._sigaaSession.url).href
       if (photoURL.includes('no_picture.png')) {
         photoURL = null
       }
-      results.push(new SigaaSearchTeacherResult({
-        name,
-        department,
-        pageURL,
-        photoURL
-      }, this._sigaaSession))
+      results.push(
+        new SigaaSearchTeacherResult(
+          {
+            name,
+            department,
+            pageURL,
+            photoURL
+          },
+          this._sigaaSession
+        )
+      )
     }
     return results
   }

@@ -1,7 +1,7 @@
 const SigaaBase = require('../common/sigaa-base')
 
 class SigaaSurvey extends SigaaBase {
-  constructor (options, updateAttachment, sigaaSession) {
+  constructor(options, updateAttachment, sigaaSession) {
     super(sigaaSession)
     this.update(options)
     if (updateAttachment !== undefined) {
@@ -11,14 +11,16 @@ class SigaaSurvey extends SigaaBase {
     }
   }
 
-  get type () {
+  get type() {
     return 'survey'
   }
 
-  update (options) {
-    if (options.title !== undefined &&
-            options.description !== undefined &&
-            options.form !== undefined) {
+  update(options) {
+    if (
+      options.title !== undefined &&
+      options.description !== undefined &&
+      options.form !== undefined
+    ) {
       this._title = options.title
       this._description = options.description
       this._form = options.form
@@ -31,26 +33,26 @@ class SigaaSurvey extends SigaaBase {
     }
   }
 
-  get title () {
+  get title() {
     this._checkIfItWasFinalized()
     return this._title
   }
 
-  get description () {
+  get description() {
     this._checkIfItWasFinalized()
     return this._description
   }
 
-  get id () {
+  get id() {
     this._checkIfItWasFinalized()
     return this._form.postValues.id
   }
 
-  finish () {
+  finish() {
     this._finish = true
   }
 
-  _checkIfItWasFinalized () {
+  _checkIfItWasFinalized() {
     if (this._finish) {
       throw new Error('SURVEY_HAS_BEEN_FINISHED')
     }

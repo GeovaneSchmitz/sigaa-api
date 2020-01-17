@@ -2,7 +2,7 @@ const SigaaBase = require('../common/sigaa-base')
 const SigaaSearchTeacher = require('../public/sigaa-search-teacher')
 
 class SigaaSearch extends SigaaBase {
-  teacher () {
+  teacher() {
     return new SigaaSearchTeacher(this._sigaaSession)
   }
 }

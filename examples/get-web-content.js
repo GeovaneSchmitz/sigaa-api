@@ -8,11 +8,12 @@ const sigaa = new Sigaa({
 const username = ''
 const password = ''
 
-sigaa.login(username, password) // return SigaaAccount
-  .then(sigaaAccount => {
+sigaa
+  .login(username, password) // return SigaaAccount
+  .then((sigaaAccount) => {
     return sigaaAccount.getClasses() // this return a array with all current classes
   })
-  .then(classes => {
+  .then((classes) => {
     return (async () => {
       for (const classStudent of classes) {
         console.log(' > ' + classStudent.title)
@@ -23,11 +24,13 @@ sigaa.login(username, password) // return SigaaAccount
           console.log(`\t\ttype: ${webContent.type}`)
           console.log(`\t\tdate: ${date}`)
           console.log(`\t\tid: ${webContent.id}`)
-          console.log(`\t\tgetDescription: ${await webContent.getDescription()}`)
+          console.log(
+            `\t\tgetDescription: ${await webContent.getDescription()}`
+          )
         }
       }
     })()
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err)
   })

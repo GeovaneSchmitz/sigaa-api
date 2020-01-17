@@ -7,12 +7,12 @@ const sigaa = new Sigaa({
 const searchTerm = ''
 
 const searchTeacher = sigaa.search.teacher()
-async function main () {
+async function main() {
   try {
     const campusList = await searchTeacher.getCampusList()
     console.log(campusList)
 
-    const campus = campusList.find(campus => campus.name.includes('FLN')) // search in campus FLN
+    const campus = campusList.find((campus) => campus.name.includes('FLN')) // search in campus FLN
 
     const results = await searchTeacher.search(searchTerm, campus)
 

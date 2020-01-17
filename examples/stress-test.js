@@ -13,21 +13,23 @@ const password = ''
 const BaseDestiny = path.join('.', 'downloads')
 
 // this creates BaseDestiny
-fs.mkdir(BaseDestiny, err => {
+fs.mkdir(BaseDestiny, (err) => {
   if (err && err.code !== 'EEXIST') throw new Error('up')
 })
 
 let account
 
-sigaa.login(username, password) // login
-  .then(sigaaAccount => {
+sigaa
+  .login(username, password) // login
+  .then((sigaaAccount) => {
     account = sigaaAccount
     return account.getClasses(true) // this return a array with all classes
   })
-  .then(classes => {
+  .then((classes) => {
     return (async () => {
       console.log('Loading IDs')
-      for (const classStudent of classes) { // for each class
+      for (const classStudent of classes) {
+        // for each class
         console.log(` > ${classStudent.title} : ${classStudent.id}`)
 
         console.log('Loading Exam Calendar')
@@ -56,19 +58,27 @@ sigaa.login(username, password) // login
           const endDate = topic.endDate.toString()
           console.log(`\tstart:${startDate} end:${endDate}`)
           for (const attachment of topic.attachments) {
-            if (attachment.description) console.log(`\t\tdescription: ${attachment.description}`)
-            if (attachment.getDescription) console.log(`\t\tdescription: ${await attachment.getDescription()}`)
-            if (attachment.getHaveGrade) console.log(`\t\thaveGrade: ${await attachment.getHaveGrade()}`)
+            if (attachment.description)
+              console.log(`\t\tdescription: ${attachment.description}`)
+            if (attachment.getDescription)
+              console.log(
+                `\t\tdescription: ${await attachment.getDescription()}`
+              )
+            if (attachment.getHaveGrade)
+              console.log(`\t\thaveGrade: ${await attachment.getHaveGrade()}`)
             if (attachment.src) console.log(`\t\tsrc: ${attachment.src}`)
             if (attachment.id) console.log(`\t\tid: ${attachment.id}`)
-            if (attachment.startDate) console.log(`\t\tstartDate: ${attachment.startDate.toString()}`)
-            if (attachment.endDate) console.log(`\t\tendDate: ${attachment.endDate.toString()}`)
+            if (attachment.startDate)
+              console.log(`\t\tstartDate: ${attachment.startDate.toString()}`)
+            if (attachment.endDate)
+              console.log(`\t\tendDate: ${attachment.endDate.toString()}`)
           }
         }
         console.log('Loading Files')
         const classFiles = await classStudent.getFiles() // this lists all topics
         console.log('Downloading Files')
-        for (const file of classFiles) { // for each file
+        for (const file of classFiles) {
+          // for each file
           await file.download(BaseDestiny, (bytesDownloaded) => {
             const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB'
             process.stdout.write('Progress: ' + progress + '\r')
@@ -85,7 +95,7 @@ sigaa.login(username, password) // login
   .then(() => {
     return account.logoff()
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err.message)
     console.log(err.stack)
   })

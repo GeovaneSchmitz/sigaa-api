@@ -8,17 +8,18 @@ const sigaa = new Sigaa({
 const username = ''
 const password = ''
 
-sigaa.login(username, password) // return SigaaAccount
-  .then(sigaaAccount => {
+sigaa
+  .login(username, password) // return SigaaAccount
+  .then((sigaaAccount) => {
     return sigaaAccount.getClasses() // this return a array with all current classes
   })
-  .then(classes => {
+  .then((classes) => {
     for (const classStudent of classes) {
       console.log(classStudent.title)
       console.log(classStudent.location)
       console.log(classStudent.scheduleSIGAAnotation)
     }
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err)
   })

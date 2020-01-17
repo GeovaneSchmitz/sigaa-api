@@ -14,12 +14,12 @@ class SigaaAccount extends SigaaBase {
    * @async
    * @throws {SIGAA_UNEXPECTED_RESPONSE}
    */
-  logoff () {
+  logoff() {
     return this._get('/sigaa/logar.do?dispatch=logOff')
-      .then(page => {
+      .then((page) => {
         return this.followAllRedirect(page)
       })
-      .then(page => {
+      .then((page) => {
         if (page.statusCode === 200) {
           this._sigaaSession.finish()
           return true
@@ -33,15 +33,15 @@ class SigaaAccount extends SigaaBase {
    * Save the account/session in object JSON
    * @returns {Object}
    */
-  toJSON () {
+  toJSON() {
     return this._sigaaSession.toJSON()
   }
 
-  get status () {
+  get status() {
     return this._sigaaSession.status
   }
 
-  get userType () {
+  get userType() {
     return this._sigaaSession.userType
   }
 
@@ -55,9 +55,9 @@ class SigaaAccount extends SigaaBase {
    * @throws {SIGAA_WRONG_CREDENTIALS} If current password is not correct
    * @throws {INSUFFICIENT_PASSWORD_COMPLEXITY} If the new password does not have the complexity requirement
    */
-  changePassword (oldPassword, newPassword) {
+  changePassword(oldPassword, newPassword) {
     return this._get('/sigaa/alterar_dados.jsf')
-      .then(page => {
+      .then((page) => {
         return new Promise((resolve, reject) => {
           if (page.statusCode === 302) {
             resolve(page)
@@ -68,10 +68,10 @@ class SigaaAccount extends SigaaBase {
           }
         })
       })
-      .then(page => {
+      .then((page) => {
         return this.followAllRedirect(page)
       })
-      .then(page => {
+      .then((page) => {
         return new Promise((resolve, reject) => {
           if (
             page.statusCode === 200 &&
@@ -79,10 +79,13 @@ class SigaaAccount extends SigaaBase {
           ) {
             const $ = Cheerio.load(page.body)
             const formElement = $('form[name="form"]')
-            const action = new URL(formElement.attr('action'), page.url.href).href
+            const action = new URL(formElement.attr('action'), page.url.href)
+              .href
             const postValues = {}
 
-            const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
+            const inputs = formElement
+              .find("input[name]:not([type='submit'])")
+              .toArray()
             for (const input of inputs) {
               postValues[$(input).attr('name')] = $(input).val()
             }
@@ -93,13 +96,16 @@ class SigaaAccount extends SigaaBase {
           }
         })
       })
-      .then(page => {
+      .then((page) => {
         return new Promise((resolve, reject) => {
           const $ = Cheerio.load(page.body)
           const formElement = $('form[name="form"]')
-          const formAction = new URL(formElement.attr('action'), page.url.href).href
+          const formAction = new URL(formElement.attr('action'), page.url.href)
+            .href
           const postValues = {}
-          const inputs = formElement.find("input[name]:not([type='submit'])").toArray()
+          const inputs = formElement
+            .find("input[name]:not([type='submit'])")
+            .toArray()
           for (const input of inputs) {
             postValues[$(input).attr('name')] = $(input).val()
           }
@@ -110,7 +116,7 @@ class SigaaAccount extends SigaaBase {
           resolve(this._post(formAction, postValues))
         })
       })
-      .then(page => {
+      .then((page) => {
         return new Promise((resolve, reject) => {
           if (page.statusCode === 200) {
             const $ = Cheerio.load(page.body, {

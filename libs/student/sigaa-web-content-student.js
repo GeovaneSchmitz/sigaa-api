@@ -2,7 +2,7 @@ const SigaaBase = require('../common/sigaa-base')
 const Cheerio = require('cheerio')
 
 class SigaaWebcontent extends SigaaBase {
-  constructor (options, updateAttachment, sigaaSession) {
+  constructor(options, updateAttachment, sigaaSession) {
     super(sigaaSession)
     this.update(options)
     if (updateAttachment !== undefined) {
@@ -12,13 +12,12 @@ class SigaaWebcontent extends SigaaBase {
     }
   }
 
-  get type () {
+  get type() {
     return 'webcontent'
   }
 
-  update (options) {
-    if (options.title !== undefined &&
-        options.form !== undefined) {
+  update(options) {
+    if (options.title !== undefined && options.form !== undefined) {
       this._title = options.title
       this._date = options.date
       this._form = options.form
@@ -28,16 +27,16 @@ class SigaaWebcontent extends SigaaBase {
     }
   }
 
-  get date () {
+  get date() {
     return this._date
   }
 
-  get title () {
+  get title() {
     this._checkIfItWasFinalized()
     return this._title
   }
 
-  async getDescription (retry = true) {
+  async getDescription(retry = true) {
     this._checkIfItWasFinalized()
     if (this._description) {
       return this._description
@@ -45,12 +44,19 @@ class SigaaWebcontent extends SigaaBase {
     try {
       const page = await this._post(this._form.action, this._form.postValues)
       if (page.statusCode === 200) {
-        this._sigaaSession.reactivateCachePageByViewState(this._form.postValues['javax.faces.ViewState'])
+        this._sigaaSession.reactivateCachePageByViewState(
+          this._form.postValues['javax.faces.ViewState']
+        )
         const $ = Cheerio.load(page.body, {
           normalizeWhitespace: true
         })
         const rows = $('table.formAva > tr')
-        this._description = this._removeTagsHtml(rows.eq(1).find('td').html())
+        this._description = this._removeTagsHtml(
+          rows
+            .eq(1)
+            .find('td')
+            .html()
+        )
         return this._description
       } else if (page.statusCode === 302) {
         throw new Error('WEBCONTENT_EXPIRED')
@@ -67,16 +73,16 @@ class SigaaWebcontent extends SigaaBase {
     }
   }
 
-  get id () {
+  get id() {
     this._checkIfItWasFinalized()
     return this._form.postValues.id
   }
 
-  finish () {
+  finish() {
     this._finish = true
   }
 
-  _checkIfItWasFinalized () {
+  _checkIfItWasFinalized() {
     if (this._finish) {
       throw new Error('WEBCONTENT_HAS_BEEN_FINISHED')
     }

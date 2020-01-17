@@ -1,12 +1,13 @@
-
 class SigaaTopic {
-  constructor (options) {
-    if (options.title !== undefined &&
+  constructor(options) {
+    if (
+      options.title !== undefined &&
       options.contentText !== undefined &&
       options.attachments !== undefined &&
       options.startDate !== undefined &&
       options.endDate !== undefined &&
-      options.attachments !== undefined) {
+      options.attachments !== undefined
+    ) {
       this._title = options.title
       this._contextText = options.contentText
       this._startDate = options.startDate
@@ -18,36 +19,36 @@ class SigaaTopic {
     }
   }
 
-  get title () {
+  get title() {
     this._checkIfItWasFinalized()
     return this._title
   }
 
-  get contentText () {
+  get contentText() {
     this._checkIfItWasFinalized()
     return this._contextText
   }
 
-  get endDate () {
+  get endDate() {
     this._checkIfItWasFinalized()
     return this._endDate
   }
 
-  get startDate () {
+  get startDate() {
     this._checkIfItWasFinalized()
     return this._startDate
   }
 
-  get attachments () {
+  get attachments() {
     this._checkIfItWasFinalized()
     return this._attachments
   }
 
-  finish () {
+  finish() {
     this._finish = true
   }
 
-  _checkIfItWasFinalized () {
+  _checkIfItWasFinalized() {
     if (this._finish) {
       throw new Error('TOPIC_HAS_BEEN_FINISHED')
     }
