@@ -882,128 +882,142 @@ class SigaaClassStudent extends SigaaBase {
     const page = await this._clickLeftSidebarButton('Participantes')
     const $ = Cheerio.load(page.body)
     const tables = $('table.participantes').toArray()
-    if (tables.length !== 2) {
+    const tablesNames = $('fieldset').toArray()
+    if (tables.length !== tablesNames.length) {
       throw new Error('SIGAA_MEMBERS_PAGE_INVALID')
     }
+    let tableTeacher
+    let tableStudent
+    tablesNames.forEach((value, index) => {
+      const label = this._removeTagsHtml($(value).html())
+      if (label.includes('Professores')) tableTeacher = tables[index]
+      else if (label.includes('Alunos')) tableStudent = tables[index]
+    })
     const teachers = []
-    const teacherElements = $(tables[0])
-      .find('tr')
-      .toArray()
-    for (const teacherElement of teacherElements) {
-      const teacher = {}
-      const informationsString = $(teacherElement)
-        .find('td[valign]')
-        .html()
-      const informations = informationsString.split('<br>').slice(1, -1)
-      for (const information of informations) {
-        const label = this._removeTagsHtml(
-          information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
-        )
-        const informationContent = this._removeTagsHtml(
-          information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
-        )
-        switch (label) {
-          case 'Departamento':
-            teacher.department = informationContent
-            break
-          case 'Formação':
-            teacher.formation = informationContent
-            break
-          case 'Usuário':
-            teacher.username = informationContent
-            break
-          case 'E-mail':
-          case 'E-Mail':
-            teacher.email = informationContent
-            break
-          default:
-            console.log(
-              'WARNING:Teacher information label not recognized:' + label
-            )
-        }
-      }
-      const photoHREF = $(teacherElement)
-        .find('img')
-        .attr('src')
-      const name = this._removeTagsHtml(
-        $(teacherElement)
-          .find('strong > a')
+    if (tableTeacher) {
+      const teacherElements = $(tableTeacher)
+        .find('tr')
+        .toArray()
+      for (const teacherElement of teacherElements) {
+        const teacher = {}
+        const informationsString = $(teacherElement)
+          .find('td[valign]')
           .html()
-      )
-      let photoURL = new URL(photoHREF, page.url.href).href
-      if (photoURL.includes('no_picture.png')) {
-        photoURL = null
+        const informations = informationsString.split('<br>').slice(1, -1)
+        for (const information of informations) {
+          const label = this._removeTagsHtml(
+            information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
+          )
+          const informationContent = this._removeTagsHtml(
+            information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
+          )
+          switch (label) {
+            case 'Departamento':
+              teacher.department = informationContent
+              break
+            case 'Formação':
+              teacher.formation = informationContent
+              break
+            case 'Usuário':
+              teacher.username = informationContent
+              break
+            case 'E-mail':
+            case 'E-Mail':
+              teacher.email = informationContent
+              break
+            default:
+              console.log(
+                'WARNING:Teacher information label not recognized:' + label
+              )
+          }
+        }
+        const photoHREF = $(teacherElement)
+          .find('img')
+          .attr('src')
+        const name = this._removeTagsHtml(
+          $(teacherElement)
+            .find('strong > a')
+            .html()
+        )
+        let photoURL = new URL(photoHREF, page.url.href).href
+        if (photoURL.includes('no_picture.png')) {
+          photoURL = null
+        }
+        teacher.name = name
+        teacher.photoURL = photoURL
+        teachers.push(teacher)
       }
-      teacher.name = name
-      teacher.photoURL = photoURL
-      teachers.push(teacher)
     }
+
     const students = []
-    const studentElements = $(tables[1])
-      .find('tr')
-      .toArray()
-    for (const studentElement of studentElements) {
-      const student = {}
-      const informationsString = $(studentElement)
-        .find('td[valign]')
-        .html()
-      const informations = informationsString.split('<br>').slice(1)
-      for (const information of informations) {
-        const label = this._removeTagsHtml(
-          information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
-        )
-        const informationContent = this._removeTagsHtml(
-          information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
-        )
-        switch (label) {
-          case 'Matrícula': {
-            student.registration = informationContent
-            break
-          }
-          case 'Usuário': {
-            student.username = informationContent
-            break
-          }
-          case 'Curso': {
-            student.course = informationContent
-            break
-          }
-          case 'Data Matrícula': {
-            const informationDateSplited = informationContent.split('-')
-            const year = parseInt(informationDateSplited[2], 10)
-            const month = parseInt(informationDateSplited[1], 10) - 1
-            const day = parseInt(informationDateSplited[0], 10)
-            student.registrationDate = new Date(year, month, day)
-            break
-          }
-          case 'E-mail':
-          case 'E-Mail': {
-            student.email = informationContent
-            break
-          }
-          default: {
-            console.log(
-              'WARNING:Student information label not recognized:' + label
-            )
+    if (tableStudent) {
+      const studentElements = $(tableStudent)
+        .find('tr')
+        .toArray()
+      for (const studentElement of studentElements) {
+        const student = {}
+        const informationsString = $(studentElement)
+          .find('td[valign]')
+          .html()
+        const informations = informationsString.split('<br>').slice(1)
+        for (const information of informations) {
+          const label = this._removeTagsHtml(
+            information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
+          )
+          const informationContent = this._removeTagsHtml(
+            information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
+          )
+          switch (label) {
+            case 'Matrícula': {
+              student.registration = informationContent
+              break
+            }
+            case 'Usuário': {
+              student.username = informationContent
+              break
+            }
+            case 'Curso': {
+              student.course = informationContent
+              break
+            }
+            case 'Data Matrícula': {
+              const informationDateSplited = informationContent.split('-')
+              const year = parseInt(informationDateSplited[2], 10)
+              const month = parseInt(informationDateSplited[1], 10) - 1
+              const day = parseInt(informationDateSplited[0], 10)
+              student.registrationDate = new Date(year, month, day)
+              break
+            }
+            case 'E-mail':
+            case 'E-Mail': {
+              student.email = informationContent
+              break
+            }
+            default: {
+              console.log(
+                'WARNING:Student information label not recognized:' + label
+              )
+            }
           }
         }
+        const photoHREF = $(studentElement)
+          .find('img')
+          .attr('src')
+        const name = this._removeTagsHtml(
+          $(studentElement)
+            .find('strong')
+            .html()
+        )
+        let photoURL = new URL(photoHREF, page.url.href).href
+        if (photoURL.includes('no_picture.png')) {
+          photoURL = null
+        }
+        student.name = name
+        student.photoURL = photoURL
+        students.push(student)
       }
-      const photoHREF = $(studentElement)
-        .find('img')
-        .attr('src')
-      const name = this._removeTagsHtml(
-        $(studentElement)
-          .find('strong')
-          .html()
-      )
-      let photoURL = new URL(photoHREF, page.url.href).href
-      if (photoURL.includes('no_picture.png')) {
-        photoURL = null
-      }
-      student.name = name
-      student.photoURL = photoURL
-      students.push(student)
     }
+
     return {
       teachers,
       students
