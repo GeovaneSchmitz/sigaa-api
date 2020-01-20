@@ -104,11 +104,7 @@ class SigaaLogin extends SigaaBase {
     return this._post(formLoginAction, formLoginPostValues)
       .then((page) => this._extractLogin(page))
       .catch((error) => {
-        if (
-          !retry ||
-          error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS ||
-          error.message === SigaaErrors.SIGAA_UNAVAILABLE_LOGIN
-        ) {
+        if (!retry || error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS) {
           throw error
         } else {
           return this.login(username, password, false)
@@ -121,9 +117,9 @@ class SigaaLogin extends SigaaBase {
       if (page.url.search.includes('?expirada=true')) {
         throw new Error(SigaaErrors.SIGAA_EXPIRED_PAGE)
       } else if (page.body.includes('form-login')) {
-        this._loginPage = Promise.resolve(page)
-        this._loadLoginForm()
         if (page.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
+          this._loginPage = Promise.resolve(page)
+          this._loadLoginForm()
           throw new Error(SigaaErrors.SIGAA_WRONG_CREDENTIALS)
         } else {
           throw new Error(SigaaErrors.SIGAA_UNAVAILABLE_LOGIN)
