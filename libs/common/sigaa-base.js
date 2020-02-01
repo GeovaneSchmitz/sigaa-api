@@ -163,9 +163,11 @@ class SigaaBase {
         page.setEncoding('utf8')
         page.url = link
         if (page.headers['set-cookie']) {
-          const cookies = page.headers['set-cookie']
-          const token = cookies[cookies.length - 1].split(';')[0]
-          this._sigaaSession.setToken(options.hostname, token)
+          const cookies = page.headers['set-cookie'].join(' ')
+          const token = cookies.match(/JSESSIONID=[^;]*/g)
+          if (token) {
+            this._sigaaSession.setToken(options.hostname, token[0])
+          }
         }
         if (Array.isArray(page.headers.location)) {
           page.headers.location = page.headers.location[0]
