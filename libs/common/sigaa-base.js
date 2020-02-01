@@ -5,6 +5,11 @@ const htmlEntities = require('he')
 const SigaaErrors = require('./sigaa-errors')
 const SigaaSession = require('./sigaa-session')
 /**
+ * Varable to request in cascade
+ * @private
+ */
+let isRequestingWithoutCookies = Promise.resolve()
+/**
  * HTTP request and response utility class
  * @class SigaaBase
  * @private
@@ -79,7 +84,7 @@ class SigaaBase {
       if (cachePage) {
         resolve(cachePage)
       } else {
-        resolve(this._request(link, options, postValues, body))
+        resolve(this._requestCascate(link, options, postValues, body))
       }
     })
   }
@@ -142,7 +147,7 @@ class SigaaBase {
       if (cachePage) {
         resolve(cachePage)
       } else {
-        resolve(this._request(link, options))
+        resolve(this._requestCascate(link, options))
       }
     })
   }
@@ -157,7 +162,8 @@ class SigaaBase {
    * @returns {Promise<http.ClientRequest>}
    * @private
    */
-  _request(link, options, postValues, body) {
+  _requestHTTP(link, options, postValues, body) {
+    options.headers.Cookies
     return new Promise((resolve, reject) => {
       const req = https.request(options, (page) => {
         page.setEncoding('utf8')
@@ -220,7 +226,28 @@ class SigaaBase {
       req.end()
     })
   }
-
+  /**
+   * Make request in cascate if needed
+   * @param {URL} link url of request
+   * @param {Object} options http.request options
+   * @param {Object} [postValues] Post values in format, key as field name, and value as field value.
+   * @param {String} [body] body of request
+   * @returns {Promise<http.ClientRequest>}
+   */
+  _requestCascate(link, options, postValues, body) {
+    return new Promise((resolve, reject) => {
+      if (!options.headers.Cookies) {
+        isRequestingWithoutCookies = isRequestingWithoutCookies
+          .then(() => this._requestHTTP(link, options, postValues, body))
+          .then((req) => resolve(req))
+          .catch((err) => reject(err))
+      } else {
+        this._requestHTTP(link, options, postValues, body)
+          .then((req) => resolve(req))
+          .catch((err) => reject(err))
+      }
+    })
+  }
   /**
    * Clears text by removing all HTML tags and fix encoding characters
    * @param {String} text
