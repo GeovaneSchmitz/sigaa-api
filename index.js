@@ -46,11 +46,10 @@ class Sigaa {
       this._sigaaSession.userLoginState !==
       SigaaTypes.userLoginStates.AUTHENTICATED
     ) {
-      await this._sigaaLogin.login(username, password)
+      return this._sigaaLogin.login(username, password)
     } else {
       throw new Error(SigaaErrors.SIGAA_ALREADY_LOGGED_IN)
     }
-    return this.account
   }
 
   get account() {
