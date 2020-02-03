@@ -103,8 +103,8 @@ class SigaaLogin extends SigaaBase {
     this._sigaaSession.formLoginPostValues = null
     try {
       const page = await this._post(formLoginAction, formLoginPostValues)
-      return this._extractLogin(page)
-    } catch (err) {
+      return await this._extractLogin(page)
+    } catch (error) {
       if (!retry || error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS) {
         throw error
       } else {

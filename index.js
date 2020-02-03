@@ -39,6 +39,7 @@ class Sigaa {
    * User authentication
    * @param {String} username
    * @param {String} password
+   * @async
    * @returns {Promise<SigaaAccountStudent>}
    */
   async login(username, password) {
@@ -46,10 +47,11 @@ class Sigaa {
       this._sigaaSession.userLoginState !==
       SigaaTypes.userLoginStates.AUTHENTICATED
     ) {
-      return this._sigaaLogin.login(username, password)
+      await this._sigaaLogin.login(username, password)
     } else {
       throw new Error(SigaaErrors.SIGAA_ALREADY_LOGGED_IN)
     }
+    return this.account
   }
 
   get account() {
