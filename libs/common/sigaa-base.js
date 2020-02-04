@@ -8,7 +8,7 @@ const SigaaSession = require('./sigaa-session')
  * Varable to request in cascade
  * @private
  */
-let isRequestingWithoutCookies = Promise.resolve()
+let requestChainWithoutCookies = { promise: Promise.resolve(), length: 0 }
 /**
  * HTTP request and response utility class
  * @class SigaaBase
@@ -61,30 +61,38 @@ class SigaaBase {
    * @async
    * @param {String} path The path of request or full URL
    * @param {Object} postValues Post values in format, key as field name, and value as field value.
-   * @param {Object} [params]
-   * @param {boolean} [params.noCache] If can retrieve from cache
+   * @param {Object} [options]
+   * @param {boolean} [options.noCache] If can retrieve from cache
    * @returns {Promise<Object>}
    * @protected
    */
-  _post(path, postValues, params) {
+  _post(path, postValues, options = {}) {
     const link = new URL(path, this._sigaaSession.url)
-    const options = this._makeRequestBasicOptions('POST', link)
+    const httpOptions = this._makeRequestBasicOptions('POST', link)
     const body = querystring.stringify(postValues)
-    options.headers['Content-Length'] = Buffer.byteLength(body)
+    httpOptions.headers['Content-Length'] = Buffer.byteLength(body)
     return new Promise((resolve, reject) => {
       let cachePage = null
-      if (!(params && params.noCache === true)) {
-        cachePage = this._sigaaSession.getPage(
-          'POST',
-          link.href,
-          options.headers,
+      if (!(options && options.noCache === true)) {
+        cachePage = this._sigaaSession.getPage({
+          method: 'POST',
+          url: link.href,
+          requestHeaders: httpOptions.headers,
           postValues
-        )
+        })
       }
       if (cachePage) {
         resolve(cachePage)
       } else {
-        resolve(this._requestCascate(link, options, postValues, body))
+        resolve(
+          this._sigaaSession.postRequestChain({
+            url: link,
+            body: body,
+            shareSameRequest: options.shareSameRequest,
+            requestPromiseFunction: () =>
+              this._requestChain(link, httpOptions, postValues, body)
+          })
+        )
       }
     })
   }
@@ -125,29 +133,34 @@ class SigaaBase {
    * Make a GET request
    * @async
    * @param {String} path The path of request or full URL
-   * @param {Object} [params]
-   * @param {boolean} [params.noCache] If can retrieve from cache
+   * @param {Object} [options]
+   * @param {boolean} [options.noCache] If can retrieve from cache
    * @returns {Promise<Object>}
    * @protected
    */
-  _get(path, params) {
+  _get(path, options) {
     const link = new URL(path, this._sigaaSession.url)
 
-    const options = this._makeRequestBasicOptions('GET', link)
+    const httpOptions = this._makeRequestBasicOptions('GET', link)
 
     return new Promise((resolve) => {
       let cachePage = null
-      if (!(params && params.noCache === true)) {
-        cachePage = this._sigaaSession.getPage(
-          'GET',
-          link.href,
-          options.headers
-        )
+      if (!(options && options.noCache === true)) {
+        cachePage = this._sigaaSession.getPage({
+          method: 'GET',
+          url: link.href,
+          requestHeaders: httpOptions.headers
+        })
       }
       if (cachePage) {
         resolve(cachePage)
       } else {
-        resolve(this._requestCascate(link, options))
+        resolve(
+          this._sigaaSession.storeRunningGetRequest({
+            path: link,
+            requestPromiseFunction: () => this._requestChain(link, httpOptions)
+          })
+        )
       }
     })
   }
@@ -227,24 +240,30 @@ class SigaaBase {
     })
   }
   /**
-   * Make request in cascate if needed
+   * Promise chain request if needed
    * @param {URL} link url of request
    * @param {Object} options http.request options
    * @param {Object} [postValues] Post values in format, key as field name, and value as field value.
    * @param {String} [body] body of request
    * @returns {Promise<http.ClientRequest>}
    */
-  _requestCascate(link, options, postValues, body) {
+  _requestChain(link, options, postValues, body) {
     return new Promise((resolve, reject) => {
-      if (!options.headers.Cookies) {
-        isRequestingWithoutCookies = isRequestingWithoutCookies
+      if (!options.headers.Cookie) {
+        requestChainWithoutCookies.length++
+        const cascadeLength = requestChainWithoutCookies.length
+        requestChainWithoutCookies.promise = requestChainWithoutCookies.promise
           .then(() => this._requestHTTP(link, options, postValues, body))
           .then((req) => resolve(req))
           .catch((err) => reject(err))
+          .finally(() => {
+            if (requestChainWithoutCookies.length === cascadeLength) {
+              requestChainWithoutCookies.promise = Promise.resolve()
+              requestChainWithoutCookies.length = 0
+            }
+          })
       } else {
-        this._requestHTTP(link, options, postValues, body)
-          .then((req) => resolve(req))
-          .catch((err) => reject(err))
+        resolve(this._requestHTTP(link, options, postValues, body))
       }
     })
   }

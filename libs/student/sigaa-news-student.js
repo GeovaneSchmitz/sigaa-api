@@ -2,9 +2,9 @@ const SigaaBase = require('../common/sigaa-base')
 const Cheerio = require('cheerio')
 
 class SigaaNews extends SigaaBase {
-  constructor(newsParams, newsUpdate, sigaaSession) {
+  constructor(newsOptions, newsUpdate, sigaaSession) {
     super(sigaaSession)
-    this.update(newsParams)
+    this.update(newsOptions)
     if (newsUpdate !== undefined) {
       this._callUpdate = newsUpdate
     } else {
@@ -12,10 +12,10 @@ class SigaaNews extends SigaaBase {
     }
   }
 
-  update(newsParams) {
-    if (newsParams.title !== undefined && newsParams.form !== undefined) {
-      this._title = newsParams.title
-      this._form = newsParams.form
+  update(newsOptions) {
+    if (newsOptions.title !== undefined && newsOptions.form !== undefined) {
+      this._title = newsOptions.title
+      this._form = newsOptions.form
     } else {
       throw new Error('INVALID_NEWS_OPTIONS')
     }

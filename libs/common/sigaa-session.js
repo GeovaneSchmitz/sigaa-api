@@ -11,6 +11,17 @@ class SigaaSession {
      * @private
      */
     this._cachePages = []
+    /**
+     * Running GET requests, to avoid duplicate requests at the same time
+     * @private
+     */
+    this._runningGetRequest = {}
+    /**
+     * Stores the execution of POST requests, to avoid POST requests at the same time and to create cascading requests
+     * @private
+     */
+    this._chainPostRequests = []
+
     this.timeoutCache = 5 * 60 * 1000 // 5min
     /**
      * @private
@@ -225,7 +236,68 @@ class SigaaSession {
       throw new Error(SigaaErrors.SIGAA_INVALID_JSON_OBJECT)
     }
   }
-
+  /**
+   * Create a request promise chain to reduce the request race condition
+   * @param {function<Promise>} options.requestPromiseFunction function that returns a request promise
+   * @param {String} options.body request Body
+   * @param {String} options.shareSameRequest If you can only request once, return the same promise for same request (same body and same URL)
+   * @param {URL} options.url request url
+   */
+  postRequestChain(options = {}) {
+    const { requestPromiseFunction, body, url, shareSameRequest } = options
+    if (shareSameRequest) {
+      const runningPostRequest = this._chainPostRequests.find((request) => {
+        return request.body === body && url.href === request.url
+      })
+      if (runningPostRequest) {
+        return runningPostRequest.promise
+      }
+    }
+    const promises = this._chainPostRequests.map((request) => request.promise)
+    const promise = Promise.all(promises).then(
+      () => requestPromiseFunction(),
+      () => requestPromiseFunction()
+    )
+    this._storePostRequest(promise, { body, url })
+    return promise
+  }
+  /**
+   *
+   * @param {String} {key} key of cascade
+   * @param {Promise} {promise} to store
+   */
+  _storePostRequest(promise, { body, url }) {
+    const index = this._chainPostRequests.length
+    this._chainPostRequests.push({
+      promise,
+      body,
+      url: url.href
+    })
+    promise.finally(() => {
+      this._chainPostRequests.splice(index, 1)
+    })
+  }
+  /**
+   * Store running GET requests, to avoid duplicate requests at the same time
+   * @param {URL} link Link of request
+   * @param {function<Promise>} requestPromiseFunction function that returns a request promise
+   */
+  storeRunningGetRequest({ path, requestPromiseFunction }) {
+    if (this._runningGetRequest[path.href]) {
+      return this._runningGetRequest[path.href]
+    } else {
+      this._runningGetRequest[path.href] = requestPromiseFunction()
+        .then((page) => {
+          delete this._runningGetRequest[path.href]
+          return page
+        })
+        .catch((error) => {
+          delete this._runningGetRequest[path.href]
+          throw error
+        })
+    }
+    return this._runningGetRequest[path.href]
+  }
   /**
    * @description flush states of instance
    */
@@ -325,12 +397,13 @@ class SigaaSession {
 
   /**
    * Get Page from cache
-   * @param {('POST'|'GET')} method Method of request
-   * @param {URL} url URL of request
-   * @param {Object} requestHeaders requestHeaders in format, key as field name, and value as field value.
-   * @param {Object} [postValues] Page post values in format, key as field name, and value as field value.
+   * @param {Object} options
+   * @param {('POST'|'GET')} options.method Method of request
+   * @param {URL} options.url URL of request
+   * @param {Object} options.requestHeaders requestHeaders in format, key as field name, and value as field value.
+   * @param {Object} [options.postValues] Page post values in format, key as field name, and value as field value.
    */
-  getPage(method, url, requestHeaders, postValues) {
+  getPage({ method, url, requestHeaders, postValues }) {
     const cachePage = this._cachePages.find((cachePage) => {
       if (method === 'GET') {
         return (

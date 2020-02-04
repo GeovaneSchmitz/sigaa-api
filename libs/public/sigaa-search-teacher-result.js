@@ -3,18 +3,18 @@ const Cheerio = require('cheerio')
 const SigaaBase = require('../common/sigaa-base')
 
 class SigaaSearchTeacherResult extends SigaaBase {
-  constructor(params, sigaaSession) {
+  constructor(options, sigaaSession) {
     super(sigaaSession)
     if (
-      params.name !== undefined &&
-      params.department !== undefined &&
-      params.pageURL !== undefined &&
-      params.photoURL !== undefined
+      options.name !== undefined &&
+      options.department !== undefined &&
+      options.pageURL !== undefined &&
+      options.photoURL !== undefined
     ) {
-      this._name = params.name
-      this._department = params.department
-      this._pageURL = params.pageURL
-      this._photoURL = params.photoURL
+      this._name = options.name
+      this._department = options.department
+      this._pageURL = options.pageURL
+      this._photoURL = options.photoURL
     } else {
       throw new Error('INVALID_TEACHER_OPTIONS')
     }

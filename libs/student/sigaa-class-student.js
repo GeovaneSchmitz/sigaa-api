@@ -11,33 +11,33 @@ const SigaaSurvey = require('./sigaa-survey-student')
 const SigaaWebContent = require('./sigaa-web-content-student')
 
 class SigaaClassStudent extends SigaaBase {
-  constructor(params, sigaaSession) {
+  constructor(options, sigaaSession) {
     super(sigaaSession)
     if (
-      params.title !== undefined &&
-      params.id !== undefined &&
-      params.form !== undefined
+      options.title !== undefined &&
+      options.id !== undefined &&
+      options.form !== undefined
     ) {
-      this._title = params.title
-      this._id = params.id
-      this._form = params.form
+      this._title = options.title
+      this._id = options.id
+      this._form = options.form
     } else {
       throw new Error('CLASS_MISSING_PARAMETERS')
     }
-    if (params.location) {
-      this._location = params.location
+    if (options.location) {
+      this._location = options.location
     }
-    if (params.schedule) {
-      this._schedule = params.schedule
+    if (options.schedule) {
+      this._schedule = options.schedule
     }
-    if (params.abbreviation) {
-      this._abbreviation = params.abbreviation
+    if (options.abbreviation) {
+      this._abbreviation = options.abbreviation
     }
-    if (params.numberOfStudents) {
-      this._numberOfStudents = params.numberOfStudents
+    if (options.numberOfStudents) {
+      this._numberOfStudents = options.numberOfStudents
     }
-    if (params.period) {
-      this._period = params.period
+    if (options.period) {
+      this._period = options.period
     }
     this._topics = []
     this._news = []
@@ -78,61 +78,44 @@ class SigaaClassStudent extends SigaaBase {
     return this._numberOfStudents
   }
 
-  _requestClassPageUsingId() {
-    return this._get('/sigaa/portais/discente/turmas.jsf').then(
-      (page) =>
-        new Promise((resolve, reject) => {
-          if (page.statusCode === 200) {
-            const $ = Cheerio.load(page.body)
-            const table = $('listagem')
-            let currentPeriod
-            for (const rowElement of table.find('tbody > tr').toArray()) {
-              const cellElements = $(rowElement).find('td')
-              if (cellElements.first().hasClass('periodo')) {
-                currentPeriod = this._removeTagsHtml(cellElements.eq(0).html())
-              } else if (currentPeriod) {
-                const JSFCLJSCode = cellElements
-                  .eq(5)
-                  .find('a[onclick]')
-                  .attr('onclick')
-                const form = this._extractJSFCLJS(JSFCLJSCode, $)
-                const id = form.postValues['idTurma']
-                if (id === this.id) {
-                  const fullname = this._removeTagsHtml(
-                    cellElements.first().html()
-                  )
-                  this._name = fullname.slice(fullname.indexOf(' - ') + 3)
-                  this._abbreviation = fullname.slice(
-                    0,
-                    fullname.indexOf(' - ')
-                  )
-                  this._numberOfStudents = this._removeTagsHtml(
-                    cellElements.eq(2).html()
-                  )
-                  this._schedule = this._removeTagsHtml(
-                    cellElements.eq(4).html()
-                  )
-                  this._form = form
-                  resolve(this._requestClassPageUsingForm())
-                  break
-                }
-              }
-            }
-            reject(new Error('CLASS_NOT_FOUND'))
-          } else if (
-            page.statusCode === 302 &&
-            page.headers.location.includes('/sigaa/expirada.jsp')
-          ) {
-            reject(new Error('ACCOUNT_SESSION_EXPIRED'))
-          } else {
-            reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
-          }
-        })
-    )
+  async _requestClassPageUsingId() {
+    const page = await this._get('/sigaa/portais/discente/turmas.jsf')
+    if (page.statusCode === 200) {
+      const $ = Cheerio.load(page.body, {
+        normalizeWhitespace: true
+      })
+      const table = $('.listagem')
+      if (table.length === 0) {
+        throw new Error('CLASS_NOT_FOUND')
+      }
+      const rows = table.find('tbody > tr').toArray()
+      const foundClass = rows.some((row) => {
+        const cellElements = $(row).find('td')
+        if (cellElements.eq(0).hasClass('periodo')) return false
+        const buttonClassPage = cellElements.eq(5).find('a[onclick]')
+        const form = this._extractJSFCLJS(buttonClassPage.attr('onclick'), $)
+        if (form.postValues.idTurma === this._form.postValues.idTurma) {
+          this._form = form
+          return true
+        }
+      })
+      if (!foundClass) {
+        throw new Error('CLASS_NOT_FOUND')
+      }
+      return this._requestClassPageUsingForm()
+    } else if (
+      page.statusCode === 302 &&
+      page.headers.location.includes('/sigaa/expirada.jsp')
+    ) {
+      throw new Error('ACCOUNT_SESSION_EXPIRED')
+    } else {
+      throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
+    }
   }
-
   _requestClassPageUsingForm() {
-    return this._post(this._form.action, this._form.postValues).then(
+    return this._post(this._form.action, this._form.postValues, {
+      shareSameRequest: true
+    }).then(
       (page) =>
         new Promise((resolve, reject) => {
           if (page.statusCode === 200) {
@@ -148,9 +131,9 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   _requestClassPage() {
-    return this._requestClassPageUsingForm().catch(() => {
-      return this._requestClassPageUsingId()
-    })
+    return this._requestClassPageUsingForm().catch(() =>
+      this._requestClassPageUsingId()
+    )
   }
 
   getTopics() {
@@ -227,7 +210,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   getFiles() {
-    return this._clickLeftSidebarButton('Arquivos').then((page) => {
+    return this._getClassSubMenu('Arquivos').then((page) => {
       return new Promise((resolve, reject) => {
         const $ = Cheerio.load(page.body)
 
@@ -480,7 +463,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   getNews() {
-    return this._clickLeftSidebarButton('Notícias').then((page) => {
+    return this._getClassSubMenu('Notícias').then((page) => {
       return new Promise((resolve, reject) => {
         const $ = Cheerio.load(page.body)
 
@@ -550,7 +533,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   getAbsence() {
-    return this._clickLeftSidebarButton('Frequência').then(
+    return this._getClassSubMenu('Frequência').then(
       (page) =>
         new Promise((resolve, reject) => {
           const $ = Cheerio.load(page.body)
@@ -592,27 +575,22 @@ class SigaaClassStudent extends SigaaBase {
     )
   }
 
-  _clickLeftSidebarButton(buttonLabel) {
-    return this._requestClassPage()
-      .then(
-        (page) =>
-          new Promise((resolve, reject) => {
-            const $ = Cheerio.load(page.body)
-            const getBtnEl = $('div.itemMenu')
-              .toArray()
-              .find((buttonEl) => {
-                return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
-              })
-            const form = this._extractJSFCLJS(
-              $(getBtnEl)
-                .parent()
-                .attr('onclick'),
-              $
-            )
-            resolve(this._post(form.action, form.postValues))
-          })
-      )
-      .then((page) => this._checkPageStatusCodeAndExpired(page))
+  async _getClassSubMenu(buttonLabel) {
+    const classPage = await this._requestClassPage()
+    const $ = Cheerio.load(classPage.body)
+    const getBtnEl = $('div.itemMenu')
+      .toArray()
+      .find((buttonEl) => {
+        return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
+      })
+    const form = this._extractJSFCLJS(
+      $(getBtnEl)
+        .parent()
+        .attr('onclick'),
+      $
+    )
+    const menuPage = await this._post(form.action, form.postValues)
+    return this._checkPageStatusCodeAndExpired(menuPage)
   }
 
   async _getRightSidebarCard($, cardTitle) {
@@ -670,7 +648,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getQuizzes() {
-    const page = await this._clickLeftSidebarButton('Questionários')
+    const page = await this._getClassSubMenu('Questionários')
     return new Promise((resolve, reject) => {
       const $ = Cheerio.load(page.body)
 
@@ -736,7 +714,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getWebContents() {
-    const page = await this._clickLeftSidebarButton('Conteúdo/Página web')
+    const page = await this._getClassSubMenu('Conteúdo/Página web')
     return new Promise((resolve, reject) => {
       const $ = Cheerio.load(page.body)
 
@@ -789,7 +767,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getHomeworks() {
-    return this._clickLeftSidebarButton('Tarefas').then((page) => {
+    return this._getClassSubMenu('Tarefas').then((page) => {
       return new Promise((resolve, reject) => {
         const $ = Cheerio.load(page.body)
 
@@ -879,7 +857,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getMembers() {
-    const page = await this._clickLeftSidebarButton('Participantes')
+    const page = await this._getClassSubMenu('Participantes')
     const $ = Cheerio.load(page.body)
     const tables = $('table.participantes').toArray()
     const tablesNames = $('fieldset').toArray()
@@ -1024,114 +1002,98 @@ class SigaaClassStudent extends SigaaBase {
     }
   }
 
-  getGrades() {
-    return this._clickLeftSidebarButton('Ver Notas').then((page) => {
-      return new Promise((resolve, reject) => {
-        const getPositionByCellColSpan = ($, ths, cell) => {
-          let i = 0
-          for (const tr of ths.toArray()) {
-            if (cell === tr) {
-              return i
-            }
-            i += parseInt($(tr).attr('colspan') || 1, 10)
-          }
-          return false
+  async getGrades() {
+    const page = await this._getClassSubMenu('Ver Notas')
+    const getPositionByCellColSpan = ($, ths, cell) => {
+      let i = 0
+      for (const tr of ths.toArray()) {
+        if (cell === tr) {
+          return i
         }
+        i += parseInt($(tr).attr('colspan') || 1, 10)
+      }
+      return false
+    }
 
-        const removeCellsWithName = ['', 'Matrícula', 'Nome', 'Sit.', 'Faltas']
+    const removeCellsWithName = ['', 'Matrícula', 'Nome', 'Sit.', 'Faltas']
 
-        const $ = Cheerio.load(page.body)
+    const $ = Cheerio.load(page.body)
 
-        const table = $('table.tabelaRelatorio')
-        if (table.length !== 1) {
-          throw new Error('SIGAA_INVALID_RESPONSE')
+    const table = $('table.tabelaRelatorio')
+    if (table.length !== 1) {
+      throw new Error('SIGAA_INVALID_RESPONSE')
+    }
+
+    const theadTrs = $('thead tr').toArray()
+    const valueCells = $(table)
+      .find('tbody tr')
+      .children()
+    if (valueCells.length === 0) {
+      throw new Error('SIGAA_INVALID_RESPONSE')
+    }
+    const grades = []
+
+    const theadElements = []
+    for (const theadTr of theadTrs) {
+      theadElements.push($(theadTr).find('th'))
+    }
+
+    for (let i = 0; i < theadElements[0].length; i++) {
+      const gradeGroupName = this._removeTagsHtml(theadElements[0].eq(i).html())
+      if (removeCellsWithName.indexOf(gradeGroupName) === -1) {
+        const gradeGroup = {
+          name: gradeGroupName
         }
-
-        const theadTrs = $('thead tr').toArray()
-        const valueCells = $(table)
-          .find('tbody tr')
-          .children()
-        if (valueCells.length === 0) {
-          throw new Error('SIGAA_INVALID_RESPONSE')
-        }
-        const grades = []
-
-        const theadElements = []
-        for (const theadTr of theadTrs) {
-          theadElements.push($(theadTr).find('th'))
-        }
-
-        for (let i = 0; i < theadElements[0].length; i++) {
-          const gradeGroupName = this._removeTagsHtml(
-            theadElements[0].eq(i).html()
+        const index = getPositionByCellColSpan(
+          $,
+          theadElements[0],
+          theadElements[0][i]
+        )
+        const theadElementColspan = parseInt(
+          theadElements[0].eq(i).attr('colspan') || 1,
+          10
+        )
+        if (theadElementColspan === 1) {
+          let value = parseFloat(
+            this._removeTagsHtml(valueCells.eq(index).html()).replace(/,/g, '.')
           )
-          if (removeCellsWithName.indexOf(gradeGroupName) === -1) {
-            const gradeGroup = {
-              name: gradeGroupName
-            }
-            const index = getPositionByCellColSpan(
-              $,
-              theadElements[0],
-              theadElements[0][i]
-            )
-            const theadElementColspan = parseInt(
-              theadElements[0].eq(i).attr('colspan') || 1,
-              10
-            )
-            if (theadElementColspan === 1) {
+          if (!value) value = null
+          gradeGroup.value = value
+        } else {
+          gradeGroup.grades = []
+          for (let j = index; j < index + theadElementColspan; j++) {
+            const gradeId = theadElements[1]
+              .eq(j)
+              .attr('id')
+              .slice(5)
+
+            if (gradeId !== '') {
+              const gradeName = $(`input#denAval_${gradeId}`).val()
+              const gradeAbbreviation = $(`input#abrevAval_${gradeId}`).val()
+              const gradeWeight = $(`input#pesoAval_${gradeId}`).val()
               let value = parseFloat(
-                this._removeTagsHtml(valueCells.eq(index).html()).replace(
-                  /,/g,
-                  '.'
-                )
+                this._removeTagsHtml(valueCells.eq(j).html()).replace(/,/g, '.')
               )
               if (!value) value = null
-              gradeGroup.value = value
+              gradeGroup.grades.push({
+                name: gradeName,
+                abbreviation: gradeAbbreviation,
+                weight: gradeWeight,
+                value
+              })
             } else {
-              gradeGroup.grades = []
-              for (let j = index; j < index + theadElementColspan; j++) {
-                const gradeId = theadElements[1]
-                  .eq(j)
-                  .attr('id')
-                  .slice(5)
-
-                if (gradeId !== '') {
-                  const gradeName = $(`input#denAval_${gradeId}`).val()
-                  const gradeAbbreviation = $(
-                    `input#abrevAval_${gradeId}`
-                  ).val()
-                  const gradeWeight = $(`input#pesoAval_${gradeId}`).val()
-                  let value = parseFloat(
-                    this._removeTagsHtml(valueCells.eq(j).html()).replace(
-                      /,/g,
-                      '.'
-                    )
-                  )
-                  if (!value) value = null
-                  gradeGroup.grades.push({
-                    name: gradeName,
-                    abbreviation: gradeAbbreviation,
-                    weight: gradeWeight,
-                    value
-                  })
-                } else {
-                  let average = parseFloat(
-                    this._removeTagsHtml(valueCells.eq(j).html()).replace(
-                      /,/g,
-                      '.'
-                    )
-                  )
-                  if (!average) average = null
-                  gradeGroup.average = average
-                }
-              }
+              let average = parseFloat(
+                this._removeTagsHtml(valueCells.eq(j).html()).replace(/,/g, '.')
+              )
+              if (!average) average = null
+              gradeGroup.average = average
             }
-            grades.push(gradeGroup)
           }
         }
-        resolve(grades)
-      })
-    })
+        grades.push(gradeGroup)
+      }
+    }
+    return grades
   }
 }
 

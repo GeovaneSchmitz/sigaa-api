@@ -9,16 +9,16 @@ const SigaaTypes = require('./libs/common/sigaa-types')
  * @class Sigaa
  */
 class Sigaa {
-  constructor(params) {
-    if (params) {
-      if (params.sessionJSON) {
+  constructor(options) {
+    if (options) {
+      if (options.sessionJSON) {
         this._sigaaSession = new SigaaSession()
-        this._sigaaSession.parseJSON(params.sessionJSON)
+        this._sigaaSession.parseJSON(options.sessionJSON)
         this._sigaaLogin = new SigaaLogin(this._sigaaSession)
-      } else if (params.url) {
+      } else if (options.url) {
         this._sigaaSession = new SigaaSession()
         this._sigaaLogin = new SigaaLogin(this._sigaaSession)
-        this._sigaaSession.url = params.url
+        this._sigaaSession.url = options.url
       } else {
         throw new Error('SIGAA_URL_IS_NECESSARY')
       }
