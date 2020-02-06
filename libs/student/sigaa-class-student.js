@@ -982,7 +982,7 @@ class SigaaClassStudent extends SigaaBase {
             }
           }
           const photoHREF = $(row)
-            .find('img')
+            .find('td[width="47"] img')
             .eq(column)
             .attr('src')
           const name = this._removeTagsHtml(
