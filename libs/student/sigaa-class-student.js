@@ -929,70 +929,76 @@ class SigaaClassStudent extends SigaaBase {
 
     const students = []
     if (tableStudent) {
-      const studentElements = $(tableStudent)
+      const rows = $(tableStudent)
         .find('tr')
         .toArray()
-      for (const studentElement of studentElements) {
-        const student = {}
-        const informationsString = $(studentElement)
-          .find('td[valign]')
-          .html()
-        const informations = informationsString.split('<br>').slice(1)
-        for (const information of informations) {
-          const label = this._removeTagsHtml(
-            information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
-          )
-          const informationContent = this._removeTagsHtml(
-            information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
-          )
-          switch (label) {
-            case 'Matrícula': {
-              student.registration = informationContent
-              break
-            }
-            case 'Usuário': {
-              student.username = informationContent
-              break
-            }
-            case 'Curso': {
-              student.course = informationContent
-              break
-            }
-            case 'Data Matrícula': {
-              const informationDateSplited = informationContent.split('-')
-              const year = parseInt(informationDateSplited[2], 10)
-              const month = parseInt(informationDateSplited[1], 10) - 1
-              const day = parseInt(informationDateSplited[0], 10)
-              student.registrationDate = new Date(year, month, day)
-              break
-            }
-            case 'E-mail':
-            case 'E-Mail': {
-              student.email = informationContent
-              break
-            }
-            default: {
-              console.log(
-                'WARNING:Student information label not recognized:' + label
-              )
+      for (const row of rows) {
+        const numberOfColumn = $(row).find('td[valign]').length
+        for (let column = 0; column < numberOfColumn; column++) {
+          const student = {}
+          const informationsString = $(row)
+            .find('td[valign]')
+            .eq(column)
+            .html()
+          const informations = informationsString.split('<br>').slice(1)
+          for (const information of informations) {
+            const label = this._removeTagsHtml(
+              information.match(/^[\s\S]*?(?=:[\s]*?<em>)/g)[0]
+            )
+            const informationContent = this._removeTagsHtml(
+              information.match(/(?=<em>)[\s\S]*?(?=<\/em>)/g)[0]
+            )
+            switch (label) {
+              case 'Matrícula': {
+                student.registration = informationContent
+                break
+              }
+              case 'Usuário': {
+                student.username = informationContent
+                break
+              }
+              case 'Curso': {
+                student.course = informationContent
+                break
+              }
+              case 'Data Matrícula': {
+                const informationDateSplited = informationContent.split('-')
+                const year = parseInt(informationDateSplited[2], 10)
+                const month = parseInt(informationDateSplited[1], 10) - 1
+                const day = parseInt(informationDateSplited[0], 10)
+                student.registrationDate = new Date(year, month, day)
+                break
+              }
+              case 'E-mail':
+              case 'E-Mail': {
+                student.email = informationContent
+                break
+              }
+              default: {
+                console.log(
+                  'WARNING:Student information label not recognized:' + label
+                )
+              }
             }
           }
+          const photoHREF = $(row)
+            .find('img')
+            .eq(column)
+            .attr('src')
+          const name = this._removeTagsHtml(
+            $(row)
+              .find('strong')
+              .eq(column)
+              .html()
+          )
+          let photoURL = new URL(photoHREF, page.url.href).href
+          if (photoURL.includes('no_picture.png')) {
+            photoURL = null
+          }
+          student.name = name
+          student.photoURL = photoURL
+          students.push(student)
         }
-        const photoHREF = $(studentElement)
-          .find('img')
-          .attr('src')
-        const name = this._removeTagsHtml(
-          $(studentElement)
-            .find('strong')
-            .html()
-        )
-        let photoURL = new URL(photoHREF, page.url.href).href
-        if (photoURL.includes('no_picture.png')) {
-          photoURL = null
-        }
-        student.name = name
-        student.photoURL = photoURL
-        students.push(student)
       }
     }
 
