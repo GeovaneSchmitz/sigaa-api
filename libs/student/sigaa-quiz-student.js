@@ -59,11 +59,6 @@ class SigaaQuiz extends SigaaBase {
         ).then((page) => {
           switch (page.statusCode) {
             case 200:
-              this._sigaaSession.reactivateCachePageByViewState(
-                this._formViewAnswersSubmitted.postValues[
-                  'javax.faces.ViewState'
-                ]
-              )
               if (
                 page.body.includes(
                   'Acabou o prazo para visualizar as respostas.'

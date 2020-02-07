@@ -93,7 +93,7 @@ class SigaaClassStudent extends SigaaBase {
         const cellElements = $(row).find('td')
         if (cellElements.eq(0).hasClass('periodo')) return false
         const buttonClassPage = cellElements.eq(5).find('a[onclick]')
-        const form = this._extractJSFCLJS(buttonClassPage.attr('onclick'), $)
+        const form = this._parseJSFCLJS(buttonClassPage.attr('onclick'), $)
         if (form.postValues.idTurma === this._form.postValues.idTurma) {
           this._form = form
           return true
@@ -201,7 +201,7 @@ class SigaaClassStudent extends SigaaBase {
         topicContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
       )
     )
-    topic.attachments = this._extractAttachmentsFromTopic(
+    topic.attachments = this._parseAttachmentsFromTopic(
       $,
       topicContentElement,
       page
@@ -225,7 +225,7 @@ class SigaaClassStudent extends SigaaBase {
           const description = this._removeTagsHtml(cells.eq(1).html())
 
           const buttonElement = cells.eq(3).find('a[onclick]')
-          const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
+          const form = this._parseJSFCLJS(buttonElement.attr('onclick'), $)
           const id = form.postValues['id']
           const fileOptions = { title, description, form }
           const [files, index] = this._updateList(
@@ -251,7 +251,7 @@ class SigaaClassStudent extends SigaaBase {
     })
   }
 
-  _extractAttachmentsFromTopic($, topicContentElement, page) {
+  _parseAttachmentsFromTopic($, topicContentElement, page) {
     const topicAttachments = []
     const attachmentElements = topicContentElement
       .find('span[id] > div.item')
@@ -261,10 +261,7 @@ class SigaaClassStudent extends SigaaBase {
         const iconElement = $(attachmentElement).find('img')
         const iconSrc = iconElement.attr('src')
         if (iconSrc.includes('questionario.png')) {
-          const quizOptions = this._extractAttachmentQuiz(
-            $(attachmentElement),
-            $
-          )
+          const quizOptions = this._parseAttachmentQuiz($(attachmentElement), $)
           const id = quizOptions.id
           const [quizzes, index] = this._updateList(
             quizOptions,
@@ -276,11 +273,11 @@ class SigaaClassStudent extends SigaaBase {
           this._quizzes = quizzes
           topicAttachments.push(this._quizzes[index])
         } else if (iconSrc.includes('video.png')) {
-          const videoOptions = this._extractAtachmentVideo($(attachmentElement))
+          const videoOptions = this._parseAtachmentVideo($(attachmentElement))
           this._videos.push(videoOptions)
           topicAttachments.push(videoOptions)
         } else if (iconSrc.includes('tarefa.png')) {
-          const homeworkOptions = this._extractAttachmentHomework(
+          const homeworkOptions = this._parseAttachmentHomework(
             $(attachmentElement),
             $
           )
@@ -295,7 +292,7 @@ class SigaaClassStudent extends SigaaBase {
           this._homeworks = homeworks
           topicAttachments.push(this._homeworks[index])
         } else if (iconSrc.includes('pesquisa.png')) {
-          const surveyOptions = this._extractAttacmentSurvey(
+          const surveyOptions = this._parseAttacmentSurvey(
             $(attachmentElement),
             $
           )
@@ -310,7 +307,7 @@ class SigaaClassStudent extends SigaaBase {
           this._surveys = surveys
           topicAttachments.push(this._surveys[index])
         } else if (iconSrc.includes('conteudo.png')) {
-          const webContentOptions = this._extractAttachmentWebContent(
+          const webContentOptions = this._parseAttachmentWebContent(
             $(attachmentElement),
             $
           )
@@ -325,10 +322,7 @@ class SigaaClassStudent extends SigaaBase {
           this._webContents = webContents
           topicAttachments.push(this._webContents[index])
         } else {
-          const fileOptions = this._extractAttachmentFile(
-            $(attachmentElement),
-            $
-          )
+          const fileOptions = this._parseAttachmentFile($(attachmentElement), $)
           const id = fileOptions.id
           const [files, index] = this._updateList(
             fileOptions,
@@ -345,58 +339,58 @@ class SigaaClassStudent extends SigaaBase {
     return topicAttachments
   }
 
-  _extractAttachmentFile(attachmentElement, $) {
+  _parseAttachmentFile(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement
       .find('span')
       .children()
       .first()
     attachment.title = this._removeTagsHtml(titleElement.html())
-    attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
+    attachment.form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
   }
 
-  _extractAttachmentWebContent(attachmentElement, $) {
+  _parseAttachmentWebContent(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement
       .find('span')
       .children()
       .first()
     attachment.title = this._removeTagsHtml(titleElement.html())
-    attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
+    attachment.form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
   }
 
-  _extractAttacmentSurvey(attachmentElement, $) {
+  _parseAttacmentSurvey(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
-    attachment.form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
+    attachment.form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
     return attachment
   }
 
-  _extractAttachmentHomework(attachmentElement, $) {
+  _parseAttachmentHomework(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
-    const form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
+    const form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = form.postValues.id
     attachment.title = this._removeTagsHtml(titleElement.html())
     const descriptionElement = attachmentElement.find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
-    const dates = this._extractDates(description)
+    const dates = this._parseDates(description)
     attachment.startDate = dates[0]
     attachment.endDate = dates[1]
     return attachment
   }
 
-  _extractAtachmentVideo(attachmentElement) {
+  _parseAtachmentVideo(attachmentElement) {
     const attachment = {}
     attachment.type = 'video'
     attachment.src = attachmentElement.find('iframe').attr('src')
@@ -407,59 +401,18 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _extractAttachmentQuiz(attachmentElement, $) {
+  _parseAttachmentQuiz(attachmentElement, $) {
     const attachment = {}
     const titleElement = attachmentElement.find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
-    const form = this._extractJSFCLJS(titleElement.attr('onclick'), $)
+    const form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = form.postValues.id
     const descriptionElement = attachmentElement.find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
-    const dates = this._extractDates(description)
+    const dates = this._parseDates(description)
     attachment.startDate = dates[0]
     attachment.endDate = dates[1]
     return attachment
-  }
-
-  _extractDates(dateString) {
-    const dateStrings = dateString.match(/[0-9]+[\S\s]+?[0-9]((?= )|(?=$))/g)
-    const createDateFromString = (dataString, timeString) => {
-      const dateSplited = dataString.match(/[0-9]+/g)
-      if (!timeString) {
-        timeString = '00:00'
-      }
-      const timeSplited = timeString.match(/[0-9]+/g)
-      return new Date(
-        `${dateSplited[2]}-${dateSplited[1]}-${dateSplited[0]}T${(
-          '0' + timeSplited[0]
-        ).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000-03:00`
-      )
-    }
-    const dates = []
-    let currentDate
-    for (let i = 0; i < dateStrings.length; i++) {
-      if (dateStrings[i].includes('/')) {
-        currentDate = dateStrings[i]
-        if (
-          dateStrings[i + 1] &&
-          (dateStrings[i + 1].includes(':') || dateStrings[i + 1].includes('h'))
-        ) {
-          dates.push(createDateFromString(dateStrings[i], dateStrings[i + 1]))
-          i++
-          continue
-        } else {
-          dates.push(createDateFromString(dateStrings[i]))
-          continue
-        }
-      }
-      if (
-        currentDate &&
-        (dateStrings[i].includes(':') || dateStrings[i].includes('h'))
-      ) {
-        dates.push(createDateFromString(currentDate, dateStrings[i]))
-      }
-    }
-    return dates
   }
 
   getNews() {
@@ -483,7 +436,7 @@ class SigaaClassStudent extends SigaaBase {
               .eq(2)
               .children()
               .first()
-            const form = this._extractJSFCLJS(buttonElement.attr('onclick'), $)
+            const form = this._parseJSFCLJS(buttonElement.attr('onclick'), $)
             const id = form.postValues.id
             const newsOptions = { title, date, form }
             const [news, index] = this._updateList(
@@ -513,7 +466,7 @@ class SigaaClassStudent extends SigaaBase {
               .eq(2)
               .children()
               .first()
-            const form = this._extractJSFCLJS(buttonEl.attr('onclick'), $)
+            const form = this._parseJSFCLJS(buttonEl.attr('onclick'), $)
             this._news.push(
               new SigaaNews(
                 {
@@ -556,7 +509,7 @@ class SigaaClassStudent extends SigaaBase {
               absence = parseInt(absenceString.replace(/\D/gm, ''), 10)
             }
             absences.list.push({
-              date: this._extractDates(date)[0],
+              date: this._parseDates(date)[0],
               absence
             })
           }
@@ -583,7 +536,7 @@ class SigaaClassStudent extends SigaaBase {
       .find((buttonEl) => {
         return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
       })
-    const form = this._extractJSFCLJS(
+    const form = this._parseJSFCLJS(
       $(getBtnEl)
         .parent()
         .attr('onclick'),
@@ -663,11 +616,11 @@ class SigaaClassStudent extends SigaaBase {
         const title = this._removeTagsHtml(cells.first().html())
         const startDate = this._removeTagsHtml(cells.eq(1).html())
         const endDate = this._removeTagsHtml(cells.eq(2).html())
-        const dates = this._extractDates(`${startDate} ${endDate}`)
+        const dates = this._parseDates(`${startDate} ${endDate}`)
         const buttonSendAnswersElement = cells.eq(3).find('a[onclick]')
         let formSendAnswers = null
         if (buttonSendAnswersElement) {
-          formSendAnswers = this._extractJSFCLJS(
+          formSendAnswers = this._parseJSFCLJS(
             buttonSendAnswersElement.attr('onclick'),
             $
           )
@@ -675,7 +628,7 @@ class SigaaClassStudent extends SigaaBase {
         const buttonViewAnswersSubmittedElement = cells.eq(4).find('a[onclick]')
         let formViewAnswersSubmitted = null
         if (buttonViewAnswersSubmittedElement) {
-          formViewAnswersSubmitted = this._extractJSFCLJS(
+          formViewAnswersSubmitted = this._parseJSFCLJS(
             buttonViewAnswersSubmittedElement.attr('onclick'),
             $
           )
@@ -728,8 +681,8 @@ class SigaaClassStudent extends SigaaBase {
         const cells = row.find('td')
         const title = this._removeTagsHtml(cells.first().html())
         const dateString = this._removeTagsHtml(cells.eq(1).html())
-        const date = this._extractDates(dateString)[0]
-        const form = this._extractJSFCLJS(
+        const date = this._parseDates(dateString)[0]
+        const form = this._parseJSFCLJS(
           cells[2].find('a[onclick]').attr('onclick'),
           $
         )
@@ -783,14 +736,14 @@ class SigaaClassStudent extends SigaaBase {
           const title = this._removeTagsHtml(cells.eq(1).html())
           const description = this._removeTagsHtml(cellDescription.html())
           const date = this._removeTagsHtml(cells.eq(2).html())
-          const dates = this._extractDates(date)
+          const dates = this._parseDates(date)
           let haveGrade = true
           if (this._removeTagsHtml(cells.eq(3).html()) === 'Não')
             haveGrade = false
           const buttonSendHomeworkElement = $(cells.eq(5).find('a[onclick]'))
           let formSendHomework = null
           if (buttonSendHomeworkElement.length !== 0) {
-            formSendHomework = this._extractJSFCLJS(
+            formSendHomework = this._parseJSFCLJS(
               buttonSendHomeworkElement.attr('onclick'),
               $
             )
@@ -800,7 +753,7 @@ class SigaaClassStudent extends SigaaBase {
           )
           let formViewHomeworkSubmitted = null
           if (buttonViewHomeworkSubmittedElement.length !== 0) {
-            formViewHomeworkSubmitted = this._extractJSFCLJS(
+            formViewHomeworkSubmitted = this._parseJSFCLJS(
               buttonViewHomeworkSubmittedElement.attr('onclick'),
               $
             )

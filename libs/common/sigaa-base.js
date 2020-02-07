@@ -55,6 +55,51 @@ class SigaaBase {
     }
     return basicOptions
   }
+  /**
+   * Parse all dates in dateString in format dd/mm/yy, dd/mm/yy hh:mm, dd/mm/yy hh'h'mm
+   * @param {String} dateString String to parse
+   * @return {Array<Date>} Dates found in string
+   */
+  _parseDates(dateString) {
+    const dateStrings = dateString.match(/[0-9]+[\S\s]+?[0-9]((?= )|(?=$))/g)
+    const createDateFromString = (dataString, timeString) => {
+      const dateSplited = dataString.match(/[0-9]+/g)
+      if (!timeString) {
+        timeString = '00:00'
+      }
+      const timeSplited = timeString.match(/[0-9]+/g)
+      return new Date(
+        `${dateSplited[2]}-${dateSplited[1]}-${dateSplited[0]}T${(
+          '0' + timeSplited[0]
+        ).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000-03:00`
+      )
+    }
+    const dates = []
+    let currentDate
+    for (let i = 0; i < dateStrings.length; i++) {
+      if (dateStrings[i].includes('/')) {
+        currentDate = dateStrings[i]
+        if (
+          dateStrings[i + 1] &&
+          (dateStrings[i + 1].includes(':') || dateStrings[i + 1].includes('h'))
+        ) {
+          dates.push(createDateFromString(dateStrings[i], dateStrings[i + 1]))
+          i++
+          continue
+        } else {
+          dates.push(createDateFromString(dateStrings[i]))
+          continue
+        }
+      }
+      if (
+        currentDate &&
+        (dateStrings[i].includes(':') || dateStrings[i].includes('h'))
+      ) {
+        dates.push(createDateFromString(currentDate, dateStrings[i]))
+      }
+    }
+    return dates
+  }
 
   /**
    * Make a POST request
@@ -324,7 +369,7 @@ class SigaaBase {
    * @param {Function} $ the cheerio context of page
    * @protected
    */
-  _extractJSFCLJS(javaScriptCode, $) {
+  _parseJSFCLJS(javaScriptCode, $) {
     if (javaScriptCode.includes('getElementById')) {
       const formQuery = javaScriptCode.replace(
         /if([\S\s]*?)getElementById\('|'([\S\s]*?)false/gm,

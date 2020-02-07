@@ -47,11 +47,11 @@ class SigaaSearchTeacher extends SigaaBase {
     postValues['form:departamento'] = campusValue
     postValues['form:buscar'] = 'Buscar'
     return this._post(action, postValues).then((page) =>
-      this._extractSearchResults(page)
+      this._parseSearchResults(page)
     )
   }
 
-  async _extractSearchResults(page) {
+  async _parseSearchResults(page) {
     this.$ = Cheerio.load(page.body)
     const rowElements = this.$('table.listagem > tbody > tr[class]').toArray()
     const results = []

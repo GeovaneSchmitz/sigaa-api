@@ -55,7 +55,7 @@ class SigaaAccountStudent extends SigaaAccount {
                   cellElements.eq(4).html()
                 )
                 classData.period = period
-                classData.form = this._extractJSFCLJS(
+                classData.form = this._parseJSFCLJS(
                   buttonClassPage.attr('onclick'),
                   $
                 )

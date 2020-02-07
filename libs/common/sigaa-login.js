@@ -103,7 +103,7 @@ class SigaaLogin extends SigaaBase {
     this._sigaaSession.formLoginPostValues = null
     try {
       const page = await this._post(formLoginAction, formLoginPostValues)
-      return await this._extractLogin(page)
+      return await this._parseLogin(page)
     } catch (error) {
       if (!retry || error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS) {
         throw error
@@ -113,7 +113,7 @@ class SigaaLogin extends SigaaBase {
     }
   }
 
-  async _extractLogin(page) {
+  async _parseLogin(page) {
     if (page.statusCode === 200) {
       if (page.url.search.includes('?expirada=true')) {
         throw new Error(SigaaErrors.SIGAA_EXPIRED_PAGE)
