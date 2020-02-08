@@ -71,7 +71,7 @@ class SigaaBase {
       return new Date(
         `${dateSplited[2]}-${dateSplited[1]}-${dateSplited[0]}T${(
           '0' + timeSplited[0]
-        ).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000-03:00`
+        ).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000`
       )
     }
     const dates = []
