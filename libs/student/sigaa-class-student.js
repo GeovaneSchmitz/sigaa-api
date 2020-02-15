@@ -1054,6 +1054,187 @@ class SigaaClassStudent extends SigaaBase {
     }
     return grades
   }
+  async getEducationPlan() {
+    const page = await this._getClassSubMenu('Plano de Ensino')
+    const $ = Cheerio.load(page.body)
+    const tables = $('table.listagem').toArray()
+
+    const response = {
+      methodology: null,
+      assessmentProcedures: null,
+      attendanceSchedule: null,
+      schedule: null,
+      evaluations: null,
+      basicReferences: null,
+      supplementaryReferences: null
+    }
+    for (const table of tables) {
+      const titleElement = $(table).find('caption')
+      const title = this._removeTagsHtml(titleElement.html())
+
+      const rows = $(table)
+        .children('tbody > tr')
+        .toArray()
+      switch (title) {
+        case 'Metodologia de Ensino e Avaliação': {
+          for (const row of rows) {
+            const rowBodyElement = $(row).children('td')
+            const body = this._removeTagsHtmlKeepingEmphasis(
+              rowBodyElement.html()
+            )
+            const rowFieldElement = $(row).children('th')
+
+            const rowField = this._removeTagsHtml(rowFieldElement.html())
+
+            if (rowField === 'Metodologia:') {
+              response.methodology = body
+            } else if (
+              rowField === 'Procedimentos de Avaliação da Aprendizagem:'
+            ) {
+              response.assessmentProcedures = body
+            } else if (rowField === 'Horário de atendimento:') {
+              response.attendanceSchedule = body
+            } else {
+              throw new Error('EDUCATION_PLAN_LABEL_NOT_FOUND')
+            }
+          }
+          break
+        }
+        case 'Cronograma de Aulas': {
+          const schedule = []
+          for (const row of rows) {
+            const scheduleDay = {}
+            const startDateElement = $(row)
+              .children('td')
+              .eq(0)
+            const endDateElement = $(row)
+              .children('td')
+              .eq(1)
+            const bodyElement = $(row)
+              .children('td')
+              .eq(2)
+
+            const endDateString = this._removeTagsHtml(endDateElement.html())
+            if (endDateString) {
+              const dates = this._parseDates(endDateString)
+              if (dates.length > 0) {
+                scheduleDay.endDate = dates[0]
+              }
+            } else {
+              scheduleDay.date = null
+            }
+
+            const startDateString = this._removeTagsHtml(
+              startDateElement.html()
+            )
+            if (startDateString) {
+              const dates = this._parseDates(startDateString)
+              if (dates.length > 0) {
+                scheduleDay.startDate = dates[0]
+              }
+            } else {
+              scheduleDay.date = null
+            }
+
+            const cellBodyText = this._removeTagsHtml(bodyElement.html())
+
+            const bodyLastCharacter = cellBodyText.slice(-1)
+            const lastCharacters = [';', '.', ':', ',']
+            scheduleDay.body = lastCharacters.includes(bodyLastCharacter)
+              ? cellBodyText.slice(0, -1)
+              : cellBodyText
+
+            schedule.push()
+          }
+          response.schedule = schedule
+          break
+        }
+        case 'Avaliações': {
+          const evaluations = []
+          for (const row of rows) {
+            const evaluation = {}
+            const dateElement = $(row)
+              .children('td')
+              .eq(0)
+
+            const descriptionElement = $(row)
+              .children('td')
+              .eq(1)
+            const dateString = this._removeTagsHtml(dateElement.html())
+            if (dateString) {
+              const dates = this._parseDates(dateString)
+              if (dates.length > 0) {
+                evaluation.date = dates[0]
+              }
+            } else {
+              evaluation.date = null
+            }
+
+            const descriptionText = this._removeTagsHtml(
+              descriptionElement.html()
+            )
+
+            const descriptionLastCharacter = descriptionText.slice(-1)
+            const lastCharacters = [';', '.', ':', ',']
+            evaluation.description = lastCharacters.includes(
+              descriptionLastCharacter
+            )
+              ? descriptionText.slice(0, -1)
+              : descriptionText
+            evaluations.push(evaluation)
+          }
+          response.evaluations = evaluations
+
+          break
+        }
+        case 'Referências Básicas':
+        case 'Referências Complementares': {
+          const rows = $(table)
+            .find('tbody > tr')
+            .toArray()
+          const references = []
+          for (const row of rows) {
+            const reference = {}
+            const referenceTypeElement = $(row)
+              .find('> td')
+              .eq(0)
+
+            const referenceType = this._removeTagsHtml(
+              referenceTypeElement.html()
+            )
+            reference.type = referenceType || null
+            const descriptionElement = $(row)
+              .children('td')
+              .eq(1)
+
+            const descriptionText = this._removeTagsHtmlKeepingEmphasis(
+              descriptionElement.html()
+            )
+            const descriptionLastCharacter = descriptionText.slice(-1)
+            const lastCharacters = [';', '.', ':', ',']
+            reference.description = lastCharacters.includes(
+              descriptionLastCharacter
+            )
+              ? descriptionText.slice(0, -1)
+              : descriptionText
+            references.push(reference)
+          }
+          if (title === 'Referências Básicas') {
+            response.basicReferences = references
+          } else if (title === 'Referências Complementares') {
+            response.supplementaryReferences = references
+          }
+
+          break
+        }
+        default:
+          console.log(
+            'WARNING:Education plan table title not recognized:' + title
+          )
+      }
+    }
+    return response
+  }
 }
 
 module.exports = SigaaClassStudent
