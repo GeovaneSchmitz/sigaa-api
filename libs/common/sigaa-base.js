@@ -323,16 +323,45 @@ class SigaaBase {
       const removeNbsp = new RegExp(String.fromCharCode(160), 'g')
       const textWithoutBreakLinesHtmlAndTabs = text.replace(/\n|\xA0|\t/gm, ' ')
       const textWithBreakLines = textWithoutBreakLinesHtmlAndTabs.replace(
-        /<p>|<br\/>|<br>/gm,
+        /<\/li>|<\/p>|<br\/>|<br>|<br \/>/gm,
         '\n'
       )
       const textWithoutHtmlTags = textWithBreakLines.replace(
-        /<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>| +(?= )|\t/gm,
+        /<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>|\s+(?=\s)|\t/gm,
         ''
       )
       const textWithHtmlParsed = htmlEntities.decode(textWithoutHtmlTags)
       const textWithoutNbsp = textWithHtmlParsed.replace(removeNbsp, ' ')
       return textWithoutNbsp.replace(/^(\s|\n)*|(\s|\n)*$/gm, '').trim()
+    } catch (err) {
+      return ''
+    }
+  }
+  /**
+   * Fix encoding characters and clears text by removing all HTML tags except strong, em, b and i
+   * @param {String} text
+   * @returns {String}
+   * @protected
+   */
+  _removeTagsHtmlKeepingEmphasis(text) {
+    try {
+      const keepTags = [
+        '<b>',
+        '</b>',
+        '<i>',
+        '</i>',
+        '<strong>',
+        '</strong>',
+        '<em>',
+        '</em>'
+      ]
+
+      let newText = text
+      for (const tag of keepTags) {
+        const replaceTag = tag.replace(/</g, '1&lt;').replace(/>/g, '&gt;')
+        newText = newText.replace(tag, replaceTag)
+      }
+      return this._removeTagsHtml(newText)
     } catch (err) {
       return ''
     }
