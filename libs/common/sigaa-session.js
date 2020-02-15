@@ -340,7 +340,7 @@ class SigaaSession {
         if (this._cachePages.length === 0) {
           clearInterval(this._intervalId)
         }
-      }, 1800000)
+      }, this.timeoutCache)
     }
     if (pageObj.method === 'POST') page.postValues = pageObj.postValues
     let replace = false
