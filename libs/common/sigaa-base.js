@@ -320,19 +320,56 @@ class SigaaBase {
    */
   _removeTagsHtml(text) {
     try {
-      const removeNbsp = new RegExp(String.fromCharCode(160), 'g')
-      const textWithoutBreakLinesHtmlAndTabs = text.replace(/\n|\xA0|\t/gm, ' ')
-      const textWithBreakLines = textWithoutBreakLinesHtmlAndTabs.replace(
-        /<\/li>|<\/p>|<br\/>|<br>|<br \/>/gm,
-        '\n'
-      )
-      const textWithoutHtmlTags = textWithBreakLines.replace(
-        /<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<([\S\s]*?)>|<[^>]+>|\s+(?=\s)|\t/gm,
-        ''
-      )
-      const textWithHtmlParsed = htmlEntities.decode(textWithoutHtmlTags)
-      const textWithoutNbsp = textWithHtmlParsed.replace(removeNbsp, ' ')
-      return textWithoutNbsp.replace(/^(\s|\n)*|(\s|\n)*$/gm, '').trim()
+      const replacesBeforeParseHTMLCharacters = [
+        {
+          pattern: /\n|\xA0|\t/g, // match tabs, break lines, etc
+          replacement: ' '
+        },
+        {
+          pattern: /&middot;/g, // replace middle dot with \n and middle dot
+          replacement: '\n&middot;'
+        },
+        {
+          pattern: /<\/li>|<\/p>|<br\/>|<br>|<br \/>/gm, //tags to replace with \n
+          replacement: '\n'
+        },
+        {
+          pattern: /<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<[^>]+>|\t/gm, //remove all tags
+          replacement: ' '
+        }
+      ]
+      const replacesAfterParseHTMLCharacters = [
+        {
+          pattern: new RegExp(String.fromCharCode(160), 'g'), // replace NBSP with space
+          replacement: ' '
+        },
+        {
+          pattern: / + /gm, //removes multiple whitespaces
+          replacement: ' '
+        },
+        {
+          pattern: /\n+\n/gm, //removes multiple break lines
+          replacement: '\n'
+        },
+        {
+          pattern: /\s+\s/gm, //removes multiple \s
+          replacement: '\n'
+        },
+        {
+          pattern: /^(\s)*|(\s)*$/gm, //remove whitespace from beginning and end
+          replacement: ''
+        }
+      ]
+
+      let newText = text
+      for (const replace of replacesBeforeParseHTMLCharacters) {
+        newText = newText.replace(replace.pattern, replace.replacement)
+      }
+      newText = htmlEntities.decode(newText)
+      for (const replace of replacesAfterParseHTMLCharacters) {
+        newText = newText.replace(replace.pattern, replace.replacement)
+      }
+      return newText.trim()
     } catch (err) {
       return ''
     }
@@ -356,10 +393,10 @@ class SigaaBase {
         '</em>'
       ]
 
-      let newText = text
+      let newText = text.replace(/<li>/g, '&middot;')
       for (const tag of keepTags) {
-        const replaceTag = tag.replace(/</g, '1&lt;').replace(/>/g, '&gt;')
-        newText = newText.replace(tag, replaceTag)
+        const replaceTag = tag.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        newText = newText.replace(new RegExp(tag, 'g'), replaceTag)
       }
       return this._removeTagsHtml(newText)
     } catch (err) {

@@ -1073,7 +1073,8 @@ class SigaaClassStudent extends SigaaBase {
       const title = this._removeTagsHtml(titleElement.html())
 
       const rows = $(table)
-        .children('tbody > tr')
+        .children('tbody')
+        .children('tr')
         .toArray()
       switch (title) {
         case 'Metodologia de Ensino e Avaliação': {
@@ -1085,7 +1086,6 @@ class SigaaClassStudent extends SigaaBase {
             const rowFieldElement = $(row).children('th')
 
             const rowField = this._removeTagsHtml(rowFieldElement.html())
-
             if (rowField === 'Metodologia:') {
               response.methodology = body
             } else if (
@@ -1144,7 +1144,7 @@ class SigaaClassStudent extends SigaaBase {
               ? cellBodyText.slice(0, -1)
               : cellBodyText
 
-            schedule.push()
+            schedule.push(scheduleDay)
           }
           response.schedule = schedule
           break
@@ -1189,14 +1189,11 @@ class SigaaClassStudent extends SigaaBase {
         }
         case 'Referências Básicas':
         case 'Referências Complementares': {
-          const rows = $(table)
-            .find('tbody > tr')
-            .toArray()
           const references = []
           for (const row of rows) {
             const reference = {}
             const referenceTypeElement = $(row)
-              .find('> td')
+              .find('td')
               .eq(0)
 
             const referenceType = this._removeTagsHtml(
