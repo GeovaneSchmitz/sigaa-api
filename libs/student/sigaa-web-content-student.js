@@ -20,7 +20,7 @@ class SigaaWebcontent extends SigaaBase {
     if (options.title !== undefined && options.form !== undefined) {
       this._title = options.title
       this._form = options.form
-      this._finish = false
+      this._close = false
     } else {
       throw new Error('INVALID_WEBCONTENT_OPTIONS')
     }
@@ -34,7 +34,7 @@ class SigaaWebcontent extends SigaaBase {
   }
 
   get title() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._title
   }
 
@@ -52,7 +52,7 @@ class SigaaWebcontent extends SigaaBase {
     return this._content
   }
   async _loadWebContentPage() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     try {
       const page = await this._post(this._form.action, this._form.postValues)
       if (page.statusCode === 200) {
@@ -106,16 +106,16 @@ class SigaaWebcontent extends SigaaBase {
   }
 
   get id() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._form.postValues.id
   }
 
-  finish() {
-    this._finish = true
+  close() {
+    this._close = true
   }
 
-  _checkIfItWasFinalized() {
-    if (this._finish) {
+  _checkIfItWasClosed() {
+    if (this._close) {
       throw new Error('WEBCONTENT_HAS_BEEN_FINISHED')
     }
   }

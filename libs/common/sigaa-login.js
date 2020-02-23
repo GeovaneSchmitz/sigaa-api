@@ -59,10 +59,7 @@ class SigaaLogin extends SigaaBase {
           normalizeWhitespace: true
         })
         const formElement = $('#form-login')
-        const action = new URL(
-          formElement.attr('action'),
-          this._sigaaSession.url
-        ).href
+        const action = new URL(formElement.attr('action'), page.url.href).href
         const postValues = {}
         formElement.find('input').each(function() {
           postValues[$(this).attr('name')] = $(this).val()

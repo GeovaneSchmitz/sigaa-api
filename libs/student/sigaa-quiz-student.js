@@ -26,7 +26,7 @@ class SigaaQuiz extends SigaaBase {
       this._id = options.id
       this._startDate = options.startDate
       this._endDate = options.endDate
-      this._finish = false
+      this._close = false
       this._formSendAnswers = options.formSendAnswers
       this._formViewAnswersSubmitted = options.formViewAnswersSubmitted
     } else {
@@ -35,12 +35,12 @@ class SigaaQuiz extends SigaaBase {
   }
 
   get title() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._title
   }
 
   get endDate() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._endDate
   }
 
@@ -92,21 +92,21 @@ class SigaaQuiz extends SigaaBase {
   }
 
   get startDate() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._startDate
   }
 
   get id() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._id
   }
 
-  finish() {
-    this._finish = true
+  close() {
+    this._close = true
   }
 
-  _checkIfItWasFinalized() {
-    if (this._finish) {
+  _checkIfItWasClosed() {
+    if (this._close) {
       throw new Error('QUIZ_HAS_BEEN_FINISHED')
     }
   }

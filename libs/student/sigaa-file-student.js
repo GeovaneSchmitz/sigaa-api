@@ -28,41 +28,41 @@ class SigaaFile extends SigaaBase {
       this._title = options.title
       this._description = options.description
       this._form = options.form
-      this._finish = false
+      this._closed = false
     } else {
       throw new Error('INVALID_FILE_OPTIONS')
     }
   }
 
   get title() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._title
   }
 
   get description() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._description
   }
 
   get id() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._form.postValues.id
   }
 
-  finish() {
-    this._finish = true
+  close() {
+    this._closed = true
   }
 
-  _checkIfItWasFinalized() {
-    if (this._finish) {
+  _checkIfItWasClosed() {
+    if (this._closed) {
       throw new Error('FILE_HAS_BEEN_FINISHED')
     }
   }
 
-  download(basepath, callback, retry = true) {
-    return new Promise((resolve, reject) => {
-      new Promise((resolve, reject) => {
-        this._checkIfItWasFinalized()
+  async download(basepath, callback, retry = true) {
+    try {
+      return await new Promise((resolve, reject) => {
+        this._checkIfItWasClosed()
         let file
         const fileStats = fs.lstatSync(basepath)
         if (!(fileStats.isDirectory() || fileStats.isFile())) {
@@ -140,19 +140,15 @@ class SigaaFile extends SigaaBase {
           reject(err)
         }
       })
-        .then((data) => resolve(data))
-        .catch((err) => {
-          if (retry) {
-            resolve(
-              this._updateFile().then(() =>
-                this.download(basepath, callback, false)
-              )
-            )
-          } else {
-            reject(err)
-          }
-        })
-    })
+    } catch (err) {
+      if (retry) {
+        return this._updateFile().then(() =>
+          this.download(basepath, callback, false)
+        )
+      } else {
+        throw err
+      }
+    }
   }
 }
 

@@ -21,7 +21,7 @@ class SigaaAccount extends SigaaBase {
       })
       .then((page) => {
         if (page.statusCode === 200) {
-          this._sigaaSession.finish()
+          this._sigaaSession.close()
           return true
         } else {
           throw new Error(sigaaErrors.SIGAA_UNEXPECTED_RESPONSE)

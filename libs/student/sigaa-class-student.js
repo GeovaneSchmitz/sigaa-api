@@ -1,5 +1,7 @@
-const SigaaBase = require('../common/sigaa-base')
 const Cheerio = require('cheerio')
+
+const SigaaBase = require('../common/sigaa-base')
+const SigaaSession = require('../common/sigaa-session')
 
 const SigaaTopic = require('./sigaa-topic-student')
 const SigaaNews = require('./sigaa-news-student')
@@ -8,19 +10,37 @@ const SigaaFile = require('./sigaa-file-student')
 const SigaaHomework = require('./sigaa-homework-student')
 const SigaaQuiz = require('./sigaa-quiz-student')
 const SigaaSurvey = require('./sigaa-survey-student')
+const SigaaClassForum = require('./sigaa-forum-class')
 const SigaaWebContent = require('./sigaa-web-content-student')
-
+/**
+ * School class in the student's view
+ */
 class SigaaClassStudent extends SigaaBase {
+  /**
+   * @param {SigaaSession} sigaaSession SigaaSession instance
+   * @param {Object} options Class options
+   * @param {String} options.title Class title
+   * @param {String} options.id Class ID
+   * @param {String} options.period Class period E.g. 2020.1
+   * @param {String} [options.location] Classroom location
+   * @param {String} [options.schedule] Class schedule in SIGAA notation
+   * @param {String} [options.abbreviation] Class title abbreviation
+   * @param {Object} options.form Class form POST to request class page
+   * @param {String} options.form.action POST action URL
+   * @param {Object} options.form.postValues Post values in format, key as field name, and value as field value.
+   */
   constructor(options, sigaaSession) {
     super(sigaaSession)
     if (
       options.title !== undefined &&
       options.id !== undefined &&
-      options.form !== undefined
+      options.form !== undefined &&
+      options.period !== undefined
     ) {
       this._title = options.title
       this._id = options.id
       this._form = options.form
+      this._period = options.period
     } else {
       throw new Error('CLASS_MISSING_PARAMETERS')
     }
@@ -33,21 +53,7 @@ class SigaaClassStudent extends SigaaBase {
     if (options.abbreviation) {
       this._abbreviation = options.abbreviation
     }
-    if (options.numberOfStudents) {
-      this._numberOfStudents = options.numberOfStudents
-    }
-    if (options.period) {
-      this._period = options.period
-    }
-    this._topics = []
-    this._news = []
-    this._homeworks = []
-    this._videos = []
-    this._files = []
-    this._surveys = []
-    this._quizzes = []
-    this._webContents = []
-    this._news = []
+    this._instances = {}
   }
 
   get title() {
@@ -73,11 +79,17 @@ class SigaaClassStudent extends SigaaBase {
   get abbreviation() {
     return this._abbreviation
   }
-
-  get numberOfStudents() {
-    return this._numberOfStudents
-  }
-
+  /**
+   * Request the class page using the class ID,
+   * it is slower than requestClassPageUsingForm,
+   * but works if the form is invalid
+   * @throws {CLASS_NOT_FOUND} If not found class with same ID
+   * @throws {ACCOUNT_SESSION_EXPIRED} If session expired
+   * @throws {SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
+   * @return {<Promise>Object} response page
+   * @private
+   * @async
+   */
   async _requestClassPageUsingId() {
     const page = await this._get('/sigaa/portais/discente/turmas.jsf')
     if (page.statusCode === 200) {
@@ -112,50 +124,60 @@ class SigaaClassStudent extends SigaaBase {
       throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
     }
   }
-  _requestClassPageUsingForm() {
-    return this._post(this._form.action, this._form.postValues, {
+  /**
+   * Request the class page using the class POST Form,
+   * it is faster than requestClassPageUsingId,
+   * but don`t works if the form is invalid or expired
+   * @private
+   * @return {<Promise>Object} response page
+   * @async
+   * @throws {SIGAA_UNEXPECTED_RESPONSE} If Class page is invalid, the form probably expired.
+   */
+  async _requestClassPageUsingForm() {
+    const page = await this._post(this._form.action, this._form.postValues, {
       shareSameRequest: true
-    }).then(
-      (page) =>
-        new Promise((resolve, reject) => {
-          if (page.statusCode === 200) {
-            if (page.body.includes('Comportamento Inesperado!')) {
-              reject(new Error('INVALID_CLASS_ID'))
-            }
-            resolve(page)
-          } else {
-            reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
-          }
-        })
-    )
+    })
+    if (page.statusCode === 200) {
+      if (page.body.includes('Comportamento Inesperado!')) {
+        throw new Error('SIGAA_UNEXPECTED_RESPONSE')
+      }
+      return page
+    } else {
+      throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
+    }
   }
-
+  /**
+   * Request the class page using _requestClassPageUsingForm,
+   * fallback to _requestClassPageUsingId
+   * @private
+   * @return {<Promise>Object} response page
+   */
   _requestClassPage() {
     return this._requestClassPageUsingForm().catch(() =>
       this._requestClassPageUsingId()
     )
   }
 
-  getTopics() {
-    return this._requestClassPage().then(
-      (page) =>
-        new Promise((resolve, reject) => {
-          this._topics.forEach((topic) => {
-            topic.finish()
-            return false
-          })
-          this._videos = []
-          this._topics = []
-          const $ = Cheerio.load(page.body)
-          const topicsElements = this._topicGetElements($)
-          for (const topicElement of topicsElements) {
-            const topicOptions = this._topicExtractor($, topicElement, page)
-            const topic = new SigaaTopic(topicOptions)
-            this._topics.push(topic)
-          }
-          resolve(this._topics)
-        })
-    )
+  async getTopics() {
+    const page = await this._requestClassPage()
+    const $ = Cheerio.load(page.body)
+    const topicsElements = this._topicGetElements($)
+    const usedTopicsIds = []
+    this._forumsIdIndex = 0
+    this._closeClassInstances('topics', usedTopicsIds)
+    for (const topicElement of topicsElements) {
+      const topicOptions = this._topicParser($, topicElement, page)
+      usedTopicsIds.push(topicOptions.id)
+      this._updateClassInstances({
+        instanceOptions: topicOptions,
+        instanceId: topicOptions.id,
+        Class: SigaaTopic,
+        type: 'topics',
+        updateMethod: this.getTopics.bind(this)
+      })
+    }
+    this._closeClassInstances('topics', usedTopicsIds)
+    return this._instances.topics
   }
 
   _topicGetElements($) {
@@ -169,7 +191,7 @@ class SigaaClassStudent extends SigaaBase {
     return topicsElements
   }
 
-  _topicExtractor($, topicElement, page) {
+  _topicParser($, topicElement) {
     const topic = {}
     const titleElement = $(topicElement).find('.titulo')
     const titleFull = this._removeTagsHtml(titleElement.html())
@@ -194,6 +216,7 @@ class SigaaClassStudent extends SigaaBase {
       topic.startDate = date
       topic.endDate = date
     }
+
     topic.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
     const topicContentElement = $(topicElement).find('.conteudotopico')
     topic.contentText = decodeURI(
@@ -201,57 +224,40 @@ class SigaaClassStudent extends SigaaBase {
         topicContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
       )
     )
-    topic.attachments = this._parseAttachmentsFromTopic(
-      $,
-      topicContentElement,
-      page
-    )
+    topic.attachments = this._parseAttachmentsFromTopic($, topicContentElement)
     return topic
   }
 
-  getFiles() {
-    return this._getClassSubMenu('Arquivos').then((page) => {
-      return new Promise((resolve, reject) => {
-        const $ = Cheerio.load(page.body)
-
-        const table = $('.listing')
-
-        if (table.length === 0) resolve([])
-        const rows = table.find('tr[class]').toArray()
-        const usedFilesIndex = []
-        for (const row of rows) {
-          const cells = $(row).children()
-          const title = this._removeTagsHtml(cells.first().html())
-          const description = this._removeTagsHtml(cells.eq(1).html())
-
-          const buttonElement = cells.eq(3).find('a[onclick]')
-          const form = this._parseJSFCLJS(buttonElement.attr('onclick'), $)
-          const id = form.postValues['id']
-          const fileOptions = { title, description, form }
-          const [files, index] = this._updateList(
-            fileOptions,
-            id,
-            SigaaFile,
-            this._files,
-            this.getFiles.bind(this)
-          )
-          this._files = files
-          usedFilesIndex.push(index)
-        }
-        this._files = this._files.filter((file, index) => {
-          if (usedFilesIndex.indexOf(index) > -1) {
-            return true
-          } else {
-            file.finish()
-            return false
-          }
+  async getFiles() {
+    const page = await this._getClassSubMenu('Arquivos')
+    const $ = Cheerio.load(page.body)
+    const table = $('.listing')
+    const usedFilesId = []
+    if (table.length !== 0) {
+      const rows = table.find('tr[class]').toArray()
+      for (const row of rows) {
+        const cells = $(row).children()
+        const title = this._removeTagsHtml(cells.first().html())
+        const description = this._removeTagsHtml(cells.eq(1).html())
+        const buttonElement = cells.eq(3).find('a[onclick]')
+        const form = this._parseJSFCLJS(buttonElement.attr('onclick'), $)
+        const id = form.postValues['id']
+        const fileOptions = { title, description, form }
+        this._updateClassInstances({
+          instanceOptions: fileOptions,
+          instanceId: id,
+          Class: SigaaFile,
+          type: 'files',
+          updateMethod: this.getFiles.bind(this)
         })
-        resolve(this._files)
-      })
-    })
+        usedFilesId.push(id)
+      }
+    }
+    this._closeClassInstances('files', usedFilesId)
+    return this._instances.files
   }
 
-  _parseAttachmentsFromTopic($, topicContentElement, page) {
+  _parseAttachmentsFromTopic($, topicContentElement) {
     const topicAttachments = []
     const attachmentElements = topicContentElement
       .find('span[id] > div.item')
@@ -261,128 +267,132 @@ class SigaaClassStudent extends SigaaBase {
         const iconElement = $(attachmentElement).find('img')
         const iconSrc = iconElement.attr('src')
         if (iconSrc.includes('questionario.png')) {
-          const quizOptions = this._parseAttachmentQuiz($(attachmentElement), $)
+          const quizOptions = this._parseAttachmentQuiz($, attachmentElement)
           const id = quizOptions.id
-          const [quizzes, index] = this._updateList(
-            quizOptions,
-            id,
-            SigaaQuiz,
-            this._quizzes,
-            this.getQuizzes.bind(this)
-          )
-          this._quizzes = quizzes
-          topicAttachments.push(this._quizzes[index])
+          const quiz = this._updateClassInstances({
+            instanceId: id,
+            instanceOptions: quizOptions,
+            Class: SigaaQuiz,
+            type: 'quizzes',
+            updateMethod: this.getQuizzes.bind(this)
+          })
+          topicAttachments.push(quiz)
         } else if (iconSrc.includes('video.png')) {
-          const videoOptions = this._parseAtachmentVideo($(attachmentElement))
-          this._videos.push(videoOptions)
+          const videoOptions = this._parseAtachmentVideo($, attachmentElement)
           topicAttachments.push(videoOptions)
         } else if (iconSrc.includes('tarefa.png')) {
           const homeworkOptions = this._parseAttachmentHomework(
-            $(attachmentElement),
-            $
+            $,
+            attachmentElement
           )
           const id = homeworkOptions.id
-          const [homeworks, index] = this._updateList(
-            homeworkOptions,
-            id,
-            SigaaHomework,
-            this._homeworks,
-            this.getHomeworks.bind(this)
-          )
-          this._homeworks = homeworks
-          topicAttachments.push(this._homeworks[index])
+          const homework = this._updateClassInstances({
+            instanceId: id,
+            instanceOptions: homeworkOptions,
+            Class: SigaaHomework,
+            type: 'homeworks',
+            updateMethod: this.getHomeworks.bind(this)
+          })
+          topicAttachments.push(homework)
         } else if (iconSrc.includes('pesquisa.png')) {
-          const surveyOptions = this._parseAttacmentSurvey(
-            $(attachmentElement),
-            $
-          )
+          const surveyOptions = this._parseAttacmentSurvey($, attachmentElement)
           const id = surveyOptions.id
-          const [surveys, index] = this._updateList(
-            surveyOptions,
-            id,
-            SigaaSurvey,
-            this._surveys,
-            this.getSurveys.bind(this)
-          )
-          this._surveys = surveys
-          topicAttachments.push(this._surveys[index])
+          const survey = this._updateClassInstances({
+            instanceOptions: surveyOptions,
+            instanceId: id,
+            Class: SigaaSurvey,
+            type: 'surveys',
+            updateMethod: this.getSurveys.bind(this)
+          })
+          topicAttachments.push(survey)
         } else if (iconSrc.includes('conteudo.png')) {
-          const webContentOptions = this._parseAttachmentWebContent(
-            $(attachmentElement),
-            $
+          const webContentOptions = this._parseAttachmentGeneric(
+            $,
+            attachmentElement
           )
           const id = webContentOptions.id
-          const [webContents, index] = this._updateList(
-            webContentOptions,
-            id,
-            SigaaWebContent,
-            this._webContents,
-            this.getWebContents.bind(this)
+          const webContents = this._updateClassInstances({
+            instanceOptions: webContentOptions,
+            instanceId: id,
+            Class: SigaaWebContent,
+            type: 'webContents',
+            updateMethod: this.getWebContents.bind(this)
+          })
+          topicAttachments.push(webContents)
+        } else if (iconSrc.includes('forumava.png')) {
+          const forumOptions = this._parseAttachmentGeneric(
+            $,
+            attachmentElement
           )
-          this._webContents = webContents
-          topicAttachments.push(this._webContents[index])
+          forumOptions.id = this._forumsIdIndex
+          this._forumsIdIndex++
+          const forum = this._updateClassInstances({
+            instanceOptions: forumOptions,
+            Class: SigaaClassForum,
+            instanceId: forumOptions.id,
+            type: 'forums',
+            updateMethod: this.getForums.bind(this)
+          })
+          topicAttachments.push(forum)
         } else {
-          const fileOptions = this._parseAttachmentFile($(attachmentElement), $)
+          const fileOptions = this._parseAttachmentGeneric($, attachmentElement)
           const id = fileOptions.id
-          const [files, index] = this._updateList(
-            fileOptions,
-            id,
-            SigaaFile,
-            this._files,
-            this.getFiles.bind(this)
-          )
-          this._files = files
-          topicAttachments.push(this._files[index])
+          const file = this._updateClassInstances({
+            instanceOptions: fileOptions,
+            instanceId: id,
+            Class: SigaaFile,
+            type: 'files',
+            updateMethod: this.getFiles.bind(this)
+          })
+          topicAttachments.push(file)
         }
       }
     }
     return topicAttachments
   }
 
-  _parseAttachmentFile(attachmentElement, $) {
+  _parseAttachmentGeneric($, attachmentElement) {
     const attachment = {}
-    const titleElement = attachmentElement
+    const titleElement = $(attachmentElement)
       .find('span')
       .children()
       .first()
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
-    const descriptionElement = attachmentElement.find('div.descricao-item')
+    const descriptionElement = $(attachmentElement).find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
   }
-
-  _parseAttachmentWebContent(attachmentElement, $) {
+  _parseAttachmentForum($, attachmentElement) {
     const attachment = {}
-    const titleElement = attachmentElement
+    const titleElement = $(attachmentElement)
       .find('span')
       .children()
       .first()
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
-    const descriptionElement = attachmentElement.find('div.descricao-item')
+    const descriptionElement = $(attachmentElement).find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
   }
-
-  _parseAttacmentSurvey(attachmentElement, $) {
+  _parseAttacmentSurvey($, attachmentElement) {
     const attachment = {}
-    const titleElement = attachmentElement.find('span > a')
+    const titleElement = $(attachmentElement).find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = attachment.form.postValues.id
     return attachment
   }
 
-  _parseAttachmentHomework(attachmentElement, $) {
+  _parseAttachmentHomework($, attachmentElement) {
     const attachment = {}
-    const titleElement = attachmentElement.find('span > a')
+    const titleElement = $(attachmentElement).find('span > a')
     const form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = form.postValues.id
     attachment.title = this._removeTagsHtml(titleElement.html())
-    const descriptionElement = attachmentElement.find('div.descricao-item')
+    const descriptionElement = $(attachmentElement).find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
     const dates = this._parseDates(description)
     attachment.startDate = dates[0]
@@ -390,142 +400,147 @@ class SigaaClassStudent extends SigaaBase {
     return attachment
   }
 
-  _parseAtachmentVideo(attachmentElement) {
+  _parseAtachmentVideo($, attachmentElement) {
     const attachment = {}
     attachment.type = 'video'
-    attachment.src = attachmentElement.find('iframe').attr('src')
-    const titleElement = attachmentElement.find('span[id] > span[id]')
+    attachment.src = $(attachmentElement)
+      .find('iframe')
+      .attr('src')
+    const titleElement = $(attachmentElement).find('span[id] > span[id]')
     attachment.title = this._removeTagsHtml(titleElement.html())
-    const descriptionElement = attachmentElement.find('div.descricao-item')
+    const descriptionElement = $(attachmentElement).find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
   }
 
-  _parseAttachmentQuiz(attachmentElement, $) {
+  _parseAttachmentQuiz($, attachmentElement) {
     const attachment = {}
-    const titleElement = attachmentElement.find('span > a')
+    const titleElement = $(attachmentElement).find('span > a')
     attachment.title = this._removeTagsHtml(titleElement.html())
     const form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
     attachment.id = form.postValues.id
-    const descriptionElement = attachmentElement.find('div.descricao-item')
+    const descriptionElement = $(attachmentElement).find('div.descricao-item')
     const description = this._removeTagsHtml(descriptionElement.html())
     const dates = this._parseDates(description)
     attachment.startDate = dates[0]
     attachment.endDate = dates[1]
+
     return attachment
   }
 
-  getNews() {
-    return this._getClassSubMenu('Notícias').then((page) => {
-      return new Promise((resolve, reject) => {
-        const $ = Cheerio.load(page.body)
-
-        const table = $('.listing')
-
-        if (table.length === 0) resolve([])
-        const rows = table.find('tr[class]').toArray()
-        if (this._news.length !== 0) {
-          const usedNewsIndex = []
-
-          for (const row of rows) {
-            const cell = $(row).children()
-            const title = this._removeTagsHtml(cell.first().html())
-            const date = this._removeTagsHtml(cell.eq(1).html())
-
-            const buttonElement = cell
-              .eq(2)
-              .children()
-              .first()
-            const form = this._parseJSFCLJS(buttonElement.attr('onclick'), $)
-            const id = form.postValues.id
-            const newsOptions = { title, date, form }
-            const [news, index] = this._updateList(
-              newsOptions,
-              id,
-              SigaaNews,
-              this._news,
-              this.getNews.bind(this)
-            )
-            this._news = news
-            usedNewsIndex.push(index)
-          }
-          this._news = this._news.filter((news, index) => {
-            if (usedNewsIndex.indexOf(index) > -1) {
-              return true
-            } else {
-              news.finish()
-              return false
-            }
-          })
-        } else {
-          for (const row of rows) {
-            const cell = $(row).children()
-            const title = this._removeTagsHtml(cell.first().html())
-            const date = this._removeTagsHtml(cell.eq(1).html())
-            const buttonEl = cell
-              .eq(2)
-              .children()
-              .first()
-            const form = this._parseJSFCLJS(buttonEl.attr('onclick'), $)
-            this._news.push(
-              new SigaaNews(
-                {
-                  title,
-                  date,
-                  form
-                },
-                this.getNews.bind(this),
-                this._sigaaSession
-              )
-            )
-          }
-          resolve(this._news)
+  async getForums() {
+    const page = await this._getClassSubMenu('Fóruns')
+    const $ = Cheerio.load(page.body)
+    const table = $('.listing')
+    const usedForumIds = []
+    if (table.length !== 0) {
+      let forumsIdIndex = 0
+      const rows = table.find('tr[class]').toArray()
+      for (const row of rows) {
+        const cells = $(row).children()
+        const titleElement = cells.first().find('a')
+        const title = this._removeTagsHtml(titleElement.html())
+        const type = this._removeTagsHtml(cells.eq(1).html())
+        const numOfTopics = parseInt(
+          this._removeTagsHtml(cells.eq(2).html()),
+          10
+        )
+        const author = this._removeTagsHtml(cells.eq(3).html())
+        const date = this._removeTagsHtml(cells.eq(4).html())
+        const form = this._parseJSFCLJS(titleElement.attr('onclick'), $)
+        const id = forumsIdIndex
+        forumsIdIndex++
+        const forumOptions = {
+          title,
+          id,
+          type,
+          numOfTopics,
+          author,
+          date,
+          form
         }
-      })
-    })
+        this._updateClassInstances({
+          instanceId: id,
+          instanceOptions: forumOptions,
+          Class: SigaaClassForum,
+          type: 'forums',
+          updateMethod: this.getForums.bind(this)
+        })
+        usedForumIds.push(id)
+      }
+    }
+    this._closeClassInstances('forums', usedForumIds)
+    return this._instances.news
   }
 
-  getAbsence() {
-    return this._getClassSubMenu('Frequência').then(
-      (page) =>
-        new Promise((resolve, reject) => {
-          const $ = Cheerio.load(page.body)
-          const table = $('.listing')
-          const absences = {
-            list: []
-          }
-          if (table.length === 0) resolve(absences)
-          const rows = table.find('tr[class]').toArray()
-          for (const row of rows) {
-            const cells = $(row).children()
-            const date = this._removeTagsHtml(cells.first().html())
-            const absenceString = this._removeTagsHtml(cells.eq(1).html())
-            let absence
-            if (absenceString === '' || absenceString === 'Não Informada') {
-              continue
-            } else if (absenceString === 'Presente') {
-              absence = 0
-            } else {
-              absence = parseInt(absenceString.replace(/\D/gm, ''), 10)
-            }
-            absences.list.push({
-              date: this._parseDates(date)[0],
-              absence
-            })
-          }
-          const details = this._removeTagsHtml($('.botoes-show').html()).split(
-            '\n'
-          )
-          for (const detail of details) {
-            if (detail.includes('Total de Faltas')) {
-              absences.totalAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
-            } else if (detail.includes('Máximo de Faltas Permitido')) {
-              absences.maxAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
-            }
-          }
-          resolve(absences)
+  async getNews() {
+    const page = await this._getClassSubMenu('Notícias')
+    const $ = Cheerio.load(page.body)
+    const table = $('.listing')
+    const usedNewsId = []
+    if (table.length !== 0) {
+      const rows = table.find('tr[class]').toArray()
+      for (const row of rows) {
+        const cell = $(row).children()
+        const title = this._removeTagsHtml(cell.first().html())
+        const date = this._removeTagsHtml(cell.eq(1).html())
+
+        const buttonElement = cell
+          .eq(2)
+          .children()
+          .first()
+        const form = this._parseJSFCLJS(buttonElement.attr('onclick'), $)
+        const id = form.postValues.id
+        const newsOptions = { title, date, form }
+        this._updateClassInstances({
+          instanceId: id,
+          instanceOptions: newsOptions,
+          Class: SigaaNews,
+          type: 'news',
+          updateMethod: this.getNews.bind(this)
         })
-    )
+        usedNewsId.push(id)
+      }
+    }
+    this._closeClassInstances('news', usedNewsId)
+    return this._instances.news
+  }
+
+  async getAbsence() {
+    const page = await this._getClassSubMenu('Frequência')
+    const $ = Cheerio.load(page.body)
+    const table = $('.listing')
+    const absences = {
+      list: []
+    }
+    if (table.length === 0) return absences
+    const rows = table.find('tr[class]').toArray()
+    for (const row of rows) {
+      const cells = $(row).children()
+      const date = this._removeTagsHtml(cells.first().html())
+      const absenceString = this._removeTagsHtml(cells.eq(1).html())
+      let absence
+      if (absenceString === '' || absenceString === 'Não Informada') {
+        continue
+      } else if (absenceString === 'Presente') {
+        absence = 0
+      } else {
+        absence = parseInt(absenceString.replace(/\D/gm, ''), 10)
+      }
+      absences.list.push({
+        date: this._parseDates(date)[0],
+        absence
+      })
+    }
+    const details = this._removeTagsHtml($('.botoes-show').html()).split('\n')
+    for (const detail of details) {
+      if (detail.includes('Total de Faltas')) {
+        absences.totalAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
+      } else if (detail.includes('Máximo de Faltas Permitido')) {
+        absences.maxAbsences = parseInt(detail.replace(/\D/gm, ''), 10)
+      }
+    }
+    return absences
   }
 
   async _getClassSubMenu(buttonLabel) {
@@ -602,14 +617,13 @@ class SigaaClassStudent extends SigaaBase {
 
   async getQuizzes() {
     const page = await this._getClassSubMenu('Questionários')
-    return new Promise((resolve, reject) => {
-      const $ = Cheerio.load(page.body)
+    const $ = Cheerio.load(page.body)
 
-      const table = $('.listing')
+    const table = $('.listing')
 
-      if (table.length === 0) resolve([])
+    const usedQuizzesIds = []
+    if (table.length !== 0) {
       const rows = table.find('tr[class]').toArray()
-      const usedQuizzesIndex = []
 
       for (const row of rows) {
         const cells = row.find('td')
@@ -644,38 +658,29 @@ class SigaaClassStudent extends SigaaBase {
           formSendAnswers,
           formViewAnswersSubmitted
         }
-        const [quizzes, index] = this._updateList(
-          quizOptions,
-          id,
-          SigaaQuiz,
-          this._quizzes,
-          this.getQuizzes.bind(this)
-        )
-        usedQuizzesIndex.push(index)
-        this._quizzes = quizzes
+        this._updateClassInstances({
+          instanceOptions: quizOptions,
+          instanceId: id,
+          Class: SigaaQuiz,
+          type: 'quizzes',
+          updateMethod: this.getQuizzes.bind(this)
+        })
+        usedQuizzesIds.push(id)
       }
-      this._quizzes = this._quizzes.filter((quiz, index) => {
-        if (usedQuizzesIndex.indexOf(index) > -1) {
-          return true
-        } else {
-          quiz.finish()
-          return false
-        }
-      })
-      resolve(this._quizzes)
-    })
+      this._closeClassInstances('quizzes', usedQuizzesIds)
+      return this._instances.quizzes
+    }
   }
 
   async getWebContents() {
     const page = await this._getClassSubMenu('Conteúdo/Página web')
-    return new Promise((resolve, reject) => {
-      const $ = Cheerio.load(page.body)
+    const $ = Cheerio.load(page.body)
 
-      const table = $('.listing')
+    const table = $('.listing')
 
-      if (table.length === 0) resolve([])
+    const usedWebContentsIds = []
+    if (table.length !== 0) {
       const rows = table.find('tr[class]').toArray()
-      const usedwebContentsIndex = []
 
       for (const row of rows) {
         const cells = row.find('td')
@@ -693,26 +698,18 @@ class SigaaClassStudent extends SigaaBase {
           form
         }
 
-        const [webContents, index] = this._updateList(
-          webContentOptions,
-          id,
-          SigaaWebContent,
-          this._webContents,
-          this.getWebContents.bind(this)
-        )
-        usedwebContentsIndex.push(index)
-        this._webContents = webContents
+        this._updateClassInstances({
+          instanceOptions: webContentOptions,
+          instanceId: id,
+          Class: SigaaWebContent,
+          type: 'webContents',
+          updateMethod: this.getWebContents.bind(this)
+        })
+        usedWebContentsIds.push(id)
       }
-      this._webContents = this._webContents.filter((webContent, index) => {
-        if (usedwebContentsIndex.indexOf(index) > -1) {
-          return true
-        } else {
-          webContent.finish()
-          return false
-        }
-      })
-      resolve(this._webContents)
-    })
+    }
+    this._closeClassInstances('webContents', usedWebContentsIds)
+    return this._instances.webContent
   }
 
   async getSurveys() {
@@ -720,92 +717,137 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getHomeworks() {
-    return this._getClassSubMenu('Tarefas').then((page) => {
-      return new Promise((resolve, reject) => {
-        const $ = Cheerio.load(page.body)
+    const page = await this._getClassSubMenu('Tarefas')
+    const $ = Cheerio.load(page.body)
 
-        const table = $('.listing')
+    const table = $('.listing')
 
-        if (!table) resolve([])
-        const rows = table.find('tr[class]').toArray()
-        const usedHomeworksIndex = []
+    if (!table) resolve([])
+    const rows = table.find('tr[class]').toArray()
+    const usedHomeworksIds = []
 
-        for (let i = 0; i < rows.length; i += 2) {
-          const cells = $(rows[i]).find('td')
-          const cellDescription = $(rows[i + 1]).find('td')
-          const title = this._removeTagsHtml(cells.eq(1).html())
-          const description = this._removeTagsHtml(cellDescription.html())
-          const date = this._removeTagsHtml(cells.eq(2).html())
-          const dates = this._parseDates(date)
-          let haveGrade = true
-          if (this._removeTagsHtml(cells.eq(3).html()) === 'Não')
-            haveGrade = false
-          const buttonSendHomeworkElement = $(cells.eq(5).find('a[onclick]'))
-          let formSendHomework = null
-          if (buttonSendHomeworkElement.length !== 0) {
-            formSendHomework = this._parseJSFCLJS(
-              buttonSendHomeworkElement.attr('onclick'),
-              $
-            )
-          }
-          const buttonViewHomeworkSubmittedElement = $(
-            cells.eq(6).find('a[onclick]')
-          )
-          let formViewHomeworkSubmitted = null
-          if (buttonViewHomeworkSubmittedElement.length !== 0) {
-            formViewHomeworkSubmitted = this._parseJSFCLJS(
-              buttonViewHomeworkSubmittedElement.attr('onclick'),
-              $
-            )
-          }
-          const form = formSendHomework || formViewHomeworkSubmitted
-          const id = form.postValues.id
-          const homeworkOptions = {
-            title,
-            startDate: dates[0],
-            endDate: dates[1],
-            description,
-            id,
-            formSendHomework,
-            formViewHomeworkSubmitted,
-            haveGrade
-          }
+    for (let i = 0; i < rows.length; i += 2) {
+      const cells = $(rows[i]).find('td')
+      const cellDescription = $(rows[i + 1]).find('td')
+      const title = this._removeTagsHtml(cells.eq(1).html())
+      const description = this._removeTagsHtml(cellDescription.html())
+      const date = this._removeTagsHtml(cells.eq(2).html())
+      const dates = this._parseDates(date)
+      let haveGrade = true
+      if (this._removeTagsHtml(cells.eq(3).html()) === 'Não') haveGrade = false
+      const buttonSendHomeworkElement = $(cells.eq(5).find('a[onclick]'))
+      let formSendHomework = null
+      if (buttonSendHomeworkElement.length !== 0) {
+        formSendHomework = this._parseJSFCLJS(
+          buttonSendHomeworkElement.attr('onclick'),
+          $
+        )
+      }
+      const buttonViewHomeworkSubmittedElement = $(
+        cells.eq(6).find('a[onclick]')
+      )
+      let formViewHomeworkSubmitted = null
+      if (buttonViewHomeworkSubmittedElement.length !== 0) {
+        formViewHomeworkSubmitted = this._parseJSFCLJS(
+          buttonViewHomeworkSubmittedElement.attr('onclick'),
+          $
+        )
+      }
+      const form = formSendHomework || formViewHomeworkSubmitted
+      const id = form.postValues.id
+      const homeworkOptions = {
+        title,
+        startDate: dates[0],
+        endDate: dates[1],
+        description,
+        id,
+        formSendHomework,
+        formViewHomeworkSubmitted,
+        haveGrade
+      }
 
-          const [homeworks, index] = this._updateList(
-            homeworkOptions,
-            id,
-            SigaaHomework,
-            this._homeworks,
-            this.getHomeworks.bind(this)
-          )
-          usedHomeworksIndex.push(index)
-          this._homeworks = homeworks
-        }
-        this._homeworks = this._homeworks.filter((homework, index) => {
-          if (usedHomeworksIndex.indexOf(index) > -1) {
-            return true
-          } else {
-            homework.finish()
-            return false
-          }
-        })
-        resolve(this._homeworks)
+      this._updateClassInstances({
+        instanceOptions: homeworkOptions,
+        instanceId: id,
+        Class: SigaaHomework,
+        type: 'homeworks',
+        updateMethod: this.getHomeworks.bind(this)
       })
-    })
+      usedHomeworksIds.push(id)
+    }
+    this._closeClassInstances('homeworks', usedHomeworksIds)
+    return this._instances.homeworks
   }
 
-  _updateList(options, id, SigaaClass, classList, updateMethod) {
-    const classIndex = classList.findIndex((classItem) => {
-      return id === classItem.id
-    })
-
-    if (classIndex === -1) {
-      const newClass = new SigaaClass(options, updateMethod, this._sigaaSession)
-      classList.push(newClass)
-      return [classList, classList.length - 1]
+  /**
+   * Closes and removes the instance if not in idsToKeep
+   * @param {String} type type of instance E.g topics, news, files.
+   * @param {Array<String>} idsToKeep array with ids to keep E.g. ["1234", "4321"]
+   */
+  _closeClassInstances(type, idsToKeep) {
+    if (this._instances[type] === undefined) {
+      this._instances[type] = []
     } else {
-      classList[classIndex].update(options)
-      return [classList, classIndex]
+      this._instances[type] = this._instances[type].filter((instance) => {
+        try {
+          if (idsToKeep.includes(instance.id)) {
+            return true
+          } else {
+            instance.close()
+            return false
+          }
+        } catch (err) {
+          return false
+        }
+      })
+    }
+    return this._instances[type]
+  }
+  /**
+   * Update instance with new information
+   * If there is an instance with the ID equal to options.id and
+   * the same type, the update method will be called with
+   * instanceOptions
+   * E.g. instance.update(options.instanceOptions)
+   * or create new instance with instanceOptions, updateMethod and sigaaSession instance
+   * E.g. new Class(instanceOptions, updateMethod, sigaaSession)
+   * @param {Object} options
+   * @param {Object} options.instanceOptions Object with new informations
+   * @param {String} [options.instanceId] instance ID to find, or falsy value to creates new instance
+   * @param {FunctionConstructor} options.Class class Constructor if no instance with id
+   * @param {String} options.type type of instance E.g. files, topics, news,
+   * @param {Function} options.updateMethod Function to be sent to the instance in the construction, this function will be called if the update is needed by the instance
+   * @return {Any} return the instance updated/created
+   */
+  _updateClassInstances(options) {
+    const { instanceOptions, instanceId, Class, type, updateMethod } = options
+    if (typeof type !== 'string') {
+      throw new Error('OPTIONS_TYPE_IS_REQUIRED')
+    }
+    if (this._instances[type] === undefined) {
+      this._instances[type] = []
+    }
+    let instance = null
+    if (instanceId !== undefined) {
+      instance = this._instances[type].find((classItem) => {
+        try {
+          return instanceId === classItem.id
+        } catch (err) {
+          return false
+        }
+      })
+    }
+    if (!instance) {
+      const newClass = new Class(
+        instanceOptions,
+        updateMethod,
+        this._sigaaSession
+      )
+      this._instances[type].push(newClass)
+      return newClass
+    } else {
+      instance.update(instanceOptions)
+      return instance
     }
   }
 

@@ -24,7 +24,7 @@ class SigaaSurvey extends SigaaBase {
       this._title = options.title
       this._description = options.description
       this._form = options.form
-      this._finish = false
+      this._close = false
       if (this._awaitUpdate) {
         this._awaitUpdate.bind(this)()
       }
@@ -34,26 +34,26 @@ class SigaaSurvey extends SigaaBase {
   }
 
   get title() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._title
   }
 
   get description() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._description
   }
 
   get id() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._form.postValues.id
   }
 
-  finish() {
-    this._finish = true
+  close() {
+    this._close = true
   }
 
-  _checkIfItWasFinalized() {
-    if (this._finish) {
+  _checkIfItWasClosed() {
+    if (this._close) {
       throw new Error('SURVEY_HAS_BEEN_FINISHED')
     }
   }

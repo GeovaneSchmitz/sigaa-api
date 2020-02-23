@@ -301,7 +301,7 @@ class SigaaSession {
   /**
    * @description flush states of instance
    */
-  finish() {
+  close() {
     this.userLoginState = SigaaTypes.userLoginStates.UNAUTHENTICATED
     this.userType = SigaaTypes.userTypes.UNAUTHENTICATED
     this._tokens = {}

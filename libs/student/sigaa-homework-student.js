@@ -38,7 +38,7 @@ class SigaaHomework extends SigaaBase {
   }
 
   get title() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._title
   }
 
@@ -67,25 +67,25 @@ class SigaaHomework extends SigaaBase {
   }
 
   get endDate() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._endDate
   }
 
   get startDate() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._startDate
   }
 
   get id() {
-    this._checkIfItWasFinalized()
+    this._checkIfItWasClosed()
     return this._id
   }
 
-  finish() {
-    this._finish = true
+  close() {
+    this._close = true
   }
 
-  _checkIfItWasFinalized() {
+  _checkIfItWasClosed() {
     if (this._finish) {
       throw new Error('HOMEWORK_HAS_BEEN_FINISHED')
     }

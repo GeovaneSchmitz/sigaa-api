@@ -68,10 +68,14 @@ class SigaaBase {
         timeString = '00:00'
       }
       const timeSplited = timeString.match(/[0-9]+/g)
+      const year = dateSplited[2]
+      const month = dateSplited[1]
+      const day = dateSplited[0]
+      const hour = ('0' + timeSplited[0]).substr(-2)
+      const minutes = ('0' + timeSplited[1]).substr(-2)
+      const seconds = timeSplited[2] ? ('0' + timeSplited[2]).substr(-2) : '00'
       return new Date(
-        `${dateSplited[2]}-${dateSplited[1]}-${dateSplited[0]}T${(
-          '0' + timeSplited[0]
-        ).substr(-2)}:${('0' + timeSplited[1]).substr(-2)}:00.000`
+        `${year}-${month}-${day}T${hour}:${minutes}:${seconds}.000`
       )
     }
     const dates = []
