@@ -1,6 +1,7 @@
 const SigaaBase = require('../common/sigaa-base')
 const SigaaFile = require('./sigaa-file-student')
 const Cheerio = require('cheerio')
+const FormData = require('formdata-node')
 
 class SigaaForumClass extends SigaaBase {
   constructor(forumOptions, forumUpdate, sigaaSession) {
@@ -17,11 +18,13 @@ class SigaaForumClass extends SigaaBase {
     if (
       forumOptions.title !== undefined &&
       forumOptions.form !== undefined &&
-      forumOptions.id !== undefined
+      forumOptions.id !== undefined &&
+      (forumOptions.isMain === false || forumOptions.isMain === true)
     ) {
       this._title = forumOptions.title
       this._form = forumOptions.form
       this._id = forumOptions.id
+      this._isMain = forumOptions.isMain
     } else {
       throw new Error('INVALID_FORUM_OPTIONS')
     }
@@ -40,6 +43,12 @@ class SigaaForumClass extends SigaaBase {
     }
   }
 
+  async getTopicResponses() {
+    if (this.isMain) {
+      const page = await this._awaitForumPage()
+    }
+  }
+
   async _requestUpdate() {
     if (!this._updatePromise) {
       this._updatePromise = this._updateForum()
@@ -49,7 +58,12 @@ class SigaaForumClass extends SigaaBase {
     }
     return this._updatePromise
   }
-  async _requestForumPage() {
+
+  get isMain() {
+    return this._isMain
+  }
+
+  async _awaitForumPage() {
     if (!this._fullForumPromise) {
       this._fullForumPromise = this._getForumPage()
       this._fullForumPromise.finally(() => {
@@ -73,21 +87,21 @@ class SigaaForumClass extends SigaaBase {
   async getForumType() {
     this._checkIfItWasClosed()
     if (this._forumType === undefined) {
-      await this._requestForumPage()
+      await this._awaitForumPage()
     }
     return this._forumType
   }
   async getDescription() {
     this._checkIfItWasClosed()
     if (this._description === undefined) {
-      await this._requestForumPage()
+      await this._awaitForumPage()
     }
     return this._description
   }
   async getAuthor() {
     this._checkIfItWasClosed()
     if (this._author === undefined) {
-      await this._requestForumPage()
+      await this._awaitForumPage()
     }
     return this._author
   }
@@ -95,7 +109,7 @@ class SigaaForumClass extends SigaaBase {
   async getFile() {
     this._checkIfItWasClosed()
     if (this._file === undefined) {
-      await this._requestForumPage()
+      await this._awaitForumPage()
     }
     return this._file
   }
@@ -106,13 +120,69 @@ class SigaaForumClass extends SigaaBase {
     }
     return this._numOfTopics
   }
+  /**
+   * Post topic in forum
+   * @param {string} title title of topic
+   * @param {string} body body of topic
+   * @param {Buffer} file buffer of file attachment
+   * @param {boolean} notify if notify members
+   */
   async postTopic(title, body, file, notify) {
-    //TODO
+    if (!title) {
+      throw new Error('TITLE_IS_REQUIRED')
+    }
+    if (!body) {
+      throw new Error('BODY_IS_REQUIRED')
+    }
+    if (!this._submitTopicPageForm) {
+      await this._awaitForumPage()
+    }
+    const page = await this._post(
+      this._submitTopicPageForm.action,
+      this._submitTopicPageForm.postValues
+    )
+    const $ = Cheerio.load(page.body, {
+      normalizeWhitespace: true
+    })
+    const formElement = $('form#form')
+    const action = new URL(formElement.attr('action'), page.url.href)
+
+    const inputHiddens = formElement
+      .find('form#form input[type="hidden"]')
+      .toArray()
+    const fileInput = formElement.find('input[type="file"]')
+    const submitButton = formElement.find('input[name="form:btnSalvar"]')
+    const notifyCheckbox = formElement.find('input[type="checkbox"]')
+    if (
+      inputHiddens.length === 0 ||
+      submitButton.length !== 1 ||
+      notifyCheckbox.length !== 1 ||
+      fileInput.length !== 1
+    ) {
+      throw new Error('SIGAA_UNEXPECTED_RESPONSE')
+    }
+    const formData = new FormData()
+    for (const input of inputHiddens) {
+      formData.set($(input).attr('name'), $(input).val())
+    }
+    if (file) {
+      formData.set(fileInput.attr('name'), file)
+    }
+    if (notify) {
+      formData.set(notifyCheckbox.attr('name'), 'on')
+    }
+    formData.set('form:assunto', title)
+    formData.set('form:mensagem', body)
+    formData.set($(submitButton).attr('name'), $(submitButton).val())
+    const responsePage = await this._postMultipart(action, formData)
+    return responsePage.body.includes(
+      'Opera&#231;&#227;o realizada com sucesso!'
+    )
   }
   async getCreationDate() {
     this._checkIfItWasClosed()
     if (this._creationDate === undefined) {
-      await this._requestForumPage()
+      await this._awaitForumPage()
     }
     return this._creationDate
   }
@@ -120,7 +190,7 @@ class SigaaForumClass extends SigaaBase {
   async getMonitorReading() {
     this._checkIfItWasClosed()
     if (this._monitorReading === undefined) {
-      await this._requestForumPage()
+      await this._awaitForumPage()
     }
     return this._monitorReading
   }
@@ -160,6 +230,7 @@ class SigaaForumClass extends SigaaBase {
     formElement.find("input:not([type='button'])").each(function() {
       postValues[$(this).attr('name')] = $(this).val()
     })
+
     this._submitTopicPageForm = {
       action,
       postValues
@@ -205,7 +276,7 @@ class SigaaForumClass extends SigaaBase {
             } else {
               this._file = new SigaaFile(
                 fileObj,
-                this._requestForumPage.bind(this),
+                this._awaitForumPage.bind(this),
                 this._sigaaSession
               )
             }

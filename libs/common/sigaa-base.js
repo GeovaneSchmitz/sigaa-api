@@ -1,9 +1,13 @@
 const https = require('https')
+const http = require('https')
 const querystring = require('querystring')
 const Cheerio = require('cheerio')
 const htmlEntities = require('he')
 const SigaaErrors = require('./sigaa-errors')
 const SigaaSession = require('./sigaa-session')
+const stream = require('stream')
+const zlib = require('zlib')
+
 /**
  * Varable to request in cascade
  * @private
@@ -42,7 +46,11 @@ class SigaaBase {
       method: method,
       headers: {
         'User-Agent':
-          'SIGAA-Api/1.0 (https://github.com/GeovaneSchmitz/SIGAA-node-interface)'
+          'SIGAA-Api/1.0 (https://github.com/GeovaneSchmitz/SIGAA-node-interface)',
+        'Accept-Encoding': 'br, gzip, deflate',
+        Accept: '*/*',
+        'Cache-Control': 'max-age=0',
+        DNT: 1
       }
     }
     if (method === 'POST') {
@@ -104,7 +112,60 @@ class SigaaBase {
     }
     return dates
   }
+  /**
+   * Make a POST multipart request
+   * @async
+   * @param {String} path The path of request or full URL
+   * @param {FormData} formData instance of FormData
+   * @returns {Promise<Object>}
+   * @protected
+   */
+  async _postMultipart(path, formData) {
+    const link = new URL(path, this._sigaaSession.url)
+    const httpOptions = this._makeRequestBasicOptions('POST', link)
 
+    httpOptions.headers = {
+      ...httpOptions.headers,
+      ...formData.headers
+    }
+
+    const buffer = await this._convertReadebleToBuffer(formData.stream)
+    const page = await this._sigaaSession.postRequestChain({
+      url: link,
+      shareSameRequest: false,
+      requestPromiseFunction: () =>
+        this._requestChain(link, httpOptions, buffer)
+    })
+    if (page.statusCode === 200 && formData.get('javax.faces.ViewState')) {
+      this._sigaaSession.reactivateCachePageByViewState(
+        formData.get('javax.faces.ViewState')
+      )
+    }
+    return page
+  }
+  /**
+   * Convert stream.Readable to buffer
+   * @param {stream.Readable} stream readable stream
+   * @return {Promise<Buffer>}
+   * @async
+   */
+  _convertReadebleToBuffer(stream) {
+    const buffers = []
+    return new Promise((resolve, reject) => {
+      stream.on('data', (buffer) => {
+        buffers.push(buffer)
+      })
+
+      stream.on('end', () => {
+        const buffer = Buffer.concat(buffers)
+        resolve(buffer)
+      })
+
+      stream.on('error', (err) => {
+        reject(err)
+      })
+    })
+  }
   /**
    * Make a POST request
    * @async
@@ -115,35 +176,41 @@ class SigaaBase {
    * @returns {Promise<Object>}
    * @protected
    */
-  _post(path, postValues, options = {}) {
+  async _post(path, postValues, options = {}) {
     const link = new URL(path, this._sigaaSession.url)
     const httpOptions = this._makeRequestBasicOptions('POST', link)
     const body = querystring.stringify(postValues)
     httpOptions.headers['Content-Length'] = Buffer.byteLength(body)
-    return new Promise((resolve, reject) => {
-      let cachePage = null
-      if (!(options && options.noCache === true)) {
-        cachePage = this._sigaaSession.getPage({
-          method: 'POST',
-          url: link.href,
-          requestHeaders: httpOptions.headers,
-          postValues
-        })
+    let cachePage = null
+    if (!(options && options.noCache === true)) {
+      cachePage = this._sigaaSession.getPage({
+        method: 'POST',
+        url: link.href,
+        requestHeaders: httpOptions.headers,
+        postValues
+      })
+    }
+    if (cachePage) {
+      return cachePage
+    } else {
+      const page = await this._sigaaSession.postRequestChain({
+        url: link,
+        body,
+        shareSameRequest: options.shareSameRequest,
+        requestPromiseFunction: () =>
+          this._requestChain(link, httpOptions, body)
+      })
+      if (page.statusCode === 200) {
+        if (postValues && postValues['javax.faces.ViewState']) {
+          this._sigaaSession.reactivateCachePageByViewState(
+            postValues['javax.faces.ViewState']
+          )
+        }
+        this._storePage(page, httpOptions, link, body)
       }
-      if (cachePage) {
-        resolve(cachePage)
-      } else {
-        resolve(
-          this._sigaaSession.postRequestChain({
-            url: link,
-            body: body,
-            shareSameRequest: options.shareSameRequest,
-            requestPromiseFunction: () =>
-              this._requestChain(link, httpOptions, postValues, body)
-          })
-        )
-      }
-    })
+
+      return page
+    }
   }
 
   /**
@@ -187,122 +254,150 @@ class SigaaBase {
    * @returns {Promise<Object>}
    * @protected
    */
-  _get(path, options) {
+  async _get(path, options) {
     const link = new URL(path, this._sigaaSession.url)
 
     const httpOptions = this._makeRequestBasicOptions('GET', link)
 
-    return new Promise((resolve) => {
-      let cachePage = null
-      if (!(options && options.noCache === true)) {
-        cachePage = this._sigaaSession.getPage({
-          method: 'GET',
-          url: link.href,
-          requestHeaders: httpOptions.headers
-        })
-      }
-      if (cachePage) {
-        resolve(cachePage)
-      } else {
-        resolve(
-          this._sigaaSession.storeRunningGetRequest({
-            path: link,
-            requestPromiseFunction: () => this._requestChain(link, httpOptions)
-          })
-        )
-      }
-    })
+    let cachePage = null
+    if (!(options && options.noCache === true)) {
+      cachePage = this._sigaaSession.getPage({
+        method: 'GET',
+        url: link.href,
+        requestHeaders: httpOptions.headers
+      })
+    }
+    if (cachePage) {
+      return cachePage
+    } else {
+      const page = await this._sigaaSession.storeRunningGetRequest({
+        path: link,
+        requestPromiseFunction: () => this._requestChain(link, httpOptions)
+      })
+      this._storePage(page, httpOptions, link)
+      return page
+    }
   }
 
   /**
-   * Make a HTTP request
+   * Make a HTTP request for a page
    * @async
    * @param {URL} link url of request
    * @param {Object} options http.request options
-   * @param {Object} [postValues] Post values in format, key as field name, and value as field value.
-   * @param {String} [body] body of request
-   * @returns {Promise<http.ClientRequest>}
+   * @param {String} [requestBody] body of request
+   * @returns {Promise<Object>}
    * @private
    */
-  _requestHTTP(link, options, postValues, body) {
-    options.headers.Cookies
+  _requestPage(link, options, requestBody) {
+    return this._requestHTTP(options, requestBody).then(
+      ({ bodyStream, headers, statusCode }) => {
+        return this._convertReadebleToBuffer(bodyStream).then((bodyBuffer) => {
+          return {
+            body: bodyBuffer.toString(),
+            url: link,
+            headers,
+            statusCode
+          }
+        })
+      }
+    )
+  }
+  /**
+   * Make a HTTP request
+   * @async
+   * @param {Object} options http.request options
+   * @param {String} [body] body of request
+   * @returns {Promise<true>}
+   * @private
+   */
+  _requestHTTP(options, body) {
     return new Promise((resolve, reject) => {
-      const req = https.request(options, (page) => {
-        page.setEncoding('utf8')
-        page.url = link
-        if (page.headers['set-cookie']) {
-          const cookies = page.headers['set-cookie'].join(' ')
+      const req = https.request(options, (response) => {
+        let streamDecompressed
+        switch (response.headers['content-encoding']) {
+          case 'br':
+            streamDecompressed = zlib.createBrotliDecompress()
+            response.pipe(streamDecompressed)
+            break
+          case 'gzip':
+            streamDecompressed = zlib.createGunzip()
+            response.pipe(streamDecompressed)
+            break
+          case 'deflate':
+            streamDecompressed = zlib.createInflate()
+            response.pipe(streamDecompressed)
+            break
+          default:
+            streamDecompressed = response
+            break
+        }
+        if (response.headers['set-cookie']) {
+          const cookies = response.headers['set-cookie'].join(' ')
           const token = cookies.match(/JSESSIONID=[^;]*/g)
           if (token) {
             this._sigaaSession.setToken(options.hostname, token[0])
           }
         }
-        if (Array.isArray(page.headers.location)) {
-          page.headers.location = page.headers.location[0]
+        if (Array.isArray(response.headers.location)) {
+          response.headers.location = response.headers.location[0]
         }
-
-        page.body = ''
-        page.on('data', (chunk) => {
-          page.body = page.body + chunk
-        })
-
-        page.on('end', () => {
-          if (page.statusCode === 200) {
-            const $ = Cheerio.load(page.body, {
-              normalizeWhitespace: true
-            })
-            const responseViewStateEl = $("input[name='javax.faces.ViewState']")
-            let responseViewState = null
-            if (responseViewStateEl) {
-              responseViewState = responseViewStateEl.val()
-            }
-            if (postValues && postValues['javax.faces.ViewState']) {
-              this._sigaaSession.reactivateCachePageByViewState(
-                postValues['javax.faces.ViewState']
-              )
-            }
-            this._sigaaSession.storePage({
-              method: options.method,
-              url: link,
-              requestHeaders: options.headers,
-              responseHeaders: page.headers,
-              body: page.body,
-              viewState: responseViewState,
-              postValues
-            })
-          }
-          resolve(page)
+        resolve({
+          bodyStream: streamDecompressed,
+          headers: response.headers,
+          statusCode: response.statusCode
         })
       })
 
-      req.on('error', (e) => {
-        const response = {
-          status: 'ERROR',
-          errorCode: e.code,
-          error: e
-        }
-        reject(response)
+      req.on('error', (err) => {
+        reject(err)
       })
-
-      if (options.method === 'POST') req.write(body)
+      if (body) req.write(body)
       req.end()
     })
   }
   /**
+   * Store page in cache
+   * @param {https.IncomingMessage} page
+   * @param {Object} options
+   * @param {URL} link
+   * @param {string} body body of request
+   */
+  _storePage(page, options, link, body) {
+    if (page.statusCode === 200) {
+      const $ = Cheerio.load(page.body, {
+        normalizeWhitespace: true
+      })
+      const responseViewStateEl = $("input[name='javax.faces.ViewState']")
+      let responseViewState = null
+      if (responseViewStateEl) {
+        responseViewState = responseViewStateEl.val()
+      }
+
+      this._sigaaSession.storePage({
+        method: options.method,
+        url: link,
+        requestHeaders: options.headers,
+        responseHeaders: page.headers,
+        body: body || null,
+        viewState: responseViewState
+      })
+    }
+  }
+
+  /**
    * Promise chain request if needed
    * @param {URL} link url of request
    * @param {Object} options http.request options
-   * @param {Object} [postValues] Post values in format, key as field name, and value as field value.
    * @param {String} [body] body of request
    * @returns {Promise<http.ClientRequest>}
    */
-  _requestChain(link, options, postValues, body) {
+  _requestChain(link, options, body) {
     return new Promise((resolve, reject) => {
       if (!options.headers.Cookie) {
         requestChainWithoutCookies.length++
         const cascadeLength = requestChainWithoutCookies.length
         requestChainWithoutCookies.promise = requestChainWithoutCookies.promise
-          .then(() => this._requestHTTP(link, options, postValues, body))
+          .then(() => this._requestPage(link, options, body))
           .then((req) => resolve(req))
           .catch((err) => reject(err))
           .finally(() => {
@@ -312,7 +407,7 @@ class SigaaBase {
             }
           })
       } else {
-        resolve(this._requestHTTP(link, options, postValues, body))
+        resolve(this._requestPage(link, options, body))
       }
     })
   }

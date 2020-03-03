@@ -317,7 +317,6 @@ class SigaaSession {
    * @param {('GET'|'POST')} pageObj.method Page HTTP request method. ex: POST, GET
    * @param {URL} pageObj.url Page URL
    * @param {Object} pageObj.requestHeaders Page HTTP request Headers
-   * @param {Object} [pageObj.postValues] Page post values in format, key as field name, and value as field value.
    * @param {Object} pageObj.responseHeaders The page HTTP response Headers
    * @param {String} pageObj.body Page body of response
    * @param {string} pageObj.viewState Page viewState is the value of the forms 'javax.faces.ViewState' field.
@@ -342,7 +341,6 @@ class SigaaSession {
         }
       }, this.timeoutCache)
     }
-    if (pageObj.method === 'POST') page.postValues = pageObj.postValues
     let replace = false
     this._cachePages = this._cachePages.map((cachePage) => {
       if (
@@ -350,9 +348,7 @@ class SigaaSession {
         cachePage.requestHeaders === page.requestHeaders
       ) {
         if (pageObj.method === 'POST') {
-          if (
-            JSON.stringify(page.postValues) === JSON.stringify(cachePage.page)
-          ) {
+          if (page.body === cachePage.body) {
             replace = true
             return page
           } else {
@@ -401,9 +397,9 @@ class SigaaSession {
    * @param {('POST'|'GET')} options.method Method of request
    * @param {URL} options.url URL of request
    * @param {Object} options.requestHeaders requestHeaders in format, key as field name, and value as field value.
-   * @param {Object} [options.postValues] Page post values in format, key as field name, and value as field value.
+   * @param {Object} [options.body] body of request
    */
-  getPage({ method, url, requestHeaders, postValues }) {
+  getPage({ method, url, requestHeaders, body }) {
     const cachePage = this._cachePages.find((cachePage) => {
       if (method === 'GET') {
         return (
@@ -418,7 +414,7 @@ class SigaaSession {
           cachePage.url === url.href &&
           JSON.stringify(cachePage.requestHeaders) ===
             JSON.stringify(requestHeaders) &&
-          JSON.stringify(cachePage.postValues) === JSON.stringify(postValues)
+          cachePage.body === body
         )
       }
     })

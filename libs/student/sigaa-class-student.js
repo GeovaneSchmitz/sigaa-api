@@ -325,6 +325,7 @@ class SigaaClassStudent extends SigaaBase {
             attachmentElement
           )
           forumOptions.id = this._forumsIdIndex
+          forumOptions.isMain = true
           this._forumsIdIndex++
           const forum = this._updateClassInstances({
             instanceOptions: forumOptions,
@@ -457,7 +458,8 @@ class SigaaClassStudent extends SigaaBase {
           numOfTopics,
           author,
           date,
-          form
+          form,
+          isMain: true
         }
         this._updateClassInstances({
           instanceId: id,

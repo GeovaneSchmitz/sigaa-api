@@ -60,82 +60,77 @@ class SigaaFile extends SigaaBase {
   }
 
   async download(basepath, callback, retry = true) {
+    this._checkIfItWasClosed()
     try {
+      let file
+      const fileStats = fs.lstatSync(basepath)
+      if (!(fileStats.isDirectory() || fileStats.isFile())) {
+        throw new Error('FILE_PATH_NOT_EXISTS')
+      }
+      const link = new URL(this._form.action)
+      const options = this._makeRequestBasicOptions('POST', link)
+      // this converts post parameters to string
+      const postValuesString = querystring.stringify(this._form.postValues)
+      // this inserts post parameters length to  header http
+
+      options.headers['Content-Length'] = Buffer.byteLength(postValuesString)
+      const response = await this._requestHTTP(options, postValuesString)
       return await new Promise((resolve, reject) => {
-        this._checkIfItWasClosed()
-        let file
-        const fileStats = fs.lstatSync(basepath)
-        if (!(fileStats.isDirectory() || fileStats.isFile())) {
-          reject(new Error('FILE_PATH_NOT_EXISTS'))
-        }
-        const link = new URL(this._form.action)
-        const options = this._makeRequestBasicOptions('POST', link)
-        // this converts post parameters to string
-        const postValuesString = querystring.stringify(this._form.postValues)
-        // this inserts post parameters length to  header http
-
-        options.headers['Content-Length'] = Buffer.byteLength(postValuesString)
-
-        // makes request
         try {
-          const request = https.request(options, (response) => {
-            switch (response.statusCode) {
-              case 200:
-                try {
-                  this._sigaaSession.reactivateCachePageByViewState(
-                    this._form.postValues['javax.faces.ViewState']
-                  )
-                  let filepath
-                  if (fileStats.isDirectory()) {
-                    if (response.headers['content-disposition']) {
-                      const filename = response.headers['content-disposition']
-                        .replace(/([\S\s]*?)filename="/gm, '')
-                        .slice(0, -1)
-                      filepath = path.join(basepath, filename)
-                    } else {
-                      reject(new Error('FILE_DOWNLOAD_EXPIRED'))
-                    }
+          switch (response.statusCode) {
+            case 200:
+              try {
+                this._sigaaSession.reactivateCachePageByViewState(
+                  this._form.postValues['javax.faces.ViewState']
+                )
+                let filepath
+                if (fileStats.isDirectory()) {
+                  if (response.headers['content-disposition']) {
+                    const filename = response.headers['content-disposition']
+                      .replace(/([\S\s]*?)filename="/gm, '')
+                      .slice(0, -1)
+                    filepath = path.join(basepath, filename)
                   } else {
-                    filepath = basepath
+                    reject(new Error('FILE_DOWNLOAD_EXPIRED'))
                   }
-
-                  file = fs.createWriteStream(filepath)
-                  response.pipe(file) // save to file
-
-                  if (callback) {
-                    response.on('data', (chunk) => {
-                      callback(file.bytesWritten)
-                    })
-                  }
-
-                  file.on('finish', () => {
-                    file.close() // close() is async, call resolve after close completes.
-                    resolve(filepath)
-                  })
-
-                  response.on('error', (err) => {
-                    file.close()
-                    fs.unlinkSync(filepath)
-                    reject(err)
-                  })
-                  file.on('error', (err) => {
-                    file.close()
-                    fs.unlinkSync(filepath)
-                    reject(err)
-                  })
-                } catch (err) {
-                  reject(err)
+                } else {
+                  filepath = basepath
                 }
-                break
-              case 302:
-                reject(new Error('FILE_DOWNLOAD_EXPIRED'))
-                break
-              default:
-                reject(new Error(`SIGAA_STATUSCODE_${response.statusCode}`))
-            }
-          })
-          request.write(postValuesString)
-          request.end()
+
+                file = fs.createWriteStream(filepath)
+                response.bodyStream.pipe(file) // save to file
+
+                if (callback) {
+                  response.bodyStream.on('data', () => {
+                    callback(file.bytesWritten)
+                  })
+                }
+
+                file.on('finish', () => {
+                  file.close() // close() is async, call resolve after close completes.
+                  resolve(filepath)
+                })
+
+                response.bodyStream.on('error', (err) => {
+                  file.close()
+                  fs.unlinkSync(filepath)
+                  reject(err)
+                })
+                file.on('error', (err) => {
+                  file.close()
+                  fs.unlinkSync(filepath)
+                  reject(err)
+                })
+              } catch (err) {
+                reject(err)
+              }
+              break
+            case 302:
+              reject(new Error('FILE_DOWNLOAD_EXPIRED'))
+              break
+            default:
+              reject(new Error(`SIGAA_STATUSCODE_${response.statusCode}`))
+          }
         } catch (err) {
           reject(err)
         }

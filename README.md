@@ -1,4 +1,4 @@
-# Disclamer
+# Disclaimer
 Eu sou estudante do IFSC, onde desenvolvo este projeto em tempo livre, por causa disto esta API não oferece suporte para qualquer outro tipo de conta além de estudante.
 Ela está em fase inicial e não possui todas as funcionalidades do SIGAA, e ela pode sofrer mudanças complexas, leve em consideração antes de usar no seu projeto.
 
