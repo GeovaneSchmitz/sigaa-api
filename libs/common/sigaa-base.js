@@ -419,6 +419,12 @@ class SigaaBase {
    */
   _removeTagsHtml(text) {
     try {
+      const removeTags = [
+        {
+          pattern: ['span', 'em', 'b', 'i', 'strong'], // remove without add space
+          replacement: ''
+        }
+      ]
       const replacesBeforeParseHTMLCharacters = [
         {
           pattern: /\n|\xA0|\t/g, // match tabs, break lines, etc
@@ -461,6 +467,14 @@ class SigaaBase {
       ]
 
       let newText = text
+      for (const replace of removeTags) {
+        for (const tag of replace.pattern) {
+          newText = newText.replace(
+            RegExp(`<${tag}>|<${tag} [\s\S]*?>|</${tag}>`, 'g'),
+            replace.replacement
+          )
+        }
+      }
       for (const replace of replacesBeforeParseHTMLCharacters) {
         newText = newText.replace(replace.pattern, replace.replacement)
       }
