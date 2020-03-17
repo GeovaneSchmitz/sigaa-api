@@ -1,4 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
+const SigaaErrors = require('../common/sigaa-errors')
 
 class SigaaSurvey extends SigaaBase {
   constructor(options, updateAttachment, sigaaSession) {
@@ -7,7 +8,7 @@ class SigaaSurvey extends SigaaBase {
     if (updateAttachment !== undefined) {
       this._updateAttachment = updateAttachment
     } else {
-      throw new Error('ATTACHMENTUPDATE_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_SURVEY_UPDATE_IS_NECESSARY)
     }
   }
 
@@ -29,7 +30,7 @@ class SigaaSurvey extends SigaaBase {
         this._awaitUpdate.bind(this)()
       }
     } else {
-      throw new Error('INVALID_SURVEY_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_SURVEY_OPTIONS)
     }
   }
 
@@ -54,7 +55,7 @@ class SigaaSurvey extends SigaaBase {
 
   _checkIfItWasClosed() {
     if (this._close) {
-      throw new Error('SURVEY_HAS_BEEN_FINISHED')
+      throw new Error(SigaaErrors.SIGAA_SURVEY_HAS_BEEN_FINISHED)
     }
   }
 }

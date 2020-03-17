@@ -1,4 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
+const SigaaErrors = require('../common/sigaa-errors')
 
 class SigaaQuiz extends SigaaBase {
   constructor(options, updateQuiz, sigaaSession) {
@@ -7,7 +8,7 @@ class SigaaQuiz extends SigaaBase {
     if (updateQuiz !== undefined) {
       this._updateQuiz = updateQuiz
     } else {
-      throw new Error('QUIZ_UPDATEQUIZ_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_QUIZ_UPDATE_IS_NECESSARY)
     }
   }
 
@@ -30,7 +31,7 @@ class SigaaQuiz extends SigaaBase {
       this._formSendAnswers = options.formSendAnswers
       this._formViewAnswersSubmitted = options.formViewAnswersSubmitted
     } else {
-      throw new Error('INVALID_QUIZ_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_QUIZ_OPTIONS)
     }
   }
 
@@ -48,10 +49,10 @@ class SigaaQuiz extends SigaaBase {
     return new Promise((resolve, reject) => {
       try {
         if (this._formSendAnswers !== undefined) {
-          throw new Error('QUIZ_YET_NO_SENT_ANSWERS')
+          throw new Error(SigaaErrors.SIGAA_QUIZ_YET_NO_SENT_ANSWERS)
         }
         if (this._formViewAnswersSubmitted === undefined) {
-          throw new Error('QUIZ_FORM_IS_UNDEFINED')
+          throw new Error(SigaaErrors.SIGAA_QUIZ_FORM_IS_UNDEFINED)
         }
         this._post(
           this._formViewAnswersSubmitted.action,
@@ -64,21 +65,23 @@ class SigaaQuiz extends SigaaBase {
                   'Acabou o prazo para visualizar as respostas.'
                 )
               ) {
-                reject(new Error('QUIZ_DEADLINE_TO_READ_ANSWERS'))
+                reject(
+                  new Error(SigaaErrors.SIGAA_QUIZ_DEADLINE_TO_READ_ANSWERS)
+                )
               }
-              reject(new Error('QUIZ_TODO'))
+              reject(new Error(SigaaErrors.SIGAA_INCOMPLETE))
               break
             case 302:
-              reject(new Error('QUIZ_EXPIRED'))
+              reject(new Error(SigaaErrors.SIGAA_QUIZ_EXPIRED))
               break
             default:
-              reject(new Error(`SIGAA_UNEXPECTED_RESPONSE`))
+              reject(new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE))
           }
         })
       } catch (err) {
         if (
-          err.message === 'QUIZ_DEADLINE_TO_READ_ANSWERS' ||
-          err.message === 'QUIZ_YET_NO_SENT_ANSWERS'
+          err.message === SigaaErrors.SIGAA_QUIZ_DEADLINE_TO_READ_ANSWERS ||
+          err.message === SigaaErrors.SIGAA_QUIZ_YET_NO_SENT_ANSWERS
         ) {
           reject(err)
         }
@@ -107,7 +110,7 @@ class SigaaQuiz extends SigaaBase {
 
   _checkIfItWasClosed() {
     if (this._close) {
-      throw new Error('QUIZ_HAS_BEEN_FINISHED')
+      throw new Error(SigaaErrors.SIGAA_QUIZ_HAS_BEEN_FINISHED)
     }
   }
 }

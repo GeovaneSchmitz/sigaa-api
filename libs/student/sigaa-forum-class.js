@@ -1,4 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
+const SigaaErrors = require('../common/sigaa-errors')
 const SigaaFile = require('./sigaa-file-student')
 const Cheerio = require('cheerio')
 const FormData = require('formdata-node')
@@ -10,7 +11,7 @@ class SigaaForumClass extends SigaaBase {
     if (forumUpdate !== undefined) {
       this._updateForum = forumUpdate
     } else {
-      throw new Error('FORUM_UPDATE_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_FORUM_UPDATE_IS_NECESSARY)
     }
   }
 
@@ -26,7 +27,7 @@ class SigaaForumClass extends SigaaBase {
       this._id = forumOptions.id
       this._isMain = forumOptions.isMain
     } else {
-      throw new Error('INVALID_FORUM_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_FORUM_OPTIONS)
     }
 
     if (forumOptions.type !== undefined) {
@@ -128,11 +129,11 @@ class SigaaForumClass extends SigaaBase {
    * @param {boolean} notify if notify members
    */
   async postTopic(title, body, file, notify) {
-    if (!title) {
-      throw new Error('TITLE_IS_REQUIRED')
+    if (!title || typeof title !== 'string') {
+      throw new Error(SigaaErrors.SIGAA_FORUM_TITLE_IS_INVALID)
     }
-    if (!body) {
-      throw new Error('BODY_IS_REQUIRED')
+    if (!body || typeof body !== 'string') {
+      throw new Error(SigaaErrors.SIGAA_FORUM_BODY_IS_INVALID)
     }
     if (!this._submitTopicPageForm) {
       await this._awaitForumPage()
@@ -159,7 +160,7 @@ class SigaaForumClass extends SigaaBase {
       notifyCheckbox.length !== 1 ||
       fileInput.length !== 1
     ) {
-      throw new Error('SIGAA_UNEXPECTED_RESPONSE')
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
     const formData = new FormData()
     for (const input of inputHiddens) {
@@ -197,7 +198,7 @@ class SigaaForumClass extends SigaaBase {
 
   _checkIfItWasClosed() {
     if (this._close) {
-      throw new Error('FORUM_HAS_BEEN_FINISHED')
+      throw new Error(SigaaErrors.SIGAA_FORUM_HAS_BEEN_FINISHED)
     }
   }
 
@@ -240,7 +241,7 @@ class SigaaForumClass extends SigaaBase {
   _parseForumTable($) {
     const tableElement = $('table.formAva > tbody')
     if (tableElement.length === 0) {
-      throw new Error('SIGAA_UNEXPECTED_RESPONSE')
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
     const rows = tableElement.find('tr').toArray()
     for (const row of rows) {

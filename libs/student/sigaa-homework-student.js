@@ -1,4 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
+const SigaaErrors = require('../common/sigaa-errors')
 
 class SigaaHomework extends SigaaBase {
   constructor(options, homeworkUpdate, sigaaSession) {
@@ -7,7 +8,7 @@ class SigaaHomework extends SigaaBase {
     if (homeworkUpdate !== undefined) {
       this._homeworkUpdate = homeworkUpdate
     } else {
-      throw new Error('HOMEWORK_UPDATE_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_HOMEWORK_UPDATE_IS_NECESSARY)
     }
   }
 
@@ -33,7 +34,7 @@ class SigaaHomework extends SigaaBase {
       this._description = options.description
       this._haveGrade = options.haveGrade
     } else {
-      throw new Error('INVALID_HOMEWORK_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_HOMEWORK_OPTIONS)
     }
   }
 
@@ -87,7 +88,7 @@ class SigaaHomework extends SigaaBase {
 
   _checkIfItWasClosed() {
     if (this._finish) {
-      throw new Error('HOMEWORK_HAS_BEEN_FINISHED')
+      throw new Error(SigaaErrors.SIGAA_HOMEWORK_HAS_BEEN_FINISHED)
     }
   }
 }

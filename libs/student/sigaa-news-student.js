@@ -1,4 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
+const SigaaErrors = require('../common/sigaa-errors')
 const Cheerio = require('cheerio')
 
 class SigaaNews extends SigaaBase {
@@ -8,7 +9,7 @@ class SigaaNews extends SigaaBase {
     if (newsUpdate !== undefined) {
       this._updateNews = newsUpdate
     } else {
-      throw new Error('NEWS_UPDATE_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_NEWS_UPDATE_IS_NECESSARY)
     }
   }
 
@@ -17,7 +18,7 @@ class SigaaNews extends SigaaBase {
       this._title = newsOptions.title
       this._form = newsOptions.form
     } else {
-      throw new Error('INVALID_NEWS_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_NEWS_OPTIONS)
     }
   }
 
@@ -36,7 +37,7 @@ class SigaaNews extends SigaaBase {
 
   _checkIfItWasClosed() {
     if (this._close) {
-      throw new Error('NEWS_HAS_BEEN_FINISHED')
+      throw new Error(SigaaErrors.SIGAA_NEWS_HAS_BEEN_FINISHED)
     }
   }
 
@@ -61,13 +62,15 @@ class SigaaNews extends SigaaBase {
     try {
       const page = await this._post(this._form.action, this._form.postValues)
       if (page.statusCode !== 200) {
-        throw new Error('SIGAA_UNEXPECTED_RESPONSE')
+        throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
       }
       const $ = Cheerio.load(page.body, {
         normalizeWhitespace: true
       })
       const newsElement = $('ul.form')
-      if (newsElement.length === 0) throw new Error('NEWS_ELEMENT_NOT_FOUND')
+      if (newsElement.length === 0) {
+        throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
+      }
       const els = newsElement.find('span')
       const dateString = this._removeTagsHtml(els.eq(1).html())
       this._date = this._parseDates(dateString)[0]
@@ -77,7 +80,7 @@ class SigaaNews extends SigaaBase {
         await this._updateNews()
         return this._getFullNews(false)
       } else {
-        throw new Error('SIGAA_UNEXPECTED_RESPONSE')
+        throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
       }
     }
   }

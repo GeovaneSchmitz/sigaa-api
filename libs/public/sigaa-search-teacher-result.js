@@ -1,6 +1,7 @@
 const Cheerio = require('cheerio')
 
 const SigaaBase = require('../common/sigaa-base')
+const SigaaErrors = require('../common/sigaa-errors')
 
 class SigaaSearchTeacherResult extends SigaaBase {
   constructor(options, sigaaSession) {
@@ -16,7 +17,7 @@ class SigaaSearchTeacherResult extends SigaaBase {
       this._pageURL = options.pageURL
       this._photoURL = options.photoURL
     } else {
-      throw new Error('INVALID_TEACHER_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_TEACHER_OPTIONS)
     }
   }
 

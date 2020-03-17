@@ -16,18 +16,16 @@ let requestChainWithoutCookies = { promise: Promise.resolve(), length: 0 }
 /**
  * HTTP request and response utility class
  * @class SigaaBase
+ * @param {SigaaSession} sigaaSession A instance of SigaaSession
+ * @throws {SigaaErrors.SIGAA_SESSION_IS_NECESSARY} If sigaaSession is not an instance of Sigaa Session
  * @private
  */
 class SigaaBase {
-  /**
-   * @param {SigaaSession} sigaaSession A instance of SigaaSession
-   * @throws {SIGAA_SESSION_IS_NECESSARY} If sigaaSession is not an instance of Sigaa Session
-   */
   constructor(sigaaSession) {
     if (sigaaSession instanceof SigaaSession) {
       this._sigaaSession = sigaaSession
     } else {
-      throw new Error('SIGAA_SESSION_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_SESSION_IS_NECESSARY)
     }
   }
 
@@ -556,7 +554,7 @@ class SigaaBase {
       )
       const formEl = $(`#${formQuery}`)
       if (!formEl) {
-        throw new Error('FORM_NOT_FOUND')
+        throw new Error(SigaaErrors.SIGAA_SFCLJS_FORM_NOT_FOUND)
       }
       const postValuesString =
         '{' +
@@ -574,7 +572,7 @@ class SigaaBase {
       Object.assign(form.postValues, postValuesJSFCLJ)
       return form
     } else {
-      throw new Error('FORM_NOT_FOUND')
+      throw new Error(SigaaErrors.SIGAA_SFCLJS_FORM_NOT_FOUND)
     }
   }
 

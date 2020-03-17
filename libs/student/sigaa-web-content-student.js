@@ -1,4 +1,5 @@
 const SigaaBase = require('../common/sigaa-base')
+const SigaaErrors = require('../common/sigaa-errors')
 const Cheerio = require('cheerio')
 
 class SigaaWebcontent extends SigaaBase {
@@ -8,7 +9,7 @@ class SigaaWebcontent extends SigaaBase {
     if (updateAttachment !== undefined) {
       this._updateWebContent = updateAttachment
     } else {
-      throw new Error('WEBCONTENT_UPDATEWEBCONTENT_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_WEBCONTENT_UPDATE_IS_NECESSARY)
     }
   }
 
@@ -22,7 +23,7 @@ class SigaaWebcontent extends SigaaBase {
       this._form = options.form
       this._close = false
     } else {
-      throw new Error('INVALID_WEBCONTENT_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_WEBCONTENT_OPTIONS)
     }
   }
 
@@ -91,9 +92,9 @@ class SigaaWebcontent extends SigaaBase {
         }
         return this._description
       } else if (page.statusCode === 302) {
-        throw new Error('WEBCONTENT_EXPIRED')
+        throw new Error(SigaaErrors.SIGAA_WEBCONTENT_EXPIRED)
       } else {
-        throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
+        throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
       }
     } catch (err) {
       if (retry) {
@@ -116,7 +117,7 @@ class SigaaWebcontent extends SigaaBase {
 
   _checkIfItWasClosed() {
     if (this._close) {
-      throw new Error('WEBCONTENT_HAS_BEEN_FINISHED')
+      throw new Error(SigaaErrors.SIGAA_WEBCONTENT_HAS_BEEN_FINISHED)
     }
   }
 }

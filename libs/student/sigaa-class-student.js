@@ -2,6 +2,7 @@ const Cheerio = require('cheerio')
 
 const SigaaBase = require('../common/sigaa-base')
 const SigaaSession = require('../common/sigaa-session')
+const SigaaErrors = require('../common/sigaa-errors')
 
 const SigaaTopic = require('./sigaa-topic-student')
 const SigaaNews = require('./sigaa-news-student')
@@ -42,7 +43,7 @@ class SigaaClassStudent extends SigaaBase {
       this._form = options.form
       this._period = options.period
     } else {
-      throw new Error('CLASS_MISSING_PARAMETERS')
+      throw new Error(SigaaErrors.SIGAA_CLASS_MISSING_PARAMETERS)
     }
     if (options.location) {
       this._location = options.location
@@ -83,9 +84,9 @@ class SigaaClassStudent extends SigaaBase {
    * Request the class page using the class ID,
    * it is slower than requestClassPageUsingForm,
    * but works if the form is invalid
-   * @throws {CLASS_NOT_FOUND} If not found class with same ID
-   * @throws {ACCOUNT_SESSION_EXPIRED} If session expired
-   * @throws {SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
+   * @throws {SigaaErrors.SIGAA_SESSION_EXPIRED} If session expired
+   * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
+   * @throws {SigaaErrors.SIGAA_CLASS_NOT_FOUND} If not found class with same ID
    * @return {<Promise>Object} response page
    * @private
    * @async
@@ -98,7 +99,7 @@ class SigaaClassStudent extends SigaaBase {
       })
       const table = $('.listagem')
       if (table.length === 0) {
-        throw new Error('CLASS_NOT_FOUND')
+        throw new Error(SigaaErrors.SIGAA_CLASS_NOT_FOUND)
       }
       const rows = table.find('tbody > tr').toArray()
       const foundClass = rows.some((row) => {
@@ -112,16 +113,16 @@ class SigaaClassStudent extends SigaaBase {
         }
       })
       if (!foundClass) {
-        throw new Error('CLASS_NOT_FOUND')
+        throw new Error(SigaaErrors.SIGAA_CLASS_NOT_FOUND)
       }
       return this._requestClassPageUsingForm()
     } else if (
       page.statusCode === 302 &&
       page.headers.location.includes('/sigaa/expirada.jsp')
     ) {
-      throw new Error('ACCOUNT_SESSION_EXPIRED')
+      throw new Error(SigaaErrors.SIGAA_SESSION_EXPIRED)
     } else {
-      throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
   }
   /**
@@ -131,7 +132,7 @@ class SigaaClassStudent extends SigaaBase {
    * @private
    * @return {<Promise>Object} response page
    * @async
-   * @throws {SIGAA_UNEXPECTED_RESPONSE} If Class page is invalid, the form probably expired.
+   * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If Class page is invalid, the form probably expired.
    */
   async _requestClassPageUsingForm() {
     const page = await this._post(this._form.action, this._form.postValues, {
@@ -139,11 +140,11 @@ class SigaaClassStudent extends SigaaBase {
     })
     if (page.statusCode === 200) {
       if (page.body.includes('Comportamento Inesperado!')) {
-        throw new Error('SIGAA_UNEXPECTED_RESPONSE')
+        throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
       }
       return page
     } else {
-      throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
   }
   /**
@@ -570,7 +571,7 @@ class SigaaClassStudent extends SigaaBase {
         return this._removeTagsHtml($(titleElement).html()) === cardTitle
       })
     if (!titleElement) {
-      throw new Error('CARD_TITLE_NOT_FOUND')
+      throw new Error(SigaaErrors.SIGAA_TITLE_NOT_FOUND)
     } else {
       return $(titleElement)
         .parent()
@@ -818,13 +819,14 @@ class SigaaClassStudent extends SigaaBase {
    * @param {String} [options.instanceId] instance ID to find, or falsy value to creates new instance
    * @param {FunctionConstructor} options.Class class Constructor if no instance with id
    * @param {String} options.type type of instance E.g. files, topics, news,
+   * @throws {SigaaErrors.SIGAA_TYPE_IS_NOT_A_VALID_VALUE} if type is not a string
    * @param {Function} options.updateMethod Function to be sent to the instance in the construction, this function will be called if the update is needed by the instance
    * @return {Any} return the instance updated/created
    */
   _updateClassInstances(options) {
     const { instanceOptions, instanceId, Class, type, updateMethod } = options
     if (typeof type !== 'string') {
-      throw new Error('OPTIONS_TYPE_IS_REQUIRED')
+      throw new Error(SigaaErrors.SIGAA_TYPE_IS_NOT_A_STRING)
     }
     if (this._instances[type] === undefined) {
       this._instances[type] = []
@@ -853,13 +855,19 @@ class SigaaClassStudent extends SigaaBase {
     }
   }
 
+  /**
+   * Get members object
+   * @async
+   * @returns {Promise<object>}
+   * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
+   */
   async getMembers() {
     const page = await this._getClassSubMenu('Participantes')
     const $ = Cheerio.load(page.body)
     const tables = $('table.participantes').toArray()
     const tablesNames = $('fieldset').toArray()
     if (tables.length !== tablesNames.length) {
-      throw new Error('SIGAA_MEMBERS_PAGE_INVALID')
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
     let tableTeacher
     let tableStudent
@@ -1005,6 +1013,12 @@ class SigaaClassStudent extends SigaaBase {
     }
   }
 
+  /**
+   * Get grades array
+   * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
+   * @returns {Promise<Array<object>>}
+   * @async
+   */
   async getGrades() {
     const page = await this._getClassSubMenu('Ver Notas')
     const getPositionByCellColSpan = ($, ths, cell) => {
@@ -1024,7 +1038,7 @@ class SigaaClassStudent extends SigaaBase {
 
     const table = $('table.tabelaRelatorio')
     if (table.length !== 1) {
-      throw new Error('SIGAA_INVALID_RESPONSE')
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
 
     const theadTrs = $('thead tr').toArray()
@@ -1032,7 +1046,7 @@ class SigaaClassStudent extends SigaaBase {
       .find('tbody tr')
       .children()
     if (valueCells.length === 0) {
-      throw new Error('SIGAA_INVALID_RESPONSE')
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
     const grades = []
 
@@ -1098,6 +1112,13 @@ class SigaaClassStudent extends SigaaBase {
     }
     return grades
   }
+
+  /**
+   * Get Education plan
+   * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
+   * @returns {Promise<object>}
+   * @async
+   */
   async getEducationPlan() {
     const page = await this._getClassSubMenu('Plano de Ensino')
     const $ = Cheerio.load(page.body)
@@ -1139,7 +1160,7 @@ class SigaaClassStudent extends SigaaBase {
             } else if (rowField === 'Horário de atendimento:') {
               response.attendanceSchedule = body
             } else {
-              throw new Error('EDUCATION_PLAN_LABEL_NOT_FOUND')
+              throw new Error(SigaaErrors.SIGAA_EDUCATION_PLAN_LABEL_NOT_FOUND)
             }
           }
           break

@@ -131,7 +131,7 @@ class SigaaSession {
    *  //user is a teacher
    * }
    * @type {SigaaAccount.userTypes}
-   * @throws {SIGAA_USERTYPE_IS_NOT_A_VALID_VALUE} if the user type is not in the list of valid types
+   * @throws {SigaaErrors.SIGAA_USERTYPE_IS_NOT_A_VALID_VALUE} if the user type is not in the list of valid types
    */
   get userType() {
     return this._userType
@@ -142,7 +142,7 @@ class SigaaSession {
     if (validUsersTypes.includes(userType)) {
       this._userType = userType
     } else {
-      throw new Error('SIGAA_USERTYPE_IS_NOT_A_VALID_VALUE')
+      throw new Error(SigaaErrors.SIGAA_USERTYPE_IS_NOT_A_VALID_VALUE)
     }
   }
 

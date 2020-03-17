@@ -173,9 +173,9 @@ class SigaaAccountStudent extends SigaaAccount {
       const username = this._removeTagsHtml($('p.usuario > span').html())
       return username
     } else if (page.statusCode === 302) {
-      throw new Error('SESSION_EXPIRED')
+      throw new Error(SigaaErrors.SIGAA_SESSION_EXPIRED)
     } else {
-      throw new Error(`SIGAA_UNEXPECTED_RESPONSE`)
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
   }
 }

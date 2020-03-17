@@ -3,7 +3,10 @@ const fs = require('fs')
 const https = require('https')
 const path = require('path')
 const querystring = require('querystring')
-
+const SigaaErrors = require('../common/sigaa-errors')
+/**
+ * file Class
+ */
 class SigaaFile extends SigaaBase {
   constructor(options, fileUpdater, sigaaSession) {
     super(sigaaSession)
@@ -11,7 +14,7 @@ class SigaaFile extends SigaaBase {
     if (fileUpdater !== undefined) {
       this._updateFile = fileUpdater
     } else {
-      throw new Error('FILE_UPDATE_IS_NECESSARY')
+      throw new Error(SigaaErrors.SIGAA_FILE_UPDATE_IS_NECESSARY)
     }
   }
 
@@ -30,7 +33,7 @@ class SigaaFile extends SigaaBase {
       this._form = options.form
       this._closed = false
     } else {
-      throw new Error('INVALID_FILE_OPTIONS')
+      throw new Error(SigaaErrors.SIGAA_INVALID_FILE_OPTIONS)
     }
   }
 
@@ -55,7 +58,7 @@ class SigaaFile extends SigaaBase {
 
   _checkIfItWasClosed() {
     if (this._closed) {
-      throw new Error('FILE_HAS_BEEN_FINISHED')
+      throw new Error(SigaaErrors.SIGAA_FILE_HAS_BEEN_FINISHED)
     }
   }
 
@@ -65,7 +68,7 @@ class SigaaFile extends SigaaBase {
       let file
       const fileStats = fs.lstatSync(basepath)
       if (!(fileStats.isDirectory() || fileStats.isFile())) {
-        throw new Error('FILE_PATH_NOT_EXISTS')
+        throw new Error(SigaaErrors.SIGAA_FILE_PATH_NOT_EXISTS)
       }
       const link = new URL(this._form.action)
       const options = this._makeRequestBasicOptions('POST', link)
@@ -91,7 +94,7 @@ class SigaaFile extends SigaaBase {
                       .slice(0, -1)
                     filepath = path.join(basepath, filename)
                   } else {
-                    reject(new Error('FILE_DOWNLOAD_EXPIRED'))
+                    reject(new Error(SigaaErrors.SIGAA_FILE_DOWNLOAD_EXPIRED))
                   }
                 } else {
                   filepath = basepath
@@ -126,10 +129,10 @@ class SigaaFile extends SigaaBase {
               }
               break
             case 302:
-              reject(new Error('FILE_DOWNLOAD_EXPIRED'))
+              reject(new Error(SigaaErrors.SIGAA_FILE_DOWNLOAD_EXPIRED))
               break
             default:
-              reject(new Error(`SIGAA_STATUSCODE_${response.statusCode}`))
+              reject(new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE))
           }
         } catch (err) {
           reject(err)
