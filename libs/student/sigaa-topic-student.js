@@ -1,3 +1,5 @@
+const sigaaErrors = require('../common/sigaa-errors')
+
 class SigaaTopic {
   constructor(options) {
     this.update(options)
@@ -17,7 +19,7 @@ class SigaaTopic {
       this._attachments = options.attachments
       this._close = false
     } else {
-      throw new Error('INVALID_TOPIC')
+      throw new Error(sigaaErrors.SIGAA_INVALID_TOPIC_OPTIONS)
     }
   }
 
@@ -52,7 +54,7 @@ class SigaaTopic {
 
   _checkIfItWasClosed() {
     if (this._close) {
-      throw new Error('TOPIC_HAS_BEEN_FINISHED')
+      throw new Error(sigaaErrors.SIGAA_TOPIC_HAS_BEEN_FINISHED)
     }
   }
 }
