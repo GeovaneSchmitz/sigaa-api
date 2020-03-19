@@ -1,6 +1,6 @@
 const SigaaBase = require('../common/sigaa-base')
 const fs = require('fs')
-const https = require('https')
+const fsPromises = require('fs').promises
 const path = require('path')
 const querystring = require('querystring')
 const SigaaErrors = require('../common/sigaa-errors')
@@ -23,18 +23,22 @@ class SigaaFile extends SigaaBase {
   }
 
   update(options) {
-    if (
-      options.title !== undefined &&
-      options.description !== undefined &&
-      options.form !== undefined
-    ) {
+    if (options.title !== undefined && options.description !== undefined) {
       this._title = options.title
       this._description = options.description
-      this._form = options.form
-      this._closed = false
     } else {
       throw new Error(SigaaErrors.SIGAA_INVALID_FILE_OPTIONS)
     }
+    if (options.form !== undefined) {
+      this._form = options.form
+      this._id = options.form.postValues.id
+    } else if (options.id !== null && options.key !== null) {
+      this._id = options.id
+      this._key = options.key
+    } else {
+      throw new Error(SigaaErrors.SIGAA_INVALID_FILE_OPTIONS)
+    }
+    this._closed = false
   }
 
   get title() {
@@ -49,7 +53,7 @@ class SigaaFile extends SigaaBase {
 
   get id() {
     this._checkIfItWasClosed()
-    return this._form.postValues.id
+    return this._id
   }
 
   close() {
@@ -61,88 +65,111 @@ class SigaaFile extends SigaaBase {
       throw new Error(SigaaErrors.SIGAA_FILE_HAS_BEEN_FINISHED)
     }
   }
+  async _fileParserResponse(response, destPath, destIsDirectory, callback) {
+    return new Promise((resolve, reject) => {
+      try {
+        switch (response.statusCode) {
+          case 200:
+            try {
+              if (this._form) {
+                this._sigaaSession.reactivateCachePageByViewState(
+                  this._form.postValues['javax.faces.ViewState']
+                )
+              }
+              let filepath
+              if (destIsDirectory) {
+                if (response.headers['content-disposition']) {
+                  const filename = response.headers['content-disposition']
+                    .replace(/([\S\s]*?)filename="/gm, '')
+                    .slice(0, -1)
+                  filepath = path.join(destPath, filename)
+                } else {
+                  reject(new Error(SigaaErrors.SIGAA_FILE_DOWNLOAD_EXPIRED))
+                }
+              } else {
+                filepath = destPath
+              }
 
-  async download(basepath, callback, retry = true) {
-    this._checkIfItWasClosed()
-    try {
-      let file
-      const fileStats = fs.lstatSync(basepath)
-      if (!(fileStats.isDirectory() || fileStats.isFile())) {
-        throw new Error(SigaaErrors.SIGAA_FILE_PATH_NOT_EXISTS)
+              const file = fs.createWriteStream(filepath)
+              response.bodyStream.pipe(file) // save to file
+
+              if (callback) {
+                response.bodyStream.on('data', () => {
+                  callback(file.bytesWritten)
+                })
+              }
+
+              file.on('finish', () => {
+                file.close() // close() is async, call resolve after close completes.
+                resolve(filepath)
+              })
+
+              response.bodyStream.on('error', (err) => {
+                file.close()
+                fs.unlinkSync(filepath)
+                reject(err)
+              })
+              file.on('error', (err) => {
+                file.close()
+                fs.unlinkSync(filepath)
+                reject(err)
+              })
+            } catch (err) {
+              reject(err)
+            }
+            break
+          case 302:
+            reject(new Error(SigaaErrors.SIGAA_FILE_DOWNLOAD_EXPIRED))
+            break
+          default:
+            reject(new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE))
+        }
+      } catch (err) {
+        reject(err)
       }
+    })
+  }
+
+  _genDownloadHTTPOptions() {
+    if (this._form) {
       const link = new URL(this._form.action)
       const options = this._makeRequestBasicOptions('POST', link)
       // this converts post parameters to string
       const postValuesString = querystring.stringify(this._form.postValues)
       // this inserts post parameters length to  header http
-
       options.headers['Content-Length'] = Buffer.byteLength(postValuesString)
-      const response = await this._requestHTTP(options, postValuesString)
-      return await new Promise((resolve, reject) => {
-        try {
-          switch (response.statusCode) {
-            case 200:
-              try {
-                this._sigaaSession.reactivateCachePageByViewState(
-                  this._form.postValues['javax.faces.ViewState']
-                )
-                let filepath
-                if (fileStats.isDirectory()) {
-                  if (response.headers['content-disposition']) {
-                    const filename = response.headers['content-disposition']
-                      .replace(/([\S\s]*?)filename="/gm, '')
-                      .slice(0, -1)
-                    filepath = path.join(basepath, filename)
-                  } else {
-                    reject(new Error(SigaaErrors.SIGAA_FILE_DOWNLOAD_EXPIRED))
-                  }
-                } else {
-                  filepath = basepath
-                }
+      return [options, postValuesString]
+    } else if (this._key !== undefined) {
+      const link = new URL('/sigaa/verFoto', this._sigaaSession.url)
+      link.searchParams.set('idArquivo', this._id)
+      link.searchParams.set('key', this._key)
+      return [
+        this._makeRequestBasicOptions('GET', link, {
+          withoutCookie: true
+        })
+      ]
+    }
+  }
 
-                file = fs.createWriteStream(filepath)
-                response.bodyStream.pipe(file) // save to file
-
-                if (callback) {
-                  response.bodyStream.on('data', () => {
-                    callback(file.bytesWritten)
-                  })
-                }
-
-                file.on('finish', () => {
-                  file.close() // close() is async, call resolve after close completes.
-                  resolve(filepath)
-                })
-
-                response.bodyStream.on('error', (err) => {
-                  file.close()
-                  fs.unlinkSync(filepath)
-                  reject(err)
-                })
-                file.on('error', (err) => {
-                  file.close()
-                  fs.unlinkSync(filepath)
-                  reject(err)
-                })
-              } catch (err) {
-                reject(err)
-              }
-              break
-            case 302:
-              reject(new Error(SigaaErrors.SIGAA_FILE_DOWNLOAD_EXPIRED))
-              break
-            default:
-              reject(new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE))
-          }
-        } catch (err) {
-          reject(err)
-        }
-      })
+  async download(basepath, callback, retry = true) {
+    this._checkIfItWasClosed()
+    try {
+      const fileStats = await fsPromises.lstat(basepath)
+      if (!(fileStats.isDirectory() || fileStats.isFile())) {
+        throw new Error(SigaaErrors.SIGAA_FILE_PATH_NOT_EXISTS)
+      }
+      const options = this._genDownloadHTTPOptions()
+      const response = await this._requestHTTP(...options)
+      return await this._fileParserResponse(
+        response,
+        basepath,
+        fileStats.isDirectory(),
+        callback
+      )
     } catch (err) {
       if (retry) {
-        return this._updateFile().then(() =>
-          this.download(basepath, callback, false)
-        )
+        await this._updateFile()
+        return this.download(basepath, callback, false)
       } else {
         throw err
       }

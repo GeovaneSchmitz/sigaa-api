@@ -33,10 +33,12 @@ class SigaaBase {
    * Create object Options for https.request
    * @param {('GET'|'POST')} method HTTP method POST or GET
    * @param {URL} link URL of Request
+   * @param {Object} options
+   * @param {Boolean} [options.withoutCookies=true] Disable cookies in headers, default = true
    * @returns {Object} The basic options for request
    * @private
    */
-  _makeRequestBasicOptions(method, link) {
+  _makeRequestBasicOptions(method, link, options = { withoutCookies: false }) {
     const basicOptions = {
       hostname: link.hostname,
       port: 443,
@@ -54,7 +56,11 @@ class SigaaBase {
     if (method === 'POST') {
       basicOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded'
     }
-    if (this._sigaaSession.getTokenByDomain(link.hostname)) {
+
+    if (
+      !options.withoutCookies &&
+      this._sigaaSession.getTokenByDomain(link.hostname)
+    ) {
       basicOptions.headers.Cookie = this._sigaaSession.getTokenByDomain(
         link.hostname
       )
@@ -303,14 +309,16 @@ class SigaaBase {
   /**
    * Make a HTTP request
    * @async
-   * @param {Object} options http.request options
+   * @param {Object} optionsHTTP http.request options
    * @param {String} [body] body of request
+   * @param {Object} [options]
+   * @param {Boolean} [options.notSaveCookie] do not store cookies received
    * @returns {Promise<true>}
    * @private
    */
-  _requestHTTP(options, body) {
+  _requestHTTP(optionsHTTP, body, options = { notSaveCookie: false }) {
     return new Promise((resolve, reject) => {
-      const req = https.request(options, (response) => {
+      const req = https.request(optionsHTTP, (response) => {
         let streamDecompressed
         switch (response.headers['content-encoding']) {
           case 'br':
@@ -329,11 +337,11 @@ class SigaaBase {
             streamDecompressed = response
             break
         }
-        if (response.headers['set-cookie']) {
+        if (!options.notSaveCookie && response.headers['set-cookie']) {
           const cookies = response.headers['set-cookie'].join(' ')
           const token = cookies.match(/JSESSIONID=[^;]*/g)
           if (token) {
-            this._sigaaSession.setToken(options.hostname, token[0])
+            this._sigaaSession.setToken(optionsHTTP.hostname, token[0])
           }
         }
         if (Array.isArray(response.headers.location)) {

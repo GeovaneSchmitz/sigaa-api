@@ -243,7 +243,8 @@ class SigaaClassStudent extends SigaaBase {
         const buttonElement = cells.eq(3).find('a[onclick]')
         const form = this._parseJSFCLJS(buttonElement.attr('onclick'), $)
         const id = form.postValues['id']
-        const fileOptions = { title, description, form }
+        const key = form.postValues['key']
+        const fileOptions = { title, description, id, key }
         this._updateClassInstances({
           instanceOptions: fileOptions,
           instanceId: id,

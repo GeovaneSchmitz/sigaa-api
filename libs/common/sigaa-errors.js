@@ -409,8 +409,26 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
+  static get SIGAA_HOMEWORK_HAS_NO_FILE() {
+    return 'SIGAA_HOMEWORK_HAS_NO_FILE'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
   static get SIGAA_WEBCONTENT_HAS_BEEN_FINISHED() {
     return 'SIGAA_WEBCONTENT_HAS_BEEN_FINISHED'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
+  static get SIGAA_HOMEWORK_HAS_BEEN_SUBMITTED() {
+    return 'SIGAA_HOMEWORK_HAS_BEEN_SUBMITTED'
   }
 
   /**

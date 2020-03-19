@@ -8,13 +8,13 @@ const SigaaTypes = require('./libs/common/sigaa-types')
 const SigaaAccountStudent = require('./libs/student/sigaa-account-student')
 const SigaaClassStudent = require('./libs/student/sigaa-class-student')
 const SigaaFileStudent = require('./libs/student/sigaa-file-student')
-const SigaaForumStudent = require('./libs/student/sigaa-forum-student')
+const SigaaForumClass = require('./libs/student/sigaa-forum-class')
 const SigaaHomeworkStudent = require('./libs/student/sigaa-homework-student')
 const SigaaNewsStudent = require('./libs/student/sigaa-news-student')
 const SigaaQuizStudent = require('./libs/student/sigaa-quiz-student')
 const SigaaSurveyStudent = require('./libs/student/sigaa-survey-student')
 const SigaaTopicStudent = require('./libs/student/sigaa-topic-student')
-const SigaaWebContentStudent = require('./libs/public/sigaa-web-content-student')
+const SigaaWebContentStudent = require('./libs/student/sigaa-web-content-student')
 
 const SigaaSearch = require('./libs/public/sigaa-search')
 const SigaaSearchTeacher = require('./libs/public/sigaa-search-teacher')
@@ -162,10 +162,10 @@ class Sigaa {
   /**
    * @readonly
    * @static
-   * @type {SigaaForumStudent}
+   * @type {SigaaForumClass}
    */
-  static get SigaaForumStudent() {
-    return SigaaForumStudent
+  static get SigaaForumClass() {
+    return SigaaForumClass
   }
 
   /**
