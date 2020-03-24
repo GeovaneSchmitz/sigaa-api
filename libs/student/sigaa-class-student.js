@@ -11,8 +11,10 @@ const SigaaFile = require('./sigaa-file-student')
 const SigaaHomework = require('./sigaa-homework-student')
 const SigaaQuiz = require('./sigaa-quiz-student')
 const SigaaSurvey = require('./sigaa-survey-student')
-const SigaaClassForum = require('./sigaa-forum-class')
+const SigaaClassForum = require('./sigaa-class-forum-student')
+const SigaaClassScheduledChat = require('./sigaa-class-scheduled-chat-student')
 const SigaaWebContent = require('./sigaa-web-content-student')
+
 /**
  * School class in the student's view
  */
@@ -337,6 +339,17 @@ class SigaaClassStudent extends SigaaBase {
             updateMethod: this.getForums.bind(this)
           })
           topicAttachments.push(forum)
+        } else if (iconSrc.includes('user_comment.png')) {
+          const chatOptions = this._parseScheduledChat($, attachmentElement)
+          const id = chatOptions.id
+          const chat = this._updateClassInstances({
+            instanceId: id,
+            instanceOptions: chatOptions,
+            Class: SigaaClassScheduledChat,
+            type: 'scheduledChats',
+            updateMethod: this.getScheduledChats.bind(this)
+          })
+          topicAttachments.push(chat)
         } else {
           const fileOptions = this._parseAttachmentGeneric($, attachmentElement)
           const id = fileOptions.id
@@ -400,6 +413,24 @@ class SigaaClassStudent extends SigaaBase {
     const dates = this._parseDates(description)
     attachment.startDate = dates[0]
     attachment.endDate = dates[1]
+    return attachment
+  }
+
+  _parseScheduledChat($, attachmentElement) {
+    const attachment = {}
+
+    const titleElement = $(attachmentElement).find('span > a')
+    attachment.title = this._removeTagsHtml(titleElement.html())
+
+    const onclick = titleElement.attr('onclick')
+    attachment.id = onclick.match(/idchat=[0-9]*?&/g)[0].match(/[0-9]+/g)[0]
+
+    const descriptionElement = $(attachmentElement).find('div.descricao-item')
+    const description = this._removeTagsHtml(descriptionElement.html())
+    const dates = this._parseDates(description)
+    attachment.startDate = dates[0]
+    attachment.endDate = dates[1]
+
     return attachment
   }
 
@@ -718,6 +749,57 @@ class SigaaClassStudent extends SigaaBase {
 
   async getSurveys() {
     // TODO
+  }
+
+  async getScheduledChats() {
+    const page = await this._getClassSubMenu('Chats Agendados')
+    const $ = Cheerio.load(page.body)
+
+    const table = $('.listing')
+
+    if (!table) resolve([])
+
+    const rows = table.find('tr[class]').toArray()
+    const usedChatIds = []
+
+    for (const row of rows) {
+      const cells = $(row).find('td')
+
+      const cellTitle = cells
+        .first()
+        .find('a')
+        .eq(0)
+      const cellDescription = cells.first().find('p')
+
+      const title = this._removeTagsHtml(cellTitle.html())
+      const description = this._removeTagsHtml(cellDescription.html())
+
+      const startDateString = this._removeTagsHtml(cells.eq(1).html())
+      const endDateString = this._removeTagsHtml(cells.eq(2).html())
+      const startDate = this._parseDates(startDateString)[0]
+      const endDate = this._parseDates(endDateString)[0]
+
+      const button = $(cells.eq(4).find('a[onclick]'))
+      const form = this._parseJSFCLJS(button.attr('onclick'), $)
+      const id = form.postValues.id
+      usedChatIds.push(id)
+      const chatOptions = {
+        title,
+        description,
+        id,
+        startDate,
+        endDate
+      }
+      this._updateClassInstances({
+        instanceOptions: chatOptions,
+        instanceId: id,
+        Class: SigaaClassScheduledChat,
+        type: 'scheduledChats',
+        updateMethod: this.getHomeworks.bind(this)
+      })
+    }
+    this._closeClassInstances('scheduledChats', usedChatIds)
+    return this._instances.scheduledChats
   }
 
   async getHomeworks() {

@@ -4,6 +4,33 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
+  static get SIGAA_SCHEDULED_CHAT_UPDATE_IS_NECESSARY() {
+    return 'SIGAA_SCHEDULED_CHAT_UPDATE_IS_NECESSARY'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
+  static get SIGAA_SCHEDULED_CHAT_HAS_BEEN_FINISHED() {
+    return 'SIGAA_SCHEDULED_CHAT_HAS_BEEN_FINISHED'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
+  static get SIGAA_INVALID_SCHEDULED_CHAT_OPTIONS() {
+    return 'SIGAA_INVALID_SCHEDULED_CHAT_OPTIONS'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
   static get SIGAA_USERTYPE_IS_NOT_A_VALID_VALUE() {
     return 'SIGAA_USERTYPE_IS_NOT_A_VALID_VALUE'
   }

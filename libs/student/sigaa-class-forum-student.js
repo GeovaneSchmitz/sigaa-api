@@ -4,7 +4,7 @@ const SigaaFile = require('./sigaa-file-student')
 const Cheerio = require('cheerio')
 const FormData = require('formdata-node')
 
-class SigaaForumClass extends SigaaBase {
+class SigaaClassForum extends SigaaBase {
   constructor(forumOptions, forumUpdate, sigaaSession) {
     super(sigaaSession)
     this.update(forumOptions)
@@ -315,4 +315,4 @@ class SigaaForumClass extends SigaaBase {
   }
 }
 
-module.exports = SigaaForumClass
+module.exports = SigaaClassForum
