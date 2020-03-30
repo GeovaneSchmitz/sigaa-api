@@ -437,11 +437,20 @@ class SigaaClassStudent extends SigaaBase {
   _parseAtachmentVideo($, attachmentElement) {
     const attachment = {}
     attachment.type = 'video'
-    attachment.src = $(attachmentElement)
-      .find('iframe')
-      .attr('src')
-    const titleElement = $(attachmentElement).find('span[id] > span[id]')
-    attachment.title = this._removeTagsHtml(titleElement.html())
+
+    const titleElement = $(attachmentElement).find('span[id] > span[id] a')
+    const href = titleElement.attr('href')
+    const title = this._removeTagsHtml(titleElement.html())
+    if (href) {
+      attachment.title = title.replace(/\(Link Externo\)$/g, '')
+      attachment.src = href
+    } else {
+      attachment.title = title
+      attachment.src = $(attachmentElement)
+        .find('iframe')
+        .attr('src')
+    }
+
     const descriptionElement = $(attachmentElement).find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
