@@ -445,7 +445,7 @@ class SigaaBase {
           replacement: '\n'
         },
         {
-          pattern: /<script([\S\s]*?)>([\S\s]*?)<\/script>|<style([\S\s]*?)style>|<[^>]+>|\t/gm, //remove all tags
+          pattern: /<script([\S\s]*?)>([\S\s]*?)<\/script>|<!--([\S\s]*?)-->|<style([\S\s]*?)style>|<[^>]+>|\t/gm, //remove all tags
           replacement: ' '
         }
       ]
