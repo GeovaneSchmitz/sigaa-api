@@ -612,11 +612,15 @@ class SigaaClassStudent extends SigaaBase {
   async _getClassSubMenu(buttonLabel) {
     const classPage = await this._requestClassPage()
     const $ = Cheerio.load(classPage.body)
+
     const getBtnEl = $('div.itemMenu')
       .toArray()
       .find((buttonEl) => {
         return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
       })
+    if (!getBtnEl) {
+      throw new Error(SigaaErrors.SIGAA_CLASS_SUB_MENU_NOT_FOUND)
+    }
     const form = this._parseJSFCLJS(
       $(getBtnEl)
         .parent()
@@ -783,7 +787,16 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getScheduledChats() {
-    const page = await this._getClassSubMenu('Chats Agendados')
+    let page
+    try {
+      page = await this._getClassSubMenu('Chats Agendados')
+    } catch (err) {
+      if (err.message === SigaaErrors.SIGAA_CLASS_SUB_MENU_NOT_FOUND) {
+        throw new Error(
+          SigaaErrors.SIGAA_SCHEDULED_CHAT_HAS_DISABLE_BY_INSTITUTION
+        )
+      }
+    }
     const $ = Cheerio.load(page.body)
 
     const table = $('.listing')

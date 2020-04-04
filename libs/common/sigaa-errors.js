@@ -13,6 +13,24 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
+  static get SIGAA_SCHEDULED_CHAT_HAS_DISABLE_BY_INSTITUTION() {
+    return 'SIGAA_SCHEDULED_CHAT_HAS_DISABLE_BY_INSTITUTION'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
+  static get SIGAA_CLASS_SUB_MENU_NOT_FOUND() {
+    return 'SIGAA_CLASS_SUB_MENU_NOT_FOUND'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
   static get SIGAA_SCHEDULED_CHAT_HAS_BEEN_FINISHED() {
     return 'SIGAA_SCHEDULED_CHAT_HAS_BEEN_FINISHED'
   }
