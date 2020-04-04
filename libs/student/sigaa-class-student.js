@@ -227,7 +227,21 @@ class SigaaClassStudent extends SigaaBase {
         topicContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
       )
     )
-    topic.attachments = this._parseAttachmentsFromTopic($, topicContentElement)
+    const attachments = this._parseAttachmentsFromTopic($, topicContentElement)
+    const { texts, attachmentsWithoutText } = attachments.reduce(
+      (reducer, attachment) => {
+        if (attachment.type === 'text') {
+          reducer.texts.push(attachment.body)
+        } else {
+          reducer.attachmentsWithoutText.push(attachments)
+        }
+        return reducer
+      },
+      { texts: [], attachmentsWithoutText: [] }
+    )
+    topic.contentText = [topic.contentText, ...texts].join('\n')
+    topic.attachments = attachmentsWithoutText
+
     return topic
   }
 
@@ -270,7 +284,13 @@ class SigaaClassStudent extends SigaaBase {
       for (const attachmentElement of attachmentElements) {
         const iconElement = $(attachmentElement).find('img')
         const iconSrc = iconElement.attr('src')
-        if (iconSrc.includes('questionario.png')) {
+        if (iconSrc === undefined) {
+          const attachmentText = {
+            type: 'text',
+            body: this._removeTagsHtml($(attachmentElement).html())
+          }
+          topicAttachments.push(attachmentText)
+        } else if (iconSrc.includes('questionario.png')) {
           const quizOptions = this._parseAttachmentQuiz($, attachmentElement)
           const id = quizOptions.id
           const quiz = this._updateClassInstances({
@@ -440,11 +460,13 @@ class SigaaClassStudent extends SigaaBase {
 
     const titleElement = $(attachmentElement).find('span[id] > span[id] a')
     const href = titleElement.attr('href')
-    const title = this._removeTagsHtml(titleElement.html())
     if (href) {
+      const title = this._removeTagsHtml(titleElement.html())
       attachment.title = title.replace(/\(Link Externo\)$/g, '')
       attachment.src = href
     } else {
+      const titleElement = $(attachmentElement).find('span[id] > span[id]')
+      const title = this._removeTagsHtml(titleElement.html())
       attachment.title = title
       attachment.src = $(attachmentElement)
         .find('iframe')
