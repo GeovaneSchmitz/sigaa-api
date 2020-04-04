@@ -233,7 +233,7 @@ class SigaaClassStudent extends SigaaBase {
         if (attachment.type === 'text') {
           reducer.texts.push(attachment.body)
         } else {
-          reducer.attachmentsWithoutText.push(attachments)
+          reducer.attachmentsWithoutText.push(attachment)
         }
         return reducer
       },
