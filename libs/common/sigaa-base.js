@@ -459,15 +459,11 @@ class SigaaBase {
           replacement: ' '
         },
         {
-          pattern: /\n+\n/gm, //removes multiple break lines
-          replacement: '\n'
+          pattern: /^(\s)*|(\s)*$/g, //remove whitespace from beginning and end of text
+          replacement: ''
         },
         {
-          pattern: /\s+\s/gm, //removes multiple \s
-          replacement: '\n'
-        },
-        {
-          pattern: /^(\s)*|(\s)*$/gm, //remove whitespace from beginning and end
+          pattern: /^([ \t])*|([ \t])*$/gm, //remove whitespace from beginning and end line by line
           replacement: ''
         }
       ]
