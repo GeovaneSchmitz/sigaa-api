@@ -1214,7 +1214,9 @@ class SigaaClassStudent extends SigaaBase {
             if (gradeId !== '') {
               const gradeName = $(`input#denAval_${gradeId}`).val()
               const gradeAbbreviation = $(`input#abrevAval_${gradeId}`).val()
-              const gradeWeight = $(`input#pesoAval_${gradeId}`).val()
+              const gradeWeight = parseFloat(
+                $(`input#pesoAval_${gradeId}`).val()
+              )
               let value = parseFloat(
                 this._removeTagsHtml(valueCells.eq(j).html()).replace(/,/g, '.')
               )
