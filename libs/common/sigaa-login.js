@@ -15,7 +15,8 @@ class SigaaLogin extends SigaaBase {
    */
   _getLoginPage() {
     this._loginPage = this._get('/sigaa/mobile/touch/login.jsf', {
-      noCache: true
+      noCache: true,
+      mobile: true
     })
       .then((page) => {
         if (page.statusCode === 200) {
@@ -99,7 +100,9 @@ class SigaaLogin extends SigaaBase {
     this._sigaaSession.formLoginAction = null
     this._sigaaSession.formLoginPostValues = null
     try {
-      const page = await this._post(formLoginAction, formLoginPostValues)
+      const page = await this._post(formLoginAction, formLoginPostValues, {
+        mobile: true
+      })
       return await this._parseLogin(page)
     } catch (error) {
       if (!retry || error.message === SigaaErrors.SIGAA_WRONG_CREDENTIALS) {

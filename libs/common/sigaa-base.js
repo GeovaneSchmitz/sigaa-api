@@ -35,18 +35,24 @@ class SigaaBase {
    * @param {URL} link URL of Request
    * @param {Object} options
    * @param {Boolean} [options.withoutCookies=true] Disable cookies in headers, default = true
+   * @param {Boolean} [options.mobile=false] Use mobile User-Agent
    * @returns {Object} The basic options for request
    * @private
    */
-  _makeRequestBasicOptions(method, link, options = { withoutCookies: false }) {
+  _makeRequestBasicOptions(
+    method,
+    link,
+    options = { withoutCookies: false, mobile: false }
+  ) {
     const basicOptions = {
       hostname: link.hostname,
       port: 443,
       path: link.pathname + link.search,
       method: method,
       headers: {
-        'User-Agent':
-          'SIGAA-Api/1.0 (https://github.com/GeovaneSchmitz/SIGAA-node-interface)',
+        'User-Agent': options.mobile
+          ? 'SIGAA-Api/1.0 (Android 7.0; https://github.com/GeovaneSchmitz/SIGAA-node-interface)'
+          : 'SIGAA-Api/1.0 (https://github.com/GeovaneSchmitz/SIGAA-node-interface)',
         'Accept-Encoding': 'br, gzip, deflate',
         Accept: '*/*',
         'Cache-Control': 'max-age=0',
@@ -124,9 +130,9 @@ class SigaaBase {
    * @returns {Promise<Object>}
    * @protected
    */
-  async _postMultipart(path, formData) {
+  async _postMultipart(path, formData, options) {
     const link = new URL(path, this._sigaaSession.url)
-    const httpOptions = this._makeRequestBasicOptions('POST', link)
+    const httpOptions = this._makeRequestBasicOptions('POST', link, options)
 
     httpOptions.headers = {
       ...httpOptions.headers,
@@ -176,13 +182,14 @@ class SigaaBase {
    * @param {String} path The path of request or full URL
    * @param {Object} postValues Post values in format, key as field name, and value as field value.
    * @param {Object} [options]
+   * @param {boolean} [options.mobile] Use mobile User-Agent
    * @param {boolean} [options.noCache] If can retrieve from cache
    * @returns {Promise<Object>}
    * @protected
    */
   async _post(path, postValues, options = {}) {
     const link = new URL(path, this._sigaaSession.url)
-    const httpOptions = this._makeRequestBasicOptions('POST', link)
+    const httpOptions = this._makeRequestBasicOptions('POST', link, options)
     const body = querystring.stringify(postValues)
     httpOptions.headers['Content-Length'] = Buffer.byteLength(body)
     let cachePage = null
@@ -255,13 +262,14 @@ class SigaaBase {
    * @param {String} path The path of request or full URL
    * @param {Object} [options]
    * @param {boolean} [options.noCache] If can retrieve from cache
+   * @param {boolean} [options.mobile] Use mobile User-Agent
    * @returns {Promise<Object>}
    * @protected
    */
   async _get(path, options) {
     const link = new URL(path, this._sigaaSession.url)
 
-    const httpOptions = this._makeRequestBasicOptions('GET', link)
+    const httpOptions = this._makeRequestBasicOptions('GET', link, options)
 
     let cachePage = null
     if (!(options && options.noCache === true)) {
