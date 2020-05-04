@@ -32,6 +32,7 @@ class SigaaFile extends SigaaBase {
     if (options.form !== undefined) {
       this._form = options.form
       this._id = options.form.postValues.id
+      this._key = options.form.postValues.key
     } else if (options.id !== null && options.key !== null) {
       this._id = options.id
       this._key = options.key
@@ -44,6 +45,11 @@ class SigaaFile extends SigaaBase {
   get title() {
     this._checkIfItWasClosed()
     return this._title
+  }
+
+  get key() {
+    this._checkIfItWasClosed()
+    return this._key
   }
 
   get description() {
