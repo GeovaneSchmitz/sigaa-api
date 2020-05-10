@@ -1257,10 +1257,10 @@ class SigaaClassStudent extends SigaaBase {
       methodology: null,
       assessmentProcedures: null,
       attendanceSchedule: null,
-      schedule: null,
-      evaluations: null,
-      basicReferences: null,
-      supplementaryReferences: null
+      schedule: [],
+      evaluations: [],
+      basicReferences: [],
+      supplementaryReferences: []
     }
     for (const table of tables) {
       const titleElement = $(table).find('caption')
@@ -1332,11 +1332,7 @@ class SigaaClassStudent extends SigaaBase {
 
             const cellBodyText = this._removeTagsHtml(bodyElement.html())
 
-            const bodyLastCharacter = cellBodyText.slice(-1)
-            const lastCharacters = [';', '.', ':', ',']
-            scheduleDay.body = lastCharacters.includes(bodyLastCharacter)
-              ? cellBodyText.slice(0, -1)
-              : cellBodyText
+            scheduleDay.body = cellBodyText
 
             schedule.push(scheduleDay)
           }
@@ -1368,13 +1364,7 @@ class SigaaClassStudent extends SigaaBase {
               descriptionElement.html()
             )
 
-            const descriptionLastCharacter = descriptionText.slice(-1)
-            const lastCharacters = [';', '.', ':', ',']
-            evaluation.description = lastCharacters.includes(
-              descriptionLastCharacter
-            )
-              ? descriptionText.slice(0, -1)
-              : descriptionText
+            evaluation.description = descriptionText
             evaluations.push(evaluation)
           }
           response.evaluations = evaluations
@@ -1401,13 +1391,7 @@ class SigaaClassStudent extends SigaaBase {
             const descriptionText = this._removeTagsHtmlKeepingEmphasis(
               descriptionElement.html()
             )
-            const descriptionLastCharacter = descriptionText.slice(-1)
-            const lastCharacters = [';', '.', ':', ',']
-            reference.description = lastCharacters.includes(
-              descriptionLastCharacter
-            )
-              ? descriptionText.slice(0, -1)
-              : descriptionText
+            reference.description = descriptionText
             references.push(reference)
           }
           if (title === 'Referências Básicas') {
