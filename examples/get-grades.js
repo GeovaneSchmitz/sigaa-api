@@ -14,13 +14,13 @@ sigaa
   .login(username, password) // login
   .then((sigaaAccount) => {
     account = sigaaAccount
-    return account.getClasses() // this return a array with all current classes
+    return account.getCourses() // this return a array with all current courses
   })
-  .then((classes) => {
+  .then((courses) => {
     return (async () => {
-      for (const classStudent of classes) {
-        console.log(classStudent.title)
-        const grade = await classStudent.getGrades()
+      for (const course of courses) {
+        console.log(course.title)
+        const grade = await course.getGrades()
         console.log(grade)
       }
     })()

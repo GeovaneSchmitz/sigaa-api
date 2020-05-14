@@ -1,7 +1,7 @@
 const SigaaBase = require('../common/sigaa-base')
 const SigaaErrors = require('../common/sigaa-errors')
 const SigaaSession = require('../common/sigaa-session')
-const SigaaFile = require('./sigaa-file-student')
+const SigaaFile = require('../common/sigaa-file')
 const Cheerio = require('cheerio')
 
 class SigaaHomework extends SigaaBase {

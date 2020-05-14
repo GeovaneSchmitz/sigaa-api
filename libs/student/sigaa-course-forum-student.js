@@ -1,10 +1,10 @@
 const SigaaBase = require('../common/sigaa-base')
 const SigaaErrors = require('../common/sigaa-errors')
-const SigaaFile = require('./sigaa-file-student')
+const SigaaFile = require('../common/sigaa-file')
 const Cheerio = require('cheerio')
 const FormData = require('formdata-node')
 
-class SigaaClassForum extends SigaaBase {
+class SigaaCourseForum extends SigaaBase {
   constructor(forumOptions, forumUpdate, sigaaSession) {
     super(sigaaSession)
     this.update(forumOptions)
@@ -33,8 +33,8 @@ class SigaaClassForum extends SigaaBase {
     if (forumOptions.type !== undefined) {
       this._forumType = forumOptions.type
     }
-    if (forumOptions.numOfTopics !== undefined) {
-      this._numOfTopics = forumOptions.numOfTopics
+    if (forumOptions.numOfLessons !== undefined) {
+      this._numOfLessons = forumOptions.numOfLessons
     }
     if (forumOptions.author !== undefined) {
       this._author = forumOptions.author
@@ -44,7 +44,7 @@ class SigaaClassForum extends SigaaBase {
     }
   }
 
-  async getTopicResponses() {
+  async getLessonResponses() {
     if (this.isMain) {
       const page = await this._awaitForumPage()
     }
@@ -114,33 +114,33 @@ class SigaaClassForum extends SigaaBase {
     }
     return this._file
   }
-  async getNumOfTopics() {
+  async getNumOfLessons() {
     this._checkIfItWasClosed()
-    if (this._numOfTopics === undefined) {
+    if (this._numOfLessons === undefined) {
       await this._requestUpdate()
     }
-    return this._numOfTopics
+    return this._numOfLessons
   }
   /**
-   * Post topic in forum
-   * @param {string} title title of topic
-   * @param {string} body body of topic
+   * Post lesson in forum
+   * @param {string} title title of lesson
+   * @param {string} body body of lesson
    * @param {Buffer} file buffer of file attachment
    * @param {boolean} notify if notify members
    */
-  async postTopic(title, body, file, notify) {
+  async postLesson(title, body, file, notify) {
     if (!title || typeof title !== 'string') {
       throw new Error(SigaaErrors.SIGAA_FORUM_TITLE_IS_INVALID)
     }
     if (!body || typeof body !== 'string') {
       throw new Error(SigaaErrors.SIGAA_FORUM_BODY_IS_INVALID)
     }
-    if (!this._submitTopicPageForm) {
+    if (!this._submitLessonPageForm) {
       await this._awaitForumPage()
     }
     const page = await this._post(
-      this._submitTopicPageForm.action,
-      this._submitTopicPageForm.postValues
+      this._submitLessonPageForm.action,
+      this._submitLessonPageForm.postValues
     )
     const $ = Cheerio.load(page.body, {
       normalizeWhitespace: true
@@ -232,7 +232,7 @@ class SigaaClassForum extends SigaaBase {
       postValues[$(this).attr('name')] = $(this).val()
     })
 
-    this._submitTopicPageForm = {
+    this._submitLessonPageForm = {
       action,
       postValues
     }
@@ -315,4 +315,4 @@ class SigaaClassForum extends SigaaBase {
   }
 }
 
-module.exports = SigaaClassForum
+module.exports = SigaaCourseForum

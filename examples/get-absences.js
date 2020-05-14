@@ -11,13 +11,13 @@ const password = ''
 const main = async () => {
   const account = await sigaa.login(username, password) // login
   if (account.userType !== 'STUDENT') throw new Error('USER_IS_NOT_A_STUDENT')
-  const classes = await account.getClasses() // this return a array with all current classes
+  const courses = await account.getCourses() // this return a array with all current courses
   console.log('Loading Absence')
-  for (const classStudent of classes) {
-    // for each class
-    console.log(' > ' + classStudent.title)
-    const absencesClass = await classStudent.getAbsence()
-    console.log(absencesClass)
+  for (const course of courses) {
+    // for each course
+    console.log(' > ' + course.title)
+    const absencesCourse = await course.getAbsence()
+    console.log(absencesCourse)
   }
   account.logoff()
 }

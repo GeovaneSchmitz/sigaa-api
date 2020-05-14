@@ -1,4 +1,5 @@
 const SigaaErrors = require('./sigaa-errors')
+const SigaaPromiseStack = require('./sigaa-promise-stack')
 const SigaaTypes = require('./sigaa-types')
 /**
  * @class SigaaSession
@@ -13,21 +14,29 @@ class SigaaSession {
     this._cachePages = []
     /**
      * Running GET requests, to avoid duplicate requests at the same time
+     * @property {SigaaPromiseStack}
      * @private
      */
-    this._runningGetRequest = {}
+    this._getRequestsStack = new SigaaPromiseStack('reverse')
     /**
      * Stores the execution of POST requests, to avoid POST requests at the same time and to create cascading requests
+     * @property {SigaaPromiseStack}
      * @private
      */
-    this._chainPostRequests = []
+    this._PostRequestsStack = new SigaaPromiseStack('reverse')
 
-    this.timeoutCache = 5 * 60 * 1000 // 5min
     /**
+     * Cache page timeout, default is 5 min
+     */
+    this.timeoutCache = 5 * 60 * 1000 // 5min
+
+    /**
+     * Cookies key as domain and value as cookie string
      * @private
      * @property {Object}
      */
     this._tokens = {}
+
     this.userLoginState = SigaaTypes.userLoginStates.UNAUTHENTICATED
     this.userType = SigaaTypes.userTypes.UNAUTHENTICATED
     this.formLoginPostValues = null
@@ -237,44 +246,29 @@ class SigaaSession {
     }
   }
   /**
-   * Create a request promise chain to reduce the request race condition
-   * @param {function<Promise>} options.requestPromiseFunction function that returns a request promise
+   * Create a request promise stack to reduce the request race condition
+   * @param {Object} options
+   * @param {function} options.requestPromiseFunction function that returns a request promise
    * @param {String} options.body request Body
    * @param {String} options.shareSameRequest If you can only request once, return the same promise for same request (same body and same URL)
    * @param {URL} options.url request url
    */
-  postRequestChain(options = {}) {
+  storeRunningPostRequest(options = {}) {
     const { requestPromiseFunction, body, url, shareSameRequest } = options
     if (shareSameRequest) {
-      const runningPostRequest = this._chainPostRequests.find((request) => {
-        return request.body === body && url.href === request.url
-      })
+      const runningPostRequest = this._PostRequestsStack.promises.find(
+        (request) => {
+          return request.key.body === body && url.href === request.key.url
+        }
+      )
       if (runningPostRequest) {
         return runningPostRequest.promise
       }
     }
-    const promises = this._chainPostRequests.map((request) => request.promise)
-    const promise = Promise.all(promises).then(
-      () => requestPromiseFunction(),
-      () => requestPromiseFunction()
-    )
-    this._storePostRequest(promise, { body, url })
-    return promise
-  }
-  /**
-   *
-   * @param {String} {key} key of cascade
-   * @param {Promise} {promise} to store
-   */
-  _storePostRequest(promise, { body, url }) {
-    const index = this._chainPostRequests.length
-    this._chainPostRequests.push({
-      promise,
+
+    return this._PostRequestsStack.addPromise(requestPromiseFunction, {
       body,
-      url: url.href
-    })
-    promise.finally(() => {
-      this._chainPostRequests.splice(index, 1)
+      url
     })
   }
   /**
@@ -283,20 +277,17 @@ class SigaaSession {
    * @param {function<Promise>} requestPromiseFunction function that returns a request promise
    */
   storeRunningGetRequest({ path, requestPromiseFunction }) {
-    if (this._runningGetRequest[path.href]) {
-      return this._runningGetRequest[path.href]
+    const promiseObject = this._getRequestsStack.promises.find(
+      (promiseObject) => promiseObject.key === path.href
+    )
+    if (promiseObject) {
+      return promiseObject.promise
     } else {
-      this._runningGetRequest[path.href] = requestPromiseFunction()
-        .then((page) => {
-          delete this._runningGetRequest[path.href]
-          return page
-        })
-        .catch((error) => {
-          delete this._runningGetRequest[path.href]
-          throw error
-        })
+      return this._getRequestsStack.addPromise(
+        requestPromiseFunction,
+        path.href
+      )
     }
-    return this._runningGetRequest[path.href]
   }
   /**
    * @description flush states of instance

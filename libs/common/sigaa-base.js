@@ -5,6 +5,7 @@ const Cheerio = require('cheerio')
 const htmlEntities = require('he')
 const SigaaErrors = require('./sigaa-errors')
 const SigaaSession = require('./sigaa-session')
+const SigaaPromiseStack = require('./sigaa-promise-stack')
 const stream = require('stream')
 const zlib = require('zlib')
 
@@ -12,7 +13,7 @@ const zlib = require('zlib')
  * Varable to request in cascade
  * @private
  */
-let requestChainWithoutCookies = { promise: Promise.resolve(), length: 0 }
+const requestStackWithoutCookies = new SigaaPromiseStack('reverse')
 /**
  * HTTP request and response utility class
  * @class SigaaBase
@@ -140,11 +141,11 @@ class SigaaBase {
     }
 
     const buffer = await this._convertReadebleToBuffer(formData.stream)
-    const page = await this._sigaaSession.postRequestChain({
+    const page = await this._sigaaSession.storeRunningPostRequest({
       url: link,
       shareSameRequest: false,
       requestPromiseFunction: () =>
-        this._requestChain(link, httpOptions, buffer)
+        this._requestStack(link, httpOptions, buffer)
     })
     if (page.statusCode === 200 && formData.get('javax.faces.ViewState')) {
       this._sigaaSession.reactivateCachePageByViewState(
@@ -204,12 +205,12 @@ class SigaaBase {
     if (cachePage) {
       return cachePage
     } else {
-      const page = await this._sigaaSession.postRequestChain({
+      const page = await this._sigaaSession.storeRunningPostRequest({
         url: link,
         body,
         shareSameRequest: options.shareSameRequest,
         requestPromiseFunction: () =>
-          this._requestChain(link, httpOptions, body)
+          this._requestStack(link, httpOptions, body)
       })
       if (page.statusCode === 200) {
         if (postValues && postValues['javax.faces.ViewState']) {
@@ -284,7 +285,7 @@ class SigaaBase {
     } else {
       const page = await this._sigaaSession.storeRunningGetRequest({
         path: link,
-        requestPromiseFunction: () => this._requestChain(link, httpOptions)
+        requestPromiseFunction: () => this._requestStack(link, httpOptions)
       })
       this._storePage(page, httpOptions, link)
       return page
@@ -399,31 +400,21 @@ class SigaaBase {
   }
 
   /**
-   * Promise chain request if needed
+   * Promise stack request if needed
    * @param {URL} link url of request
    * @param {Object} options http.request options
    * @param {String} [body] body of request
    * @returns {Promise<http.ClientRequest>}
+   * @async
    */
-  _requestChain(link, options, body) {
-    return new Promise((resolve, reject) => {
-      if (!options.headers.Cookie) {
-        requestChainWithoutCookies.length++
-        const cascadeLength = requestChainWithoutCookies.length
-        requestChainWithoutCookies.promise = requestChainWithoutCookies.promise
-          .then(() => this._requestPage(link, options, body))
-          .then((req) => resolve(req))
-          .catch((err) => reject(err))
-          .finally(() => {
-            if (requestChainWithoutCookies.length === cascadeLength) {
-              requestChainWithoutCookies.promise = Promise.resolve()
-              requestChainWithoutCookies.length = 0
-            }
-          })
-      } else {
-        resolve(this._requestPage(link, options, body))
-      }
-    })
+  _requestStack(link, options, body) {
+    if (!options.headers.Cookie) {
+      return requestStackWithoutCookies.addPromise(() =>
+        this._requestPage(link, options, body)
+      )
+    } else {
+      return this._requestPage(link, options, body)
+    }
   }
   /**
    * Clears text by removing all HTML tags and fix encoding characters
@@ -432,6 +423,7 @@ class SigaaBase {
    * @protected
    */
   _removeTagsHtml(text) {
+    if (!text) return ''
     try {
       const removeTags = [
         {
@@ -542,9 +534,9 @@ class SigaaBase {
       page.statusCode === 302 &&
       page.headers.location.includes('/sigaa/expirada.jsp')
     ) {
-      return new Error(SigaaErrors.SIGAA_SESSION_EXPIRED)
+      throw new Error(SigaaErrors.SIGAA_SESSION_EXPIRED)
     } else {
-      return new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
+      throw new Error(SigaaErrors.SIGAA_UNEXPECTED_RESPONSE)
     }
   }
 

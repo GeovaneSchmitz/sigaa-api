@@ -23,41 +23,41 @@ sigaa
   .login(username, password) // login
   .then((sigaaAccount) => {
     account = sigaaAccount
-    return account.getClasses(true) // this return a array with all classes
+    return account.getCourses(true) // this return a array with all courses
   })
-  .then((classes) => {
+  .then((courses) => {
     return (async () => {
-      console.log('Loading IDs')
-      for (const classStudent of classes) {
-        // for each class
-        console.log(` > ${classStudent.title} : ${classStudent.id}`)
+      for (const course of courses) {
+        // for each course
+        console.log('Loading IDs')
+        console.log(` > ${course.title} : ${course.id}`)
 
         console.log('Loading Exam Calendar')
-        const examCalendar = await classStudent.getExamCalendar()
+        const examCalendar = await course.getExamCalendar()
         console.log(examCalendar)
 
         console.log('Loading Absence')
-        const absencesClass = await classStudent.getAbsence()
-        console.log(absencesClass)
+        const absencesCourse = await course.getAbsence()
+        console.log(absencesCourse)
 
         console.log('Loading News')
-        const newsClassList = await classStudent.getNews()
+        const newsCourseList = await course.getNews()
         console.log('Loading Full News')
-        for (const news of newsClassList) {
+        for (const news of newsCourseList) {
           console.log(news.title)
           console.log(await news.getContent())
           console.log((await news.getDate()).toString())
           console.log()
         }
-        console.log('Loading Topics')
-        const topics = await classStudent.getTopics()
-        for (const topic of topics) {
-          console.log(`\t> ${topic.title}`)
-          if (topic.contentText) console.log(`\t${topic.contentText}`)
-          const startDate = topic.startDate.toString()
-          const endDate = topic.endDate.toString()
+        console.log('Loading Lessons')
+        const lessons = await course.getLessons()
+        for (const lesson of lessons) {
+          console.log(`\t> ${lesson.title}`)
+          if (lesson.contentText) console.log(`\t${lesson.contentText}`)
+          const startDate = lesson.startDate.toString()
+          const endDate = lesson.endDate.toString()
           console.log(`\tstart:${startDate} end:${endDate}`)
-          for (const attachment of topic.attachments) {
+          for (const attachment of lesson.attachments) {
             if (attachment.description)
               console.log(`\t\tdescription: ${attachment.description}`)
             if (attachment.getDescription)
@@ -75,9 +75,9 @@ sigaa
           }
         }
         console.log('Loading Files')
-        const classFiles = await classStudent.getFiles() // this lists all topics
+        const courseFiles = await course.getFiles() // this lists all lessons
         console.log('Downloading Files')
-        for (const file of classFiles) {
+        for (const file of courseFiles) {
           // for each file
           await file.download(BaseDestiny, (bytesDownloaded) => {
             const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB'
@@ -87,7 +87,7 @@ sigaa
         }
 
         console.log('Loading Grades')
-        const grade = await classStudent.getGrades()
+        const grade = await course.getGrades()
         console.log(grade)
       }
     })()

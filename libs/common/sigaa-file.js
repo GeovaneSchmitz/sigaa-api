@@ -1,11 +1,12 @@
-const SigaaBase = require('../common/sigaa-base')
+const SigaaBase = require('./sigaa-base')
 const fs = require('fs')
 const fsPromises = require('fs').promises
 const path = require('path')
 const querystring = require('querystring')
-const SigaaErrors = require('../common/sigaa-errors')
+const SigaaErrors = require('./sigaa-errors')
+
 /**
- * file Class
+ * file class
  */
 class SigaaFile extends SigaaBase {
   constructor(options, fileUpdater, sigaaSession) {

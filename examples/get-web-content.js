@@ -11,13 +11,13 @@ const password = ''
 sigaa
   .login(username, password) // return SigaaAccount
   .then((sigaaAccount) => {
-    return sigaaAccount.getClasses() // this return a array with all current classes
+    return sigaaAccount.getCourses() // this return a array with all current courses
   })
-  .then((classes) => {
+  .then((courses) => {
     return (async () => {
-      for (const classStudent of classes) {
-        console.log(' > ' + classStudent.title)
-        const webContents = await classStudent.getWebContents() // this lists all topics
+      for (const course of courses) {
+        console.log(' > ' + course.title)
+        const webContents = await course.getWebContents() // this lists all lessons
         for (const webContent of webContents) {
           console.log(`\t> ${webContent.title}`)
           const date = webContent.date.toString()

@@ -1,6 +1,6 @@
 const sigaaErrors = require('../common/sigaa-errors')
 
-class SigaaTopic {
+class SigaaLesson {
   constructor(options) {
     this.update(options)
   }
@@ -19,7 +19,7 @@ class SigaaTopic {
       this._attachments = options.attachments
       this._close = false
     } else {
-      throw new Error(sigaaErrors.SIGAA_INVALID_TOPIC_OPTIONS)
+      throw new Error(sigaaErrors.SIGAA_INVALID_LESSON_OPTIONS)
     }
   }
 
@@ -54,9 +54,9 @@ class SigaaTopic {
 
   _checkIfItWasClosed() {
     if (this._close) {
-      throw new Error(sigaaErrors.SIGAA_TOPIC_HAS_BEEN_FINISHED)
+      throw new Error(sigaaErrors.SIGAA_LESSON_HAS_BEEN_FINISHED)
     }
   }
 }
 
-module.exports = SigaaTopic
+module.exports = SigaaLesson

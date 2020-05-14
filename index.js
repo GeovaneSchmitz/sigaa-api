@@ -6,14 +6,14 @@ const SigaaSession = require('./libs/common/sigaa-session')
 const SigaaTypes = require('./libs/common/sigaa-types')
 
 const SigaaAccountStudent = require('./libs/student/sigaa-account-student')
-const SigaaClassStudent = require('./libs/student/sigaa-class-student')
-const SigaaFileStudent = require('./libs/student/sigaa-file-student')
-const SigaaClassForum = require('./libs/student/sigaa-class-forum-student')
+const SigaaCourseStudent = require('./libs/student/sigaa-course-student')
+const SigaaFile = require('./libs/common/sigaa-file')
+const SigaaCourseForum = require('./libs/student/sigaa-course-forum-student')
 const SigaaHomeworkStudent = require('./libs/student/sigaa-homework-student')
 const SigaaNewsStudent = require('./libs/student/sigaa-news-student')
 const SigaaQuizStudent = require('./libs/student/sigaa-quiz-student')
 const SigaaSurveyStudent = require('./libs/student/sigaa-survey-student')
-const SigaaTopicStudent = require('./libs/student/sigaa-topic-student')
+const SigaaLessonStudent = require('./libs/student/sigaa-lesson-student')
 const SigaaWebContentStudent = require('./libs/student/sigaa-web-content-student')
 
 const SigaaSearch = require('./libs/public/sigaa-search')
@@ -144,28 +144,28 @@ class Sigaa {
   /**
    * @readonly
    * @static
-   * @type {SigaaClassStudent}
+   * @type {SigaaCourseStudent}
    */
-  static get SigaaClassStudent() {
-    return SigaaClassStudent
+  static get SigaaCourseStudent() {
+    return SigaaCourseStudent
   }
 
   /**
    * @readonly
    * @static
-   * @type {SigaaFileStudent}
+   * @type {SigaaFile}
    */
-  static get SigaaFileStudent() {
-    return SigaaFileStudent
+  static get SigaaFile() {
+    return SigaaFile
   }
 
   /**
    * @readonly
    * @static
-   * @type {SigaaClassForum}
+   * @type {SigaaCourseForum}
    */
-  static get SigaaClassForum() {
-    return SigaaClassForum
+  static get SigaaCourseForum() {
+    return SigaaCourseForum
   }
 
   /**
@@ -207,10 +207,10 @@ class Sigaa {
   /**
    * @readonly
    * @static
-   * @type {SigaaTopicStudent}
+   * @type {SigaaLessonStudent}
    */
-  static get SigaaTopicStudent() {
-    return SigaaTopicStudent
+  static get SigaaLessonStudent() {
+    return SigaaLessonStudent
   }
 
   /**

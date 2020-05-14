@@ -23,20 +23,20 @@ sigaa
   .login(username, password) // login
   .then((sigaaAccount) => {
     account = sigaaAccount
-    return account.getClasses() // this return a array with all current classes
+    return account.getCourses() // this return a array with all current courses
   })
-  .then((classes) => {
+  .then((courses) => {
     return (async () => {
-      for (const classStudent of classes) {
-        // for each class
-        console.log(classStudent.title)
-        const files = await classStudent.getFiles() // this lists all topics
+      for (const course of courses) {
+        // for each course
+        console.log(course.title)
+        const files = await course.getFiles() // this lists all topics
         if (files.length !== 0) {
-          const pathPeriod = path.join(BaseDestiny, classStudent.period)
-          const pathClass = path.join(pathPeriod, classStudent.title)
+          const pathPeriod = path.join(BaseDestiny, course.period)
+          const pathCourse = path.join(pathPeriod, course.title)
           fs.mkdir(pathPeriod, (err) => {
             if (err && err.code !== 'EEXIST') throw new Error('up')
-            fs.mkdir(pathClass, (err) => {
+            fs.mkdir(pathCourse, (err) => {
               if (err && err.code !== 'EEXIST') {
                 throw new Error('up')
               }
@@ -46,7 +46,7 @@ sigaa
             // for each topic
             console.log(file.title)
             await file
-              .download(pathClass, (bytesDownloaded) => {
+              .download(pathCourse, (bytesDownloaded) => {
                 const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB'
                 process.stdout.write('Progress: ' + progress + '\r')
               })

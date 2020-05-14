@@ -3,16 +3,20 @@ const fs = require('fs')
 const https = require('https')
 const path = require('path')
 const SigaaAccount = require('../common/sigaa-account')
-const SigaaClassStudent = require('./sigaa-class-student')
+const SigaaCourseStudent = require('./sigaa-course-student')
 const SigaaErrors = require('../common/sigaa-errors')
+
+/**
+ * class to represent student account
+ */
 class SigaaAccountStudent extends SigaaAccount {
   /**
-   * Get all classes
-   * @param {Boolean} [allPeriods=false]
-   * @returns {Promise.<Array.<SigaaClassStudent>>}
+   * Get courses
+   * @param {Boolean} [allPeriods=false] if true, all courses will be returned; otherwise, only current courses
+   * @returns {Promise<Array<SigaaCourseStudent>>}
    * @async
    */
-  getClasses(allPeriods) {
+  getCourses(allPeriods) {
     return this._get('/sigaa/portais/discente/turmas.jsf').then(
       (page) =>
         new Promise((resolve, reject) => {
@@ -21,7 +25,7 @@ class SigaaAccountStudent extends SigaaAccount {
           })
           const table = $('.listagem')
           if (table.length === 0) resolve([])
-          const listClasses = []
+          const listCourses = []
           let period
           let rows = table.find('tbody > tr').toArray()
           if (!allPeriods) {
@@ -39,47 +43,41 @@ class SigaaAccountStudent extends SigaaAccount {
             if (cellElements.eq(0).hasClass('periodo')) {
               period = this._removeTagsHtml(cellElements.html())
             } else if (period) {
-              const buttonClassPage = cellElements.eq(5).find('a[onclick]')
-              if (buttonClassPage) {
-                const classData = {}
+              const buttonCoursePage = cellElements.eq(5).find('a[onclick]')
+              if (buttonCoursePage) {
+                const courseData = {}
                 const fullname = this._removeTagsHtml(cellElements.eq(0).html())
-                classData.title = fullname.slice(fullname.indexOf(' - ') + 3)
-                classData.abbreviation = fullname.slice(
-                  0,
-                  fullname.indexOf(' - ')
-                )
-                classData.numberOfStudents = this._removeTagsHtml(
+                courseData.title = fullname.slice(fullname.indexOf(' - ') + 3)
+                courseData.code = fullname.slice(0, fullname.indexOf(' - '))
+                courseData.numberOfStudents = this._removeTagsHtml(
                   cellElements.eq(2).html()
                 )
-                classData.schedule = this._removeTagsHtml(
+                courseData.schedule = this._removeTagsHtml(
                   cellElements.eq(4).html()
                 )
-                classData.period = period
-                classData.form = this._parseJSFCLJS(
-                  buttonClassPage.attr('onclick'),
+                courseData.period = period
+                courseData.form = this._parseJSFCLJS(
+                  buttonCoursePage.attr('onclick'),
                   $
                 )
-                classData.id = classData.form.postValues['idTurma']
-                listClasses.push(
-                  new SigaaClassStudent(classData, this._sigaaSession)
+                courseData.id = courseData.form.postValues['idTurma']
+                listCourses.push(
+                  new SigaaCourseStudent(courseData, this._sigaaSession)
                 )
               }
             }
           }
-          resolve(listClasses)
+          resolve(listCourses)
         })
     )
   }
   /**
-   * Download user profile picture, save in filepath
-   * File path can be a directory
-   * @param {String} basepath Path to save the image
-   * @returns {String} Full filepath of image
+   * Get profile picture URL
    * @throws {SIGAA_USER_HAS_NO_PICTURE} If the user has no  picture
-   * @throws {SIGAA_FILEPATH_NOT_EXISTS} If filepath isn't a directory or file
    * @throws {SIGAA_UNEXPECTED_RESPONSE} If receive a unexpected response
+   * @returns {URL} URL of profile picture
    */
-  async downloadProfilePicture(basepath) {
+  async getProfilePictureURL() {
     const page = await this._get('/sigaa/mobile/touch/menu.jsf').then(
       (page) => {
         return this._checkPageStatusCodeAndExpired(page)
@@ -96,14 +94,27 @@ class SigaaAccountStudent extends SigaaAccount {
     if (pictureSrc.includes('/img/avatar.jpg')) {
       throw new Error(SigaaErrors.SIGAA_USER_HAS_NO_PICTURE)
     }
+
+    return new URL(pictureSrc, this._sigaaSession.url)
+  }
+
+  /**
+   * Download user profile picture, save in filepath
+   * File path can be a directory
+   * @param {String} basepath Path to save the image
+   * @throws {SIGAA_USER_HAS_NO_PICTURE} If the user has no  picture
+   * @throws {SIGAA_FILEPATH_NOT_EXISTS} If filepath isn't a directory or file
+   * @throws {SIGAA_UNEXPECTED_RESPONSE} If receive a unexpected response
+   * @returns {String} Full filepath of image
+   */
+  async downloadProfilePicture(basepath) {
+    const pictureURL = await this.getProfilePictureURL()
     const fileStats = fs.lstatSync(basepath)
     if (!(fileStats.isDirectory() || fileStats.isFile())) {
       reject(new Error(SigaaErrors.SIGAA_FILEPATH_NOT_EXISTS))
     }
-    const pictureURL = new URL(pictureSrc, this._sigaaSession.url)
     const options = this._makeRequestBasicOptions('GET', pictureURL)
 
-    // makes request
     return new Promise((resolve, reject) => {
       const request = https.request(options, (response) => {
         if (response.statusCode !== 200) {
@@ -164,7 +175,13 @@ class SigaaAccountStudent extends SigaaAccount {
     })
   }
 
-  async getUsername() {
+  /**
+   * get user's name
+   * @return {string}
+   * @throws {SigaaErrors.SIGAA_SESSION_EXPIRED} If session has expired
+   * @throws {igaaErrors.SIGAA_UNEXPECTED_RESPONSE} If receive a unexpected response
+   */
+  async getName() {
     const page = await this._get('/sigaa/portais/discente/discente.jsf')
     if (page.statusCode === 200) {
       const $ = Cheerio.load(page.body, {

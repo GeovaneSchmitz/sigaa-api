@@ -13,6 +13,15 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
+  static get SIGAA_STACK_INVALID_ORDER_TYPE() {
+    return 'SIGAA_STACK_INVALID_ORDER_TYPE'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
   static get SIGAA_SCHEDULED_CHAT_HAS_DISABLE_BY_INSTITUTION() {
     return 'SIGAA_SCHEDULED_CHAT_HAS_DISABLE_BY_INSTITUTION'
   }
@@ -22,8 +31,8 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
-  static get SIGAA_CLASS_SUB_MENU_NOT_FOUND() {
-    return 'SIGAA_CLASS_SUB_MENU_NOT_FOUND'
+  static get SIGAA_COURSE_SUB_MENU_NOT_FOUND() {
+    return 'SIGAA_COURSE_SUB_MENU_NOT_FOUND'
   }
 
   /**
@@ -157,8 +166,8 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
-  static get SIGAA_CLASS_MISSING_PARAMETERS() {
-    return 'SIGAA_CLASS_MISSING_PARAMETERS'
+  static get SIGAA_COURSE_MISSING_PARAMETERS() {
+    return 'SIGAA_COURSE_MISSING_PARAMETERS'
   }
 
   /**
@@ -166,8 +175,8 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
-  static get SIGAA_CLASS_NOT_FOUND() {
-    return 'SIGAA_CLASS_NOT_FOUND'
+  static get SIGAA_COURSE_NOT_FOUND() {
+    return 'SIGAA_COURSE_NOT_FOUND'
   }
 
   /**
@@ -427,8 +436,8 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
-  static get SIGAA_INVALID_TOPIC_OPTIONS() {
-    return 'SIGAA_INVALID_TOPIC_OPTIONS'
+  static get SIGAA_INVALID_LESSON_OPTIONS() {
+    return 'SIGAA_INVALID_LESSON_OPTIONS'
   }
 
   /**
@@ -481,8 +490,8 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
-  static get SIGAA_TOPIC_HAS_BEEN_FINISHED() {
-    return 'SIGAA_TOPIC_HAS_BEEN_FINISHED'
+  static get SIGAA_LESSON_HAS_BEEN_FINISHED() {
+    return 'SIGAA_LESSON_HAS_BEEN_FINISHED'
   }
 
   /**

@@ -3,7 +3,7 @@ const Cheerio = require('cheerio')
 const SigaaBase = require('./sigaa-base')
 const sigaaErrors = require('./sigaa-errors')
 /**
- * Account Class
+ * Account class
  * @class SigaaAccount
  * @extends SigaaBase
  */

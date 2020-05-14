@@ -11,21 +11,21 @@ const password = ''
 sigaa
   .login(username, password) // return SigaaAccount
   .then((sigaaAccount) => {
-    return sigaaAccount.getClasses() // this return a array with all current classes
+    return sigaaAccount.getCourses() // this return a array with all current courses
   })
-  .then((classes) => {
+  .then((courses) => {
     return (async () => {
-      for (const classStudent of classes) {
-        // for each class
-        console.log(' > ' + classStudent.title)
-        const topics = await classStudent.getTopics() // this lists all topics
-        for (const topic of topics) {
-          console.log(`\t> ${topic.title}`)
-          if (topic.contentText) console.log(`\t${topic.contentText}`)
-          const startDate = topic.startDate.toString()
-          const endDate = topic.endDate.toString()
+      for (const course of courses) {
+        // for each course
+        console.log(' > ' + course.title)
+        const lessons = await course.getLessons() // this lists all lessons
+        for (const lessonn of lessons) {
+          console.log(`\t> ${lessonn.title}`)
+          if (lessonn.contentText) console.log(`\t$lessonon.contentText}`)
+          const startDate = lessonn.startDate.toString()
+          const endDate = lessonn.endDate.toString()
           console.log(`\tstartDate:${startDate}, endDate:${endDate}`)
-          for (const attachment of topic.attachments) {
+          for (const attachment of lessonn.attachments) {
             if (attachment.title) console.log(`\t\ttitle: ${attachment.title}`)
             if (attachment.description)
               console.log(`\t\tdescription: ${attachment.description}`)

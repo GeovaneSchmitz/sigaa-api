@@ -2,7 +2,7 @@ const SigaaBase = require('../common/sigaa-base')
 const SigaaErrors = require('../common/sigaa-errors')
 const Cheerio = require('cheerio')
 
-class SigaaWebcontent extends SigaaBase {
+class SigaaWebContent extends SigaaBase {
   constructor(options, updateAttachment, sigaaSession) {
     super(sigaaSession)
     this.update(options)
@@ -122,4 +122,4 @@ class SigaaWebcontent extends SigaaBase {
   }
 }
 
-module.exports = SigaaWebcontent
+module.exports = SigaaWebContent

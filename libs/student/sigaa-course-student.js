@@ -4,31 +4,31 @@ const SigaaBase = require('../common/sigaa-base')
 const SigaaSession = require('../common/sigaa-session')
 const SigaaErrors = require('../common/sigaa-errors')
 
-const SigaaTopic = require('./sigaa-topic-student')
+const SigaaLesson = require('./sigaa-lesson-student')
 const SigaaNews = require('./sigaa-news-student')
 
-const SigaaFile = require('./sigaa-file-student')
+const SigaaFile = require('../common/sigaa-file')
 const SigaaHomework = require('./sigaa-homework-student')
 const SigaaQuiz = require('./sigaa-quiz-student')
 const SigaaSurvey = require('./sigaa-survey-student')
-const SigaaClassForum = require('./sigaa-class-forum-student')
-const SigaaClassScheduledChat = require('./sigaa-class-scheduled-chat-student')
+const SigaaCourseForum = require('./sigaa-course-forum-student')
+const SigaaCourseScheduledChat = require('./sigaa-course-scheduled-chat-student')
 const SigaaWebContent = require('./sigaa-web-content-student')
 
 /**
- * School class in the student's view
+ * course in the student's view
  */
-class SigaaClassStudent extends SigaaBase {
+class SigaaCourseStudent extends SigaaBase {
   /**
    * @param {SigaaSession} sigaaSession SigaaSession instance
-   * @param {Object} options Class options
-   * @param {String} options.title Class title
-   * @param {String} options.id Class ID
-   * @param {String} options.period Class period E.g. 2020.1
-   * @param {String} [options.location] Classroom location
-   * @param {String} [options.schedule] Class schedule in SIGAA notation
-   * @param {String} [options.abbreviation] Class title abbreviation
-   * @param {Object} options.form Class form POST to request class page
+   * @param {Object} options Course options
+   * @param {String} options.title Course title
+   * @param {String} options.id Course ID
+   * @param {String} options.period Course period E.g. 2020.1
+   * @param {String} [options.location] Courseroom location
+   * @param {String} [options.schedule] Course schedule in SIGAA notation
+   * @param {String} [options.code] Course title code
+   * @param {Object} options.form Course form POST to request course page
    * @param {String} options.form.action POST action URL
    * @param {Object} options.form.postValues Post values in format, key as field name, and value as field value.
    */
@@ -45,7 +45,7 @@ class SigaaClassStudent extends SigaaBase {
       this._form = options.form
       this._period = options.period
     } else {
-      throw new Error(SigaaErrors.SIGAA_CLASS_MISSING_PARAMETERS)
+      throw new Error(SigaaErrors.SIGAA_COURSE_MISSING_PARAMETERS)
     }
     if (options.location) {
       this._location = options.location
@@ -53,8 +53,8 @@ class SigaaClassStudent extends SigaaBase {
     if (options.schedule) {
       this._schedule = options.schedule
     }
-    if (options.abbreviation) {
-      this._abbreviation = options.abbreviation
+    if (options.code) {
+      this._code = options.code
     }
     this._instances = {}
   }
@@ -79,21 +79,21 @@ class SigaaClassStudent extends SigaaBase {
     return this._schedule
   }
 
-  get abbreviation() {
-    return this._abbreviation
+  get code() {
+    return this._code
   }
   /**
-   * Request the class page using the class ID,
-   * it is slower than requestClassPageUsingForm,
+   * Request the course page using the course ID,
+   * it is slower than requestCoursePageUsingForm,
    * but works if the form is invalid
    * @throws {SigaaErrors.SIGAA_SESSION_EXPIRED} If session expired
    * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
-   * @throws {SigaaErrors.SIGAA_CLASS_NOT_FOUND} If not found class with same ID
+   * @throws {SigaaErrors.SIGAA_COURSE_NOT_FOUND} If not found course with same ID
    * @return {<Promise>Object} response page
    * @private
    * @async
    */
-  async _requestClassPageUsingId() {
+  async _requestCoursePageUsingId() {
     const page = await this._get('/sigaa/portais/discente/turmas.jsf')
     if (page.statusCode === 200) {
       const $ = Cheerio.load(page.body, {
@@ -101,23 +101,23 @@ class SigaaClassStudent extends SigaaBase {
       })
       const table = $('.listagem')
       if (table.length === 0) {
-        throw new Error(SigaaErrors.SIGAA_CLASS_NOT_FOUND)
+        throw new Error(SigaaErrors.SIGAA_COURSE_NOT_FOUND)
       }
       const rows = table.find('tbody > tr').toArray()
-      const foundClass = rows.some((row) => {
+      const foundCourse = rows.some((row) => {
         const cellElements = $(row).find('td')
         if (cellElements.eq(0).hasClass('periodo')) return false
-        const buttonClassPage = cellElements.eq(5).find('a[onclick]')
-        const form = this._parseJSFCLJS(buttonClassPage.attr('onclick'), $)
+        const buttonCoursePage = cellElements.eq(5).find('a[onclick]')
+        const form = this._parseJSFCLJS(buttonCoursePage.attr('onclick'), $)
         if (form.postValues.idTurma === this._form.postValues.idTurma) {
           this._form = form
           return true
         }
       })
-      if (!foundClass) {
-        throw new Error(SigaaErrors.SIGAA_CLASS_NOT_FOUND)
+      if (!foundCourse) {
+        throw new Error(SigaaErrors.SIGAA_COURSE_NOT_FOUND)
       }
-      return this._requestClassPageUsingForm()
+      return this._requestCoursePageUsingForm()
     } else if (
       page.statusCode === 302 &&
       page.headers.location.includes('/sigaa/expirada.jsp')
@@ -128,15 +128,15 @@ class SigaaClassStudent extends SigaaBase {
     }
   }
   /**
-   * Request the class page using the class POST Form,
-   * it is faster than requestClassPageUsingId,
+   * Request the course page using the course POST Form,
+   * it is faster than requestCoursePageUsingId,
    * but don`t works if the form is invalid or expired
    * @private
    * @return {<Promise>Object} response page
    * @async
-   * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If Class page is invalid, the form probably expired.
+   * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If Course page is invalid, the form probably expired.
    */
-  async _requestClassPageUsingForm() {
+  async _requestCoursePageUsingForm() {
     const page = await this._post(this._form.action, this._form.postValues, {
       shareSameRequest: true
     })
@@ -150,84 +150,89 @@ class SigaaClassStudent extends SigaaBase {
     }
   }
   /**
-   * Request the class page using _requestClassPageUsingForm,
-   * fallback to _requestClassPageUsingId
+   * Request the course page using _requestCoursePageUsingForm,
+   * fallback to _requestCoursePageUsingId
    * @private
    * @return {<Promise>Object} response page
    */
-  _requestClassPage() {
-    return this._requestClassPageUsingForm().catch(() =>
-      this._requestClassPageUsingId()
+  _requestCoursePage() {
+    return this._requestCoursePageUsingForm().catch(() =>
+      this._requestCoursePageUsingId()
     )
   }
 
-  async getTopics() {
-    const page = await this._requestClassPage()
+  async getLessons() {
+    const page = await this._requestCoursePage()
     const $ = Cheerio.load(page.body)
-    const topicsElements = this._topicGetElements($)
-    const usedTopicsIds = []
+    const lessonsElements = this._lessonGetElements($)
+    const usedLessonsIds = []
     this._forumsIdIndex = 0
-    this._closeClassInstances('topics', usedTopicsIds)
-    for (const topicElement of topicsElements) {
-      const topicOptions = this._topicParser($, topicElement, page)
-      usedTopicsIds.push(topicOptions.id)
+    this._closeClassInstances('lessons', usedLessonsIds)
+    for (const lessonElement of lessonsElements) {
+      const lessonOptions = this._lessonParser($, lessonElement, page)
+      usedLessonsIds.push(lessonOptions.id)
       this._updateClassInstances({
-        instanceOptions: topicOptions,
-        instanceId: topicOptions.id,
-        Class: SigaaTopic,
-        type: 'topics',
-        updateMethod: this.getTopics.bind(this)
+        instanceOptions: lessonOptions,
+        instanceId: lessonOptions.id,
+        Class: SigaaLesson,
+        type: 'lessons',
+        updateMethod: this.getLessons.bind(this)
       })
     }
-    this._closeClassInstances('topics', usedTopicsIds)
-    return this._instances.topics
+    this._closeClassInstances('lessons', usedLessonsIds)
+    return this._instances.lessons
   }
 
-  _topicGetElements($) {
+  _lessonGetElements($) {
     const contentElement = $('#conteudo')
-    let topicsElements
+    let lessonsElements
     if (contentElement) {
-      topicsElements = contentElement.find('.topico-aula').toArray()
+      lessonsElements = contentElement.find('.lessono-aula').toArray()
     } else {
-      topicsElements = []
+      lessonsElements = []
     }
-    return topicsElements
+    return lessonsElements
   }
 
-  _topicParser($, topicElement) {
-    const topic = {}
-    const titleElement = $(topicElement).find('.titulo')
+  _lessonParser($, lessonElement) {
+    const lesson = {}
+    const titleElement = $(lessonElement).find('.titulo')
     const titleFull = this._removeTagsHtml(titleElement.html())
-    const topicDates = titleFull.slice(
+    const lessonDates = titleFull.slice(
       titleFull.lastIndexOf('(') + 1,
       titleFull.lastIndexOf(')')
     )
-    if (topicDates.includes(' ')) {
-      const startDate = topicDates.slice(0, topicDates.indexOf(' ')).split('/')
-      topic.startDate = new Date(
+    if (lessonDates.includes(' ')) {
+      const startDate = lessonDates
+        .slice(0, lessonDates.indexOf(' '))
+        .split('/')
+      lesson.startDate = new Date(
         `${startDate[1]}/${startDate[0]}/${startDate[2]}`
       )
-      const endDate = topicDates
-        .slice(topicDates.lastIndexOf(' ') + 1)
+      const endDate = lessonDates
+        .slice(lessonDates.lastIndexOf(' ') + 1)
         .split('/')
-      topic.endDate = new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`)
+      lesson.endDate = new Date(`${endDate[1]}/${endDate[0]}/${endDate[2]}`)
     } else {
-      const dateString = topicDates.split('/')
+      const dateString = lessonDates.split('/')
       const date = new Date(
         `${dateString[1]}/${dateString[0]}/${dateString[2]}`
       )
-      topic.startDate = date
-      topic.endDate = date
+      lesson.startDate = date
+      lesson.endDate = date
     }
 
-    topic.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
-    const topicContentElement = $(topicElement).find('.conteudotopico')
-    topic.contentText = decodeURI(
+    lesson.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
+    const lessonContentElement = $(lessonElement).find('.conteudolessono')
+    lesson.contentText = decodeURI(
       this._removeTagsHtml(
-        topicContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
+        lessonContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
       )
     )
-    const attachments = this._parseAttachmentsFromTopic($, topicContentElement)
+    const attachments = this._parseAttachmentsFromLesson(
+      $,
+      lessonContentElement
+    )
     const { texts, attachmentsWithoutText } = attachments.reduce(
       (reducer, attachment) => {
         if (attachment.type === 'text') {
@@ -239,14 +244,14 @@ class SigaaClassStudent extends SigaaBase {
       },
       { texts: [], attachmentsWithoutText: [] }
     )
-    topic.contentText = [topic.contentText, ...texts].join('\n')
-    topic.attachments = attachmentsWithoutText
+    lesson.contentText = [lesson.contentText, ...texts].join('\n')
+    lesson.attachments = attachmentsWithoutText
 
-    return topic
+    return lesson
   }
 
   async getFiles() {
-    const page = await this._getClassSubMenu('Arquivos')
+    const page = await this._getCourseSubMenu('Arquivos')
     const $ = Cheerio.load(page.body)
     const table = $('.listing')
     const usedFilesId = []
@@ -275,9 +280,9 @@ class SigaaClassStudent extends SigaaBase {
     return this._instances.files
   }
 
-  _parseAttachmentsFromTopic($, topicContentElement) {
-    const topicAttachments = []
-    const attachmentElements = topicContentElement
+  _parseAttachmentsFromLesson($, lessonContentElement) {
+    const lessonAttachments = []
+    const attachmentElements = lessonContentElement
       .find('span[id] > div.item')
       .toArray()
     if (attachmentElements.length !== 0) {
@@ -289,7 +294,7 @@ class SigaaClassStudent extends SigaaBase {
             type: 'text',
             body: this._removeTagsHtml($(attachmentElement).html())
           }
-          topicAttachments.push(attachmentText)
+          lessonAttachments.push(attachmentText)
         } else if (iconSrc.includes('questionario.png')) {
           const quizOptions = this._parseAttachmentQuiz($, attachmentElement)
           const id = quizOptions.id
@@ -300,10 +305,10 @@ class SigaaClassStudent extends SigaaBase {
             type: 'quizzes',
             updateMethod: this.getQuizzes.bind(this)
           })
-          topicAttachments.push(quiz)
+          lessonAttachments.push(quiz)
         } else if (iconSrc.includes('video.png')) {
           const videoOptions = this._parseAtachmentVideo($, attachmentElement)
-          topicAttachments.push(videoOptions)
+          lessonAttachments.push(videoOptions)
         } else if (iconSrc.includes('tarefa.png')) {
           const homeworkOptions = this._parseAttachmentHomework(
             $,
@@ -317,7 +322,7 @@ class SigaaClassStudent extends SigaaBase {
             type: 'homeworks',
             updateMethod: this.getHomeworks.bind(this)
           })
-          topicAttachments.push(homework)
+          lessonAttachments.push(homework)
         } else if (iconSrc.includes('pesquisa.png')) {
           const surveyOptions = this._parseAttacmentSurvey($, attachmentElement)
           const id = surveyOptions.id
@@ -328,7 +333,7 @@ class SigaaClassStudent extends SigaaBase {
             type: 'surveys',
             updateMethod: this.getSurveys.bind(this)
           })
-          topicAttachments.push(survey)
+          lessonAttachments.push(survey)
         } else if (iconSrc.includes('conteudo.png')) {
           const webContentOptions = this._parseAttachmentGeneric(
             $,
@@ -342,7 +347,7 @@ class SigaaClassStudent extends SigaaBase {
             type: 'webContents',
             updateMethod: this.getWebContents.bind(this)
           })
-          topicAttachments.push(webContents)
+          lessonAttachments.push(webContents)
         } else if (iconSrc.includes('forumava.png')) {
           const forumOptions = this._parseAttachmentGeneric(
             $,
@@ -353,23 +358,23 @@ class SigaaClassStudent extends SigaaBase {
           this._forumsIdIndex++
           const forum = this._updateClassInstances({
             instanceOptions: forumOptions,
-            Class: SigaaClassForum,
+            Class: SigaaCourseForum,
             instanceId: forumOptions.id,
             type: 'forums',
             updateMethod: this.getForums.bind(this)
           })
-          topicAttachments.push(forum)
+          lessonAttachments.push(forum)
         } else if (iconSrc.includes('user_comment.png')) {
           const chatOptions = this._parseScheduledChat($, attachmentElement)
           const id = chatOptions.id
           const chat = this._updateClassInstances({
             instanceId: id,
             instanceOptions: chatOptions,
-            Class: SigaaClassScheduledChat,
+            Class: SigaaCourseScheduledChat,
             type: 'scheduledChats',
             updateMethod: this.getScheduledChats.bind(this)
           })
-          topicAttachments.push(chat)
+          lessonAttachments.push(chat)
         } else {
           const fileOptions = this._parseAttachmentGeneric($, attachmentElement)
           const id = fileOptions.id
@@ -380,11 +385,11 @@ class SigaaClassStudent extends SigaaBase {
             type: 'files',
             updateMethod: this.getFiles.bind(this)
           })
-          topicAttachments.push(file)
+          lessonAttachments.push(file)
         }
       }
     }
-    return topicAttachments
+    return lessonAttachments
   }
 
   _parseAttachmentGeneric($, attachmentElement) {
@@ -494,7 +499,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getForums() {
-    const page = await this._getClassSubMenu('Fóruns')
+    const page = await this._getCourseSubMenu('Fóruns')
     const $ = Cheerio.load(page.body)
     const table = $('.listing')
     const usedForumIds = []
@@ -506,7 +511,7 @@ class SigaaClassStudent extends SigaaBase {
         const titleElement = cells.first().find('a')
         const title = this._removeTagsHtml(titleElement.html())
         const type = this._removeTagsHtml(cells.eq(1).html())
-        const numOfTopics = parseInt(
+        const numOfLessons = parseInt(
           this._removeTagsHtml(cells.eq(2).html()),
           10
         )
@@ -519,7 +524,7 @@ class SigaaClassStudent extends SigaaBase {
           title,
           id,
           type,
-          numOfTopics,
+          numOfLessons,
           author,
           date,
           form,
@@ -528,7 +533,7 @@ class SigaaClassStudent extends SigaaBase {
         this._updateClassInstances({
           instanceId: id,
           instanceOptions: forumOptions,
-          Class: SigaaClassForum,
+          Class: SigaaCourseForum,
           type: 'forums',
           updateMethod: this.getForums.bind(this)
         })
@@ -540,7 +545,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getNews() {
-    const page = await this._getClassSubMenu('Notícias')
+    const page = await this._getCourseSubMenu('Notícias')
     const $ = Cheerio.load(page.body)
     const table = $('.listing')
     const usedNewsId = []
@@ -573,7 +578,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getAbsence() {
-    const page = await this._getClassSubMenu('Frequência')
+    const page = await this._getCourseSubMenu('Frequência')
     const $ = Cheerio.load(page.body)
     const table = $('.listing')
     const absences = {
@@ -609,9 +614,9 @@ class SigaaClassStudent extends SigaaBase {
     return absences
   }
 
-  async _getClassSubMenu(buttonLabel) {
-    const classPage = await this._requestClassPage()
-    const $ = Cheerio.load(classPage.body)
+  async _getCourseSubMenu(buttonLabel) {
+    const coursePage = await this._requestCoursePage()
+    const $ = Cheerio.load(coursePage.body)
 
     const getBtnEl = $('div.itemMenu')
       .toArray()
@@ -619,7 +624,7 @@ class SigaaClassStudent extends SigaaBase {
         return this._removeTagsHtml($(buttonEl).html()) === buttonLabel
       })
     if (!getBtnEl) {
-      throw new Error(SigaaErrors.SIGAA_CLASS_SUB_MENU_NOT_FOUND)
+      throw new Error(SigaaErrors.SIGAA_COURSE_SUB_MENU_NOT_FOUND)
     }
     const form = this._parseJSFCLJS(
       $(getBtnEl)
@@ -647,7 +652,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getExamCalendar() {
-    const page = await this._requestClassPage()
+    const page = await this._requestCoursePage()
     const $ = Cheerio.load(page.body)
     const card = await this._getRightSidebarCard($, 'Avaliações')
     const examElements = card.find('li').toArray()
@@ -686,7 +691,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getQuizzes() {
-    const page = await this._getClassSubMenu('Questionários')
+    const page = await this._getCourseSubMenu('Questionários')
     const $ = Cheerio.load(page.body)
 
     const table = $('.listing')
@@ -743,7 +748,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getWebContents() {
-    const page = await this._getClassSubMenu('Conteúdo/Página web')
+    const page = await this._getCourseSubMenu('Conteúdo/Página web')
     const $ = Cheerio.load(page.body)
 
     const table = $('.listing')
@@ -789,9 +794,9 @@ class SigaaClassStudent extends SigaaBase {
   async getScheduledChats() {
     let page
     try {
-      page = await this._getClassSubMenu('Chats Agendados')
+      page = await this._getCourseSubMenu('Chats Agendados')
     } catch (err) {
-      if (err.message === SigaaErrors.SIGAA_CLASS_SUB_MENU_NOT_FOUND) {
+      if (err.message === SigaaErrors.SIGAA_COURSE_SUB_MENU_NOT_FOUND) {
         throw new Error(
           SigaaErrors.SIGAA_SCHEDULED_CHAT_HAS_DISABLE_BY_INSTITUTION
         )
@@ -837,7 +842,7 @@ class SigaaClassStudent extends SigaaBase {
       this._updateClassInstances({
         instanceOptions: chatOptions,
         instanceId: id,
-        Class: SigaaClassScheduledChat,
+        Class: SigaaCourseScheduledChat,
         type: 'scheduledChats',
         updateMethod: this.getHomeworks.bind(this)
       })
@@ -847,7 +852,7 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   async getHomeworks() {
-    const page = await this._getClassSubMenu('Tarefas')
+    const page = await this._getCourseSubMenu('Tarefas')
     const $ = Cheerio.load(page.body)
 
     const table = $('.listing')
@@ -911,7 +916,7 @@ class SigaaClassStudent extends SigaaBase {
 
   /**
    * Closes and removes the instance if not in idsToKeep
-   * @param {String} type type of instance E.g topics, news, files.
+   * @param {String} type type of instance E.g lessons, news, files.
    * @param {Array<String>} idsToKeep array with ids to keep E.g. ["1234", "4321"]
    */
   _closeClassInstances(type, idsToKeep) {
@@ -933,6 +938,7 @@ class SigaaClassStudent extends SigaaBase {
     }
     return this._instances[type]
   }
+
   /**
    * Update instance with new information
    * If there is an instance with the ID equal to options.id and
@@ -940,13 +946,13 @@ class SigaaClassStudent extends SigaaBase {
    * instanceOptions
    * E.g. instance.update(options.instanceOptions)
    * or create new instance with instanceOptions, updateMethod and sigaaSession instance
-   * E.g. new Class(instanceOptions, updateMethod, sigaaSession)
+   * E.g. new class(instanceOptions, updateMethod, sigaaSession)
    * @param {Object} options
    * @param {Object} options.instanceOptions Object with new informations
-   * @param {String} [options.instanceId] instance ID to find, or falsy value to creates new instance
-   * @param {FunctionConstructor} options.Class class Constructor if no instance with id
-   * @param {String} options.type type of instance E.g. files, topics, news,
-   * @throws {SigaaErrors.SIGAA_TYPE_IS_NOT_A_VALID_VALUE} if type is not a string
+   * @param {String} [options.instanceId] Instance ID to find, or falsy value to creates new instance
+   * @param {FunctionConstructor} options.Class Class Constructor if no instance with id
+   * @param {String} options.type Type of instance E.g. files, lessons, news,
+   * @throws {SigaaErrors.SIGAA_TYPE_IS_NOT_A_VALID_VALUE} If type is not a string
    * @param {Function} options.updateMethod Function to be sent to the instance in the construction, this function will be called if the update is needed by the instance
    * @return {Any} return the instance updated/created
    */
@@ -989,7 +995,7 @@ class SigaaClassStudent extends SigaaBase {
    * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
    */
   async getMembers() {
-    const page = await this._getClassSubMenu('Participantes')
+    const page = await this._getCourseSubMenu('Participantes')
     const $ = Cheerio.load(page.body)
     const tables = $('table.participantes').toArray()
     const tablesNames = $('fieldset').toArray()
@@ -1090,7 +1096,7 @@ class SigaaClassStudent extends SigaaBase {
                 break
               }
               case 'Curso': {
-                student.course = informationContent
+                student.program = informationContent
                 break
               }
               case 'Data Matrícula': {
@@ -1147,7 +1153,7 @@ class SigaaClassStudent extends SigaaBase {
    * @async
    */
   async getGrades() {
-    const page = await this._getClassSubMenu('Ver Notas')
+    const page = await this._getCourseSubMenu('Ver Notas')
     const getPositionByCellColSpan = ($, ths, cell) => {
       let i = 0
       for (const tr of ths.toArray()) {
@@ -1213,7 +1219,7 @@ class SigaaClassStudent extends SigaaBase {
 
             if (gradeId !== '') {
               const gradeName = $(`input#denAval_${gradeId}`).val()
-              const gradeAbbreviation = $(`input#abrevAval_${gradeId}`).val()
+              const gradeCode = $(`input#abrevAval_${gradeId}`).val()
               const gradeWeight = parseFloat(
                 $(`input#pesoAval_${gradeId}`).val()
               )
@@ -1223,7 +1229,7 @@ class SigaaClassStudent extends SigaaBase {
               if (!value) value = null
               gradeGroup.grades.push({
                 name: gradeName,
-                abbreviation: gradeAbbreviation,
+                code: gradeCode,
                 weight: gradeWeight,
                 value
               })
@@ -1243,18 +1249,18 @@ class SigaaClassStudent extends SigaaBase {
   }
 
   /**
-   * Get Education plan
+   * Get Syllabus
    * @throws {SigaaErrors.SIGAA_UNEXPECTED_RESPONSE} If unexpeted response is received
    * @returns {Promise<object>}
    * @async
    */
-  async getEducationPlan() {
-    const page = await this._getClassSubMenu('Plano de Ensino')
+  async getSyllabus() {
+    const page = await this._getCourseSubMenu('Plano de Ensino')
     const $ = Cheerio.load(page.body)
     const tables = $('table.listagem').toArray()
 
     const response = {
-      methodology: null,
+      methods: null,
       assessmentProcedures: null,
       attendanceSchedule: null,
       schedule: [],
@@ -1281,7 +1287,7 @@ class SigaaClassStudent extends SigaaBase {
 
             const rowField = this._removeTagsHtml(rowFieldElement.html())
             if (rowField === 'Metodologia:') {
-              response.methodology = body
+              response.methods = body
             } else if (
               rowField === 'Procedimentos de Avaliação da Aprendizagem:'
             ) {
@@ -1412,4 +1418,4 @@ class SigaaClassStudent extends SigaaBase {
   }
 }
 
-module.exports = SigaaClassStudent
+module.exports = SigaaCourseStudent

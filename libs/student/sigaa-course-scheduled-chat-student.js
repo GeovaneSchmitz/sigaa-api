@@ -1,7 +1,7 @@
 const SigaaBase = require('../common/sigaa-base')
 const SigaaErrors = require('../common/sigaa-errors')
 
-class SigaaClassScheduledStudent extends SigaaBase {
+class SigaaCourseScheduledStudent extends SigaaBase {
   constructor(chatOptions, chatUpdate, sigaaSession) {
     super(sigaaSession)
     this.update(chatOptions)
@@ -73,4 +73,4 @@ class SigaaClassScheduledStudent extends SigaaBase {
   }
 }
 
-module.exports = SigaaClassScheduledStudent
+module.exports = SigaaCourseScheduledStudent
