@@ -187,7 +187,7 @@ class SigaaCourseStudent extends SigaaBase {
     const contentElement = $('#conteudo')
     let lessonsElements
     if (contentElement) {
-      lessonsElements = contentElement.find('.lessono-aula').toArray()
+      lessonsElements = contentElement.find('.topico-aula').toArray()
     } else {
       lessonsElements = []
     }
@@ -223,7 +223,7 @@ class SigaaCourseStudent extends SigaaBase {
     }
 
     lesson.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
-    const lessonContentElement = $(lessonElement).find('.conteudolessono')
+    const lessonContentElement = $(lessonElement).find('.conteudotopico')
     lesson.contentText = decodeURI(
       this._removeTagsHtml(
         lessonContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
@@ -541,7 +541,7 @@ class SigaaCourseStudent extends SigaaBase {
       }
     }
     this._closeClassInstances('forums', usedForumIds)
-    return this._instances.news
+    return this._instances.forums
   }
 
   async getNews() {
