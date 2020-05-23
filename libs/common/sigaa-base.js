@@ -177,6 +177,29 @@ class SigaaBase {
       })
     })
   }
+
+  /**
+   * RFC 3986
+   * Uses the UTF-8 code point to code, not the hexadecimal binary
+   * @param {string} str
+   */
+  encodeWithRFC3986(str) {
+    let escapedString = ''
+    const unreservedCharacters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.~'
+    for (const i in str) {
+      if (unreservedCharacters.includes(str.charAt(i))) {
+        escapedString += str.charAt(i)
+      } else {
+        escapedString += str
+          .codePointAt(i)
+          .toString(16)
+          .replace(/..?/g, '%$&')
+      }
+    }
+    return escapedString
+  }
+
   /**
    * Make a POST request
    * @async
@@ -191,7 +214,9 @@ class SigaaBase {
   async _post(path, postValues, options = {}) {
     const link = new URL(path, this._sigaaSession.url)
     const httpOptions = this._makeRequestBasicOptions('POST', link, options)
-    const body = querystring.stringify(postValues)
+    const body = querystring.stringify(postValues, null, null, {
+      encodeURIComponent: this.encodeWithRFC3986
+    })
     httpOptions.headers['Content-Length'] = Buffer.byteLength(body)
     let cachePage = null
     if (!(options && options.noCache === true)) {
