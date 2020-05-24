@@ -11,7 +11,7 @@ const SigaaSession = require('./sigaa-session')
  */
 class SigaaFile extends SigaaBase {
   /**
-   * There are two ways to create the class and they are unique
+   * There are two ways to create the class
    * the first is used the file's id and key
    * the second is used the file form
    *
@@ -27,9 +27,6 @@ class SigaaFile extends SigaaBase {
    */
   constructor(options, fileUpdater, sigaaSession) {
     super(sigaaSession)
-    if ((options.form && options.id) || (options.key && options.form)) {
-      throw new Error('MORE_THAN_A_TYPE_OF_FILE_CONSTRUCTOR')
-    }
 
     this.update(options)
     if (options.id || fileUpdater !== undefined) {
