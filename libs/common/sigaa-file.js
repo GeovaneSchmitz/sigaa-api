@@ -4,16 +4,36 @@ const fsPromises = require('fs').promises
 const path = require('path')
 const querystring = require('querystring')
 const SigaaErrors = require('./sigaa-errors')
+const SigaaSession = require('./sigaa-session')
 
 /**
- * file class
+ * Class to manager file
  */
 class SigaaFile extends SigaaBase {
+  /**
+   * There are two ways to create the class and they are unique
+   * the first is used the file's id and key
+   * the second is used the file form
+   *
+   * @param {Object} options
+   * @param {String} [options.id]
+   * @param {String} [options.key]
+   * @param {Object} [options.form]
+   * @param {String} [options.title] file title
+   * @param {Object} [options.description] file description
+   * @param {Function} [fileUpdater] needed only if using options.form
+   * @param {SigaaSession} sigaaSession
+   * @throws {SigaaErrors.SIGAA_MORE_THAN_ONE_TYPE_OF_FILE_CONSTRUCTOR}
+   */
   constructor(options, fileUpdater, sigaaSession) {
     super(sigaaSession)
+    if ((options.form && options.id) || (options.key && options.form)) {
+      throw new Error('MORE_THAN_A_TYPE_OF_FILE_CONSTRUCTOR')
+    }
+
     this.update(options)
-    if (fileUpdater !== undefined) {
-      this._updateFile = fileUpdater
+    if (options.id || fileUpdater !== undefined) {
+      this._updateFile = fileUpdater || null
     } else {
       throw new Error(SigaaErrors.SIGAA_FILE_UPDATE_IS_NECESSARY)
     }
@@ -24,12 +44,9 @@ class SigaaFile extends SigaaBase {
   }
 
   update(options) {
-    if (options.title !== undefined && options.description !== undefined) {
-      this._title = options.title
-      this._description = options.description
-    } else {
-      throw new Error(SigaaErrors.SIGAA_INVALID_FILE_OPTIONS)
-    }
+    this._title = options.title || null
+    this._description = options.description || null
+
     if (options.form !== undefined) {
       this._form = options.form
       this._id = options.form.postValues.id
@@ -174,7 +191,7 @@ class SigaaFile extends SigaaBase {
         callback
       )
     } catch (err) {
-      if (retry) {
+      if (retry && this._updateFile) {
         await this._updateFile()
         return this.download(basepath, callback, false)
       } else {

@@ -13,6 +13,15 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
+  static get SIGAA_MORE_THAN_ONE_TYPE_OF_FILE_CONSTRUCTOR() {
+    return 'SIGAA_MORE_THAN_ONE_TYPE_OF_FILE_CONSTRUCTOR'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
   static get SIGAA_STACK_INVALID_ORDER_TYPE() {
     return 'SIGAA_STACK_INVALID_ORDER_TYPE'
   }

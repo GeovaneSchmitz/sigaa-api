@@ -1,13 +1,13 @@
 const SigaaAccount = require('./libs/common/sigaa-account')
 const SigaaBase = require('./libs/common/sigaa-base')
 const SigaaErrors = require('./libs/common/sigaa-errors')
+const SigaaFile = require('./libs/common/sigaa-file')
 const SigaaLogin = require('./libs/common/sigaa-login')
 const SigaaSession = require('./libs/common/sigaa-session')
 const SigaaTypes = require('./libs/common/sigaa-types')
 
 const SigaaAccountStudent = require('./libs/student/sigaa-account-student')
 const SigaaCourseStudent = require('./libs/student/sigaa-course-student')
-const SigaaFile = require('./libs/common/sigaa-file')
 const SigaaCourseForum = require('./libs/student/sigaa-course-forum-student')
 const SigaaHomeworkStudent = require('./libs/student/sigaa-homework-student')
 const SigaaNewsStudent = require('./libs/student/sigaa-news-student')
@@ -67,6 +67,17 @@ class Sigaa {
       throw new Error(SigaaErrors.SIGAA_ALREADY_LOGGED_IN)
     }
     return this.account
+  }
+
+  /**
+   * Load file to download
+   * @param {Object} options
+   * @param {String} options.id  file id
+   * @param {String} options.key file key
+   * @returns {SigaaFile}
+   */
+  loadFile(options) {
+    return new SigaaFile(options, null, this._sigaaSession)
   }
 
   get account() {

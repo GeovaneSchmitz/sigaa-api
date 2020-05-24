@@ -24,6 +24,10 @@ const requestStackWithoutCookies = new SigaaPromiseStack('reverse')
 class SigaaBase {
   constructor(sigaaSession) {
     if (sigaaSession instanceof SigaaSession) {
+      /**
+       * @protected
+       * @property {SigaaSession}
+       */
       this._sigaaSession = sigaaSession
     } else {
       throw new Error(SigaaErrors.SIGAA_SESSION_IS_NECESSARY)
