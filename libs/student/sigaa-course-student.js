@@ -289,103 +289,115 @@ class SigaaCourseStudent extends SigaaBase {
       for (const attachmentElement of attachmentElements) {
         const iconElement = $(attachmentElement).find('img')
         const iconSrc = iconElement.attr('src')
-        if (iconSrc === undefined) {
-          const attachmentText = {
-            type: 'text',
-            body: this._removeTagsHtml($(attachmentElement).html())
+        try {
+          if (iconSrc === undefined) {
+            const attachmentText = {
+              type: 'text',
+              body: this._removeTagsHtml($(attachmentElement).html())
+            }
+            lessonAttachments.push(attachmentText)
+          } else if (iconSrc.includes('questionario.png')) {
+            const quizOptions = this._parseAttachmentQuiz($, attachmentElement)
+            const id = quizOptions.id
+            const quiz = this._updateClassInstances({
+              instanceId: id,
+              instanceOptions: quizOptions,
+              Class: SigaaQuiz,
+              type: 'quizzes',
+              updateMethod: this.getQuizzes.bind(this)
+            })
+            lessonAttachments.push(quiz)
+          } else if (iconSrc.includes('video.png')) {
+            const videoOptions = this._parseAtachmentVideo($, attachmentElement)
+            lessonAttachments.push(videoOptions)
+          } else if (iconSrc.includes('tarefa.png')) {
+            const homeworkOptions = this._parseAttachmentHomework(
+              $,
+              attachmentElement
+            )
+            const id = homeworkOptions.id
+            const homework = this._updateClassInstances({
+              instanceId: id,
+              instanceOptions: homeworkOptions,
+              Class: SigaaHomework,
+              type: 'homeworks',
+              updateMethod: this.getHomeworks.bind(this)
+            })
+            lessonAttachments.push(homework)
+          } else if (iconSrc.includes('pesquisa.png')) {
+            const surveyOptions = this._parseAttacmentSurvey(
+              $,
+              attachmentElement
+            )
+            const id = surveyOptions.id
+            const survey = this._updateClassInstances({
+              instanceOptions: surveyOptions,
+              instanceId: id,
+              Class: SigaaSurvey,
+              type: 'surveys',
+              updateMethod: this.getSurveys.bind(this)
+            })
+            lessonAttachments.push(survey)
+          } else if (iconSrc.includes('conteudo.png')) {
+            const webContentOptions = this._parseAttachmentGeneric(
+              $,
+              attachmentElement
+            )
+            const id = webContentOptions.id
+            const webContents = this._updateClassInstances({
+              instanceOptions: webContentOptions,
+              instanceId: id,
+              Class: SigaaWebContent,
+              type: 'webContents',
+              updateMethod: this.getWebContents.bind(this)
+            })
+            lessonAttachments.push(webContents)
+          } else if (iconSrc.includes('forumava.png')) {
+            const forumOptions = this._parseAttachmentGeneric(
+              $,
+              attachmentElement
+            )
+            forumOptions.id = this._forumsIdIndex
+            forumOptions.isMain = true
+            this._forumsIdIndex++
+            const forum = this._updateClassInstances({
+              instanceOptions: forumOptions,
+              Class: SigaaCourseForum,
+              instanceId: forumOptions.id,
+              type: 'forums',
+              updateMethod: this.getForums.bind(this)
+            })
+            lessonAttachments.push(forum)
+          } else if (iconSrc.includes('user_comment.png')) {
+            const chatOptions = this._parseScheduledChat($, attachmentElement)
+            const id = chatOptions.id
+            const chat = this._updateClassInstances({
+              instanceId: id,
+              instanceOptions: chatOptions,
+              Class: SigaaCourseScheduledChat,
+              type: 'scheduledChats',
+              updateMethod: this.getScheduledChats.bind(this)
+            })
+            lessonAttachments.push(chat)
+          } else {
+            const fileOptions = this._parseAttachmentGeneric(
+              $,
+              attachmentElement
+            )
+            const id = fileOptions.id
+            const file = this._updateClassInstances({
+              instanceOptions: fileOptions,
+              instanceId: id,
+              Class: SigaaFile,
+              type: 'files',
+              updateMethod: this.getFiles.bind(this)
+            })
+            lessonAttachments.push(file)
           }
-          lessonAttachments.push(attachmentText)
-        } else if (iconSrc.includes('questionario.png')) {
-          const quizOptions = this._parseAttachmentQuiz($, attachmentElement)
-          const id = quizOptions.id
-          const quiz = this._updateClassInstances({
-            instanceId: id,
-            instanceOptions: quizOptions,
-            Class: SigaaQuiz,
-            type: 'quizzes',
-            updateMethod: this.getQuizzes.bind(this)
-          })
-          lessonAttachments.push(quiz)
-        } else if (iconSrc.includes('video.png')) {
-          const videoOptions = this._parseAtachmentVideo($, attachmentElement)
-          lessonAttachments.push(videoOptions)
-        } else if (iconSrc.includes('tarefa.png')) {
-          const homeworkOptions = this._parseAttachmentHomework(
-            $,
-            attachmentElement
-          )
-          const id = homeworkOptions.id
-          const homework = this._updateClassInstances({
-            instanceId: id,
-            instanceOptions: homeworkOptions,
-            Class: SigaaHomework,
-            type: 'homeworks',
-            updateMethod: this.getHomeworks.bind(this)
-          })
-          lessonAttachments.push(homework)
-        } else if (iconSrc.includes('pesquisa.png')) {
-          const surveyOptions = this._parseAttacmentSurvey($, attachmentElement)
-          const id = surveyOptions.id
-          const survey = this._updateClassInstances({
-            instanceOptions: surveyOptions,
-            instanceId: id,
-            Class: SigaaSurvey,
-            type: 'surveys',
-            updateMethod: this.getSurveys.bind(this)
-          })
-          lessonAttachments.push(survey)
-        } else if (iconSrc.includes('conteudo.png')) {
-          const webContentOptions = this._parseAttachmentGeneric(
-            $,
-            attachmentElement
-          )
-          const id = webContentOptions.id
-          const webContents = this._updateClassInstances({
-            instanceOptions: webContentOptions,
-            instanceId: id,
-            Class: SigaaWebContent,
-            type: 'webContents',
-            updateMethod: this.getWebContents.bind(this)
-          })
-          lessonAttachments.push(webContents)
-        } else if (iconSrc.includes('forumava.png')) {
-          const forumOptions = this._parseAttachmentGeneric(
-            $,
-            attachmentElement
-          )
-          forumOptions.id = this._forumsIdIndex
-          forumOptions.isMain = true
-          this._forumsIdIndex++
-          const forum = this._updateClassInstances({
-            instanceOptions: forumOptions,
-            Class: SigaaCourseForum,
-            instanceId: forumOptions.id,
-            type: 'forums',
-            updateMethod: this.getForums.bind(this)
-          })
-          lessonAttachments.push(forum)
-        } else if (iconSrc.includes('user_comment.png')) {
-          const chatOptions = this._parseScheduledChat($, attachmentElement)
-          const id = chatOptions.id
-          const chat = this._updateClassInstances({
-            instanceId: id,
-            instanceOptions: chatOptions,
-            Class: SigaaCourseScheduledChat,
-            type: 'scheduledChats',
-            updateMethod: this.getScheduledChats.bind(this)
-          })
-          lessonAttachments.push(chat)
-        } else {
-          const fileOptions = this._parseAttachmentGeneric($, attachmentElement)
-          const id = fileOptions.id
-          const file = this._updateClassInstances({
-            instanceOptions: fileOptions,
-            instanceId: id,
-            Class: SigaaFile,
-            type: 'files',
-            updateMethod: this.getFiles.bind(this)
-          })
-          lessonAttachments.push(file)
+        } catch (error) {
+          error.iconSrc = iconSrc
+          error.htmlAttachment = $(attachmentElement).html()
+          throw error
         }
       }
     }
