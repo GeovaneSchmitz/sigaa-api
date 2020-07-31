@@ -13,6 +13,24 @@ class SigaaErrors {
    * @static
    * @type {String}
    */
+  static get SIGAA_QUIZ_NOT_FOUND_BY_TITLE() {
+    return 'SIGAA_QUIZ_NOT_FOUND_BY_TITLE'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
+  static get SIGAA_HOMEWORK_NOT_FOUND_BY_TITLE() {
+    return 'SIGAA_HOMEWORK_NOT_FOUND_BY_TITLE'
+  }
+
+  /**
+   * @readonly
+   * @static
+   * @type {String}
+   */
   static get SIGAA_STACK_INVALID_ORDER_TYPE() {
     return 'SIGAA_STACK_INVALID_ORDER_TYPE'
   }

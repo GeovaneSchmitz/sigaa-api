@@ -722,8 +722,23 @@ class SigaaCourseStudent extends SigaaBase {
             $
           )
         }
-        const form = formSendAnswers || formViewAnswersSubmitted
-        const id = form.postValues.id
+        const form = formSendAnswers || formViewAnswersSubmitted || null
+        let id
+        if (!form) {
+          if (!this._instances.lessons) {
+            await this.getLessons()
+          }
+          const quiz = this._instances.quizzes.find(
+            (quiz) => quiz.title === title
+          )
+          if (quiz) {
+            id = quiz.id
+          } else {
+            throw SigaaErrors.SIGAA_QUIZ_NOT_FOUND_BY_TITLE
+          }
+        } else {
+          id = form.postValues.id
+        }
 
         const quizOptions = {
           title,
@@ -888,8 +903,23 @@ class SigaaCourseStudent extends SigaaBase {
           $
         )
       }
-      const form = formSendHomework || formViewHomeworkSubmitted
-      const id = form.postValues.id
+      const form = formViewHomeworkSubmitted && formViewHomeworkSubmitted
+      let id
+      if (!form) {
+        if (!this._instances.lessons) {
+          await this.getLessons()
+        }
+        const homework = this._instances.homeworks.find(
+          (homework) => homework.title === title
+        )
+        if (homework) {
+          id = homework.id
+        } else {
+          throw SigaaErrors.SIGAA_HOMEWORK_NOT_FOUND_BY_TITLE
+        }
+      } else {
+        id = form.postValues.id
+      }
       const homeworkOptions = {
         title,
         startDate: dates[0],
