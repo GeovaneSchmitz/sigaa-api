@@ -508,6 +508,7 @@ class SigaaCourseStudent extends SigaaBase {
     attachment.type = 'link'
 
     const titleElement = $(attachmentElement).find('span[id] > a')
+    attachment.title = this._removeTagsHtml(titleElement.html())
     attachment.href = titleElement.attr('href')
 
     const descriptionElement = $(attachmentElement).find('div.descricao-item')
