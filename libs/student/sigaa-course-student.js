@@ -308,7 +308,10 @@ class SigaaCourseStudent extends SigaaBase {
             })
             lessonAttachments.push(quiz)
           } else if (iconSrc.includes('video.png')) {
-            const videoOptions = this._parseAtachmentVideo($, attachmentElement)
+            const videoOptions = this._parseAttachmentVideo(
+              $,
+              attachmentElement
+            )
             lessonAttachments.push(videoOptions)
           } else if (iconSrc.includes('tarefa.png')) {
             const homeworkOptions = this._parseAttachmentHomework(
@@ -379,6 +382,9 @@ class SigaaCourseStudent extends SigaaBase {
               updateMethod: this.getScheduledChats.bind(this)
             })
             lessonAttachments.push(chat)
+          } else if (iconSrc.includes('portal_turma/site_add.png')) {
+            const linkOptions = this._parseAttachmentLink($, attachmentElement)
+            lessonAttachments.push(linkOptions)
           } else {
             const fileOptions = this._parseAttachmentGeneric(
               $,
@@ -417,6 +423,7 @@ class SigaaCourseStudent extends SigaaBase {
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
   }
+
   _parseAttachmentForum($, attachmentElement) {
     const attachment = {}
     const titleElement = $(attachmentElement)
@@ -430,6 +437,7 @@ class SigaaCourseStudent extends SigaaBase {
     attachment.description = this._removeTagsHtml(descriptionElement.html())
     return attachment
   }
+
   _parseAttacmentSurvey($, attachmentElement) {
     const attachment = {}
     const titleElement = $(attachmentElement).find('span > a')
@@ -471,7 +479,7 @@ class SigaaCourseStudent extends SigaaBase {
     return attachment
   }
 
-  _parseAtachmentVideo($, attachmentElement) {
+  _parseAttachmentVideo($, attachmentElement) {
     const attachment = {}
     attachment.type = 'video'
 
@@ -489,6 +497,18 @@ class SigaaCourseStudent extends SigaaBase {
         .find('iframe')
         .attr('src')
     }
+
+    const descriptionElement = $(attachmentElement).find('div.descricao-item')
+    attachment.description = this._removeTagsHtml(descriptionElement.html())
+    return attachment
+  }
+
+  _parseAttachmentLink($, attachmentElement) {
+    const attachment = {}
+    attachment.type = 'link'
+
+    const titleElement = $(attachmentElement).find('span[id] > a')
+    attachment.href = titleElement.attr('href')
 
     const descriptionElement = $(attachmentElement).find('div.descricao-item')
     attachment.description = this._removeTagsHtml(descriptionElement.html())
