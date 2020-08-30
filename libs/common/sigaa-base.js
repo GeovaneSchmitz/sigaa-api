@@ -501,7 +501,7 @@ class SigaaBase {
       for (const replace of removeTags) {
         for (const tag of replace.pattern) {
           newText = newText.replace(
-            RegExp(`<${tag}>|<${tag} [\s\S]*?>|</${tag}>`, 'g'),
+            new RegExp(`<${tag}>|<${tag} [\s\S]*?>|</${tag}>`, 'g'),
             replace.replacement
           )
         }
@@ -513,6 +513,23 @@ class SigaaBase {
       for (const replace of replacesAfterParseHTMLCharacters) {
         newText = newText.replace(replace.pattern, replace.replacement)
       }
+      const spaces = (newText.match(/\n+/g) || [])
+        .filter((item, index, array) => array.indexOf(item) == index)
+        .sort()
+        .filter((item, index) => item.length !== index + 1)
+        .reverse()
+
+      for (const i in spaces) {
+        const currentSpaces = spaces[i]
+        const newSpacesCount = spaces.length - i
+        let newSpaces = ''
+        for (let count = 0; count < newSpacesCount; count++) {
+          newSpaces += '\n'
+        }
+        const regExCurrentSpaces = new RegExp(currentSpaces, 'g')
+        newText = newText.replace(regExCurrentSpaces, newSpaces)
+      }
+
       return newText.trim()
     } catch (err) {
       return ''
