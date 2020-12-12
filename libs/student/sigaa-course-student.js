@@ -224,11 +224,10 @@ class SigaaCourseStudent extends SigaaBase {
 
     lesson.title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim()
     const lessonContentElement = $(lessonElement).find('.conteudotopico')
-    lesson.contentText = decodeURI(
-      this._removeTagsHtml(
-        lessonContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
-      )
+    lesson.contentText = this._removeTagsHtml(
+      lessonContentElement.html().replace(/<div([\S\s]*?)div>/gm, '')
     )
+
     const attachments = this._parseAttachmentsFromLesson(
       $,
       lessonContentElement
