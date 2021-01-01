@@ -1,0 +1,23 @@
+{
+  "clearMocks": true,
+  "testEnvironment": "node",
+  "transform": {
+    "^.+\\.(t|j)sx?$": "ts-jest"
+  },
+  "roots": ["<rootDir>"],
+  "moduleFileExtensions": ["ts", "js", "json"],
+  "testRegex": "/src/[\\s\\S]*spec.ts$",
+  "modulePaths": ["<rootDir>"],
+  "modulePathIgnorePatterns": ["dist"],
+  "moduleNameMapper": {
+    "@sigaa": "<rootDir>/src/main",
+    "@accounts(.*)": "<rootDir>/src/accounts/$1",
+    "@attachments(.*)": "<rootDir>/src/courses/resources/attachments/$1",
+    "@courseResources(.*)": "<rootDir>/src/courses/resources/$1",
+    "@resources(.*)": "<rootDir>/src/resources/$1",
+    "@courses(.*)": "<rootDir>/src/courses/$1",
+    "@helpers(.*)": "<rootDir>/src/helpers/$1",
+    "@search(.*)": "<rootDir>/src/search/$1",
+    "@session(.*)": "<rootDir>/src/session/$1"
+  }
+}

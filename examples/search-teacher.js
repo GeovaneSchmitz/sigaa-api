@@ -1,32 +1,45 @@
-const Sigaa = require('..')
+const Sigaa = require('sigaa-api').Sigaa;
 
 const sigaa = new Sigaa({
   url: 'https://sigaa.ifsc.edu.br'
-})
+});
 
-const searchTerm = ''
+const searchTerm = 'José'; // Nome do professor para procurar
 
-const searchTeacher = sigaa.search.teacher()
+const searchTeacher = sigaa.sigaaSearch.teacher();
 async function main() {
   try {
-    const campusList = await searchTeacher.getCampusList()
-    console.log(campusList)
+    /**
+     * Retorna a lista de campus, você não precisa usar,
+     * mas se você quiser filtrar os resultados para um
+     * campus específico você pode.
+     *  */
 
-    const campus = campusList.find((campus) => campus.name.includes('FLN')) // search in campus FLN
+    const campusList = await searchTeacher.getCampusList();
+    console.log('Lista de campus');
+    console.table(campusList);
 
-    const results = await searchTeacher.search(searchTerm, campus)
+    const campus = campusList.find((campus) => campus.name.includes('FLN')); // Procurar pelo primeiro campus que tenha no nome FLN
+
+    const results = await searchTeacher.search(searchTerm, campus);
 
     for (const result of results) {
-      const email = await result.getEmail()
-      console.log(result.name)
-      console.log(result.department)
-      console.log(result.pageURL)
-      console.log(result.photoURL)
-      console.log(email)
+      const email = await result.getEmail();
+      console.log('Nome: ' + result.name);
+      console.log('Departamento: ' + result.department);
+      console.log('Página: ' + result.pageURL.href);
+
+      //Se você quiser baixar você pode usar result.downloadProfilePicture(localParaSalvar)
+      console.log(
+        'Link da foto: ' +
+          (result.profilePictureURL ? result.profilePictureURL.href : undefined)
+      );
+      console.log('E-Mail: ' + email);
+      console.log('');
     }
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
 }
 
-main()
+main();

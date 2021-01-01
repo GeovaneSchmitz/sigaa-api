@@ -4,6 +4,7 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+testpages
 
 # Runtime data
 pids
@@ -62,3 +63,5 @@ typings/
 
 downloads
 .vscode
+
+dist/

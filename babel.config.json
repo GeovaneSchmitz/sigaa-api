@@ -1,0 +1,33 @@
+{
+  "sourceMaps": "both",
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "node": "current"
+        }
+      }
+    ],
+    "@babel/preset-typescript"
+  ],
+  "plugins": [
+    ["source-map-support"],
+    [
+      "module-resolver",
+      {
+        "alias": {
+          "@accounts": "./src/accounts",
+          "@attachments": "./src/courses/resources/attachments",
+          "@courseResources": "./src/courses/resources",
+          "@resources": "./src/resources",
+          "@courses": "./src/courses",
+          "@helpers": "./src/helpers",
+          "@search": "./src/search",
+          "@session": "./src/session",
+          "@sigaa": "./src/main"
+        }
+      }
+    ]
+  ]
+}

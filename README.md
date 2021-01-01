@@ -1,26 +1,23 @@
 # Disclaimer
 Eu sou estudante do IFSC, onde desenvolvo este projeto em tempo livre, por causa disto esta API não oferece suporte para qualquer outro tipo de conta além de estudante.
-Ela está em fase inicial e não possui todas as funcionalidades do SIGAA, e ela pode sofrer mudanças complexas, leve em consideração antes de usar no seu projeto.
+Ela não possui todas as funcionalidades do SIGAA.
 
-# Exemplos
-Existe alguns exemplos de uso, você pode ver na pasta examples, como: 
+# O que ela já faz
 * Listar suas turmas
-* Ver suas notas
+* Ver suas faltas e notas
+* Alterar a sua senha
+* Ver a sua foto de perfil, de seus colegas e seus professores
+* Ver os membros da turmas
+* Procurar por docentes pelo nome ou pelo campus
 * Baixar todos os arquivos disponibilizado pelos seus professores
 * Ver as noticias publicas nas turmas
+* Ver os planos de ensinos, atendimento, referências bibliográficas, etc
+# Caso de uso
+  Ela é usada em um [bot](https://github.com/GeovaneSchmitz/SIGAA-telegram-integration) para o telegram 
 
-## Para executar:
-* Instalar o nodejs e instalar as dependências do pacote
-* Você precisa dizer a url do sigaa da sua instituição:
-```javascript
-const sigaa = new Sigaa ({
-  url: 'https://sigaa.ifsc.edu.br'
-});
-```
-* Preencher com seu usuário e senha do sigaa
-```javascript
-// put your crendecias
-const username = 'usuario';
-const password = 'senha';
-```
-* Executar o arquivo com o nodejs
+# Como usar 
+* Instalar o nodejs
+* Criar um projeto com o node, pode ser feito com `npm init`
+* Instalar este pacote como dependência `npm install sigaa-api` ou `yarn add sigaa-api`
+* Escrever algum script, você pode ver alguns exemplos [aqui](https://github.com/GeovaneSchmitz/sigaa-api/tree/master/examples)
+* Executar o seu script com o nodejs
