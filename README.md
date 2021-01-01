@@ -1,6 +1,5 @@
 # Disclaimer
-Eu sou estudante do IFSC, onde desenvolvo este projeto em tempo livre, por causa disto esta API não oferece suporte para qualquer outro tipo de conta além de estudante.
-Ela não possui todas as funcionalidades do SIGAA.
+Eu sou estudante do IFSC, onde desenvolvo este projeto em tempo livre, por causa disto esta API não oferece suporte para qualquer outro tipo de conta além de estudante. Logo, ela não engloba todas as funcionalidades do SIGAA.
 
 # O que ela já faz
 * Listar suas turmas

@@ -51,15 +51,21 @@ const main = async () => {
       });
 
       for (const file of files) {
-        console.log('Nome do arquivo:' + file.title); // Os arquivos também podem ter descrição
+        // O nome do arquivo no sistema, pode ser diferente do nome do arquivo baixado
+        console.log('Nome do arquivo:' + file.title);
+        // O arquivo também pode ter descrição (file.description)
+
+        // Faz o download do arquivo, quando terminar o download retona o diretório onde foi salvo
         const filepath = await file
-          .download(pathCourse, (bytesDownloaded) => { // Faz o download do arquivo
+          .download(pathCourse, (bytesDownloaded) => {
+            // O callback é apenas para saber o progresso do download
             const progress = Math.trunc(bytesDownloaded / 10) / 100 + 'kB';
             process.stdout.write('Progresso: ' + progress + '\r'); // O process.stdout.write é usado apenas para reutilizar a mesma linha
           })
           .catch((err) => {
             console.error(err);
           });
+        //filepath é o diretório onde foi salvo o arquivo
         console.log('Salvado em: ' + filepath);
         console.log('');
       }

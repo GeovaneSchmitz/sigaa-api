@@ -29,11 +29,12 @@ const main = async () => {
       switch (
         gradesGroup.type //Existem 3 tipos de grupos de notas
       ) {
-        // O primiro tipo é somente o valor final, mesmo assim, pode ser que o valor ainda seja indefinido
+        // O primiro tipo (only-average) é somente o valor final, mesmo assim, pode ser que o valor ainda seja indefinido
         case 'only-average':
           console.log(gradesGroup.value);
           break;
-        // O segundo é um grupo com notas ponderadas (tem peso), mas os pesos podem serem todos iguais
+
+        // O segundo (weighted-average) é um grupo com notas ponderadas (tem peso), mas os pesos podem serem todos iguais
         case 'weighted-average':
           //Para cada nota do grupo
           for (const grade of gradesGroup.grades) {
@@ -48,8 +49,8 @@ const main = async () => {
           console.log('média:' + gradesGroup.value);
 
           break;
-        // O Terceiro é um grupo de soma de notas, não tem peso, mas cada nota tem um valor máximo
 
+        // O terceiro (sum-of-grades) é um grupo de soma de notas, não tem peso, mas cada nota tem um valor máximo
         case 'sum-of-grades':
           //Para cada nota do grupo
           for (const grade of gradesGroup.grades) {

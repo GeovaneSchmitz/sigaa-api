@@ -26,8 +26,8 @@ const main = async () => {
     for (const homework of homeworkList) {
       console.log(homework.title);
       try {
-        // Pode gerar um erro se a tarefa não tem arquivo ou se você já enviou a resposta
-        // É a para baixá-lo é a mesma coisa do exemplo download-all-files
+        // Pode gerar um erro se a tarefa não tem arquivo ou se você já enviou a resposta para a tarefa
+        // E para baixar o arquivo é a mesma coisa do exemplo download-all-files file.download(caminho)
         const file = await homework.getAttachmentFile();
         console.log(file.title);
       } catch (err) {
