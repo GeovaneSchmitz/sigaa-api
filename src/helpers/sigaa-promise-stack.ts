@@ -6,8 +6,8 @@ export interface FunctionPromise<T> {
 
 export interface PromiseItemStack<K, T> {
   key: K;
-  promiseFunction(): Promise<void>;
-  promise: Promise<T>;
+  promiseFunction?(): Promise<void>;
+  promise?: Promise<T>;
 }
 
 interface PromiseStack<K, T> {
@@ -84,7 +84,7 @@ export class SigaaPromiseStack<K, T> implements PromiseStack<K, T> {
           this.promiseRunning = this.storedPromises.pop();
         }
         try {
-          if (this.promiseRunning) {
+          if (this.promiseRunning?.promiseFunction) {
             await this.promiseRunning.promiseFunction();
           }
         } finally {
@@ -101,17 +101,16 @@ export class SigaaPromiseStack<K, T> implements PromiseStack<K, T> {
    * @async
    */
   public addPromise(key: K, promiseFunction: FunctionPromise<T>): Promise<T> {
+    const promiseObject: PromiseItemStack<K, T> = { key };
     const promise = new Promise<T>((resolve, reject) => {
-      setImmediate(() => {
-        const promiseObject: PromiseItemStack<K, T> = {
-          key,
-          promiseFunction: () => promiseFunction().then(resolve, reject),
-          promise
-        };
-        this.storedPromises.push(promiseObject);
-        this.promiseExecutor();
-      });
+      promiseObject.promiseFunction = () => {
+        return promiseFunction().then(resolve, reject);
+      };
     });
+    promiseObject.promise = promise;
+    this.storedPromises.push(promiseObject);
+    this.promiseExecutor();
+
     return promise;
   }
 }

@@ -199,7 +199,11 @@ export class SigaaHTTPSession implements HTTPSession {
       }
     }
     if (page.statusCode === 200) {
-      if (typeof page.requestBody === 'string') this.pageCache.storePage(page);
+      if (
+        page.requestBody === undefined ||
+        typeof page.requestBody === 'string'
+      )
+        this.pageCache.storePage(page);
     }
 
     if (requestPromise) {
@@ -236,32 +240,32 @@ export class SigaaHTTPSession implements HTTPSession {
       : httpOptions.method === 'POST'
       ? this.postRequestsStack
       : this.requestStack;
+
     if (
-      (!requestBody || typeof requestBody == 'string') &&
+      (requestBody === undefined || typeof requestBody == 'string') &&
       options?.shareSameRequest
     ) {
+      const request: Request = {
+        httpOptions,
+        body: requestBody
+      };
       const runningRequest = stack.promises.find(
         (request) =>
           request.key.body === requestBody &&
           isEqual(httpOptions, request.key.httpOptions)
       );
-      if (runningRequest) {
+      if (runningRequest?.promise) {
         return runningRequest.promise;
       }
-    }
-    const request: Request = {
-      httpOptions,
-      body: requestBody
-    };
-    await new Promise<void>((awaitResolve) => {
-      const page = stack.addPromise(request, () => {
-        awaitResolve();
-        return new Promise<Page>((resolve, reject) => {
-          this.requestPromises.push({ request, reject, resolve });
+      await new Promise<void>((awaitResolve) => {
+        stack.addPromise(request, () => {
+          awaitResolve();
+          return new Promise<Page>((resolve, reject) => {
+            this.requestPromises.push({ request, reject, resolve });
+          });
         });
       });
-      return page;
-    });
+    }
 
     return null;
   }

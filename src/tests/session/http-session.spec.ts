@@ -50,3 +50,30 @@ test('if Sigaa http requests again if noCache is enable', async () => {
 
   expect(firstRequest !== secondRequest).toBeTruthy();
 }, 10000);
+
+
+test('if Sigaa http cache page', async () => {
+  const http = createHTTPInstance();
+  await http.get('/sigaa/public/home.jsf'); // request to get cookies
+
+  const firstRequest = await http.get('/sigaa/public/home.jsf'); // Loads cookies
+  const secondRequest = await http.get('/sigaa/public/home.jsf');
+
+  expect(firstRequest === secondRequest).toBeTruthy();
+}, 10000);
+
+
+
+test('if Sigaa http return page same request', async () => {
+  const http = createHTTPInstance();
+
+  const firstRequest = http.get('/sigaa/public/home.jsf', {
+    shareSameRequest: true
+  })
+
+  const secondRequest = http.get('/sigaa/public/home.jsf', {
+    shareSameRequest: true
+  });
+
+  expect((await firstRequest) === (await secondRequest)).toBeTruthy();
+}, 10000);
