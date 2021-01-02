@@ -32,10 +32,10 @@ export type SigaaOptionsConstructor =
   | SigaaConstructorHTTP;
 
 export class Sigaa {
-  private http: HTTP;
   private loginInstance: Login;
-  private parser: Parser;
-  private session: Session;
+  http: HTTP;
+  parser: Parser;
+  session: Session;
 
   constructor(options: SigaaOptionsConstructor) {
     if (!(<SigaaConstructorHTTP>options).http) {

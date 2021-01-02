@@ -1268,7 +1268,7 @@ export class SigaaCourseStudent implements Course {
    * @param {String} type type of instance E.g lessons, news, files.
    * @param {Array<String>} idsToKeep array with ids to keep E.g. ["1234", "4321"]
    */
-  closeClassInstances<T>(
+  private closeClassInstances<T>(
     instances: UpdatableResource<T>[],
     idsToKeep: string[]
   ): UpdatableResource<T>[] {
