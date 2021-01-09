@@ -57,7 +57,7 @@ test('if Sigaa http cache page', async () => {
   await http.get('/sigaa/public/home.jsf'); // request to get cookies
 
   const firstRequest = await http.get('/sigaa/public/home.jsf'); // Loads cookies
-  const secondRequest = await http.get('/sigaa/public/home.jsf');
+  const secondRequest = await http.get('/sigaa/public/home.jsf'); // Loads cookies
 
   expect(firstRequest === secondRequest).toBeTruthy();
 }, 10000);

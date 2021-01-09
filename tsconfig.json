@@ -13,17 +13,18 @@
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@accounts/*": ["./src/accounts/*"],
-      "@attachments/*": ["src/courses/resources/attachments/*"],
-      "@courseResources/*": ["src/courses/resources/*"],
+      "@account/*": ["./src/account/*"],
+      "@bonds/*": ["./src/bonds/*"],
+      "@attachments/*": ["./src/courses/resources/attachments/*"],
+      "@courseResources/*": ["./src/courses/resources/*"],
       "@courses/*": ["./src/courses/*"],
       "@helpers/*": ["./src/helpers/*"],
-      "@resources/*": ["src/resources/*"],
+      "@resources/*": ["./src/resources/*"],
       "@search/*": ["./src/search/*"],
       "@session/*": ["./src/session/*"],
       "@sigaa": ["./src/main"]
     }
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/spec.ts",  "**__MOCKS__**"]
+  "exclude": ["node_modules", "**/spec.ts", "**__MOCKS__**"]
 }

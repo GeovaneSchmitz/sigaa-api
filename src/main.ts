@@ -1,6 +1,9 @@
-export * from '@accounts/sigaa-account';
-export * from '@accounts/sigaa-account-student';
-export * from '@accounts/sigaa-account-teacher';
+export * from '@account/sigaa-account';
+export * from '@account/sigaa-account-factory';
+
+export * from '@bonds/sigaa-student-bond';
+export * from '@bonds/sigaa-teacher-bond';
+export * from '@bonds/sigaa-bond-factory';
 
 export * from '@courses/sigaa-course';
 
@@ -32,6 +35,9 @@ export * from '@session/sigaa-session';
 export * from '@session/sigaa-page';
 export * from '@session/sigaa-http';
 export * from '@session/sigaa-login';
+export * from '@session/sigaa-bond-controller';
+export * from '@session/sigaa-http-factory';
+export * from '@session/sigaa-http-with-bond';
 
 export * from './sigaa-types';
 export * from './sigaa-root';

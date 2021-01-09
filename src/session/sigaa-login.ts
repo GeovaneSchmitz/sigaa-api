@@ -1,4 +1,3 @@
-import { AccountType } from '@accounts/sigaa-account';
 import { LoginStatus } from '../sigaa-types';
 import { URL } from 'url';
 import { HTTP } from './sigaa-http';
@@ -6,18 +5,21 @@ import { Page, SigaaForm } from './sigaa-page';
 import { Session } from './sigaa-session';
 
 export interface Login {
-  login(username: string, password: string): Promise<AccountType[]>;
+  /**
+   * login on Sigaa
+   * @param username
+   * @param password'
+   * @returns login page result
+   */
+  login(username: string, password: string): Promise<Page>;
 }
 
 /**
+ * responsible for logging in
  * @class SigaaLogin
  */
 export class SigaaLogin implements Login {
-  constructor(
-    private http: HTTP,
-    private session: Session,
-    private accounts: AccountType[]
-  ) {}
+  constructor(private http: HTTP, private session: Session) {}
   readonly errorInvalidCredentials = 'SIGAA: Invalid credentials.';
 
   /**
@@ -87,10 +89,7 @@ export class SigaaLogin implements Login {
    * @param username
    * @param password
    */
-  private async mobileLogin(
-    username: string,
-    password: string
-  ): Promise<AccountType[]> {
+  private async mobileLogin(username: string, password: string): Promise<Page> {
     const { action, postValues } = await this.loadMobileLoginForm();
 
     const postValuesKeys = Object.keys(postValues);
@@ -112,7 +111,7 @@ export class SigaaLogin implements Login {
   private async desktopLogin(
     username: string,
     password: string
-  ): Promise<AccountType[]> {
+  ): Promise<Page> {
     const { action, postValues } = await this.loadDesktopLoginForm();
 
     postValues['user.login'] = username;
@@ -122,23 +121,19 @@ export class SigaaLogin implements Login {
   }
 
   /**
-   * Start a session on Sigaa, return a list of the accounts the user has
+   * Start a session on Sigaa, return login reponse page
    * @param username
    * @param password
    */
-  async login(
-    username: string,
-    password: string,
-    retry = true
-  ): Promise<AccountType[]> {
+  async login(username: string, password: string, retry = true): Promise<Page> {
     if (this.session.loginStatus === LoginStatus.Authenticated)
       throw new Error('Sigaa: This session already has a user logged in.');
-
     try {
-      return await this.mobileLogin(username, password).catch((error) => {
+      const page = await this.mobileLogin(username, password).catch((error) => {
         if (error.message === this.errorInvalidCredentials) throw error;
         return this.desktopLogin(username, password);
       });
+      return this.http.followAllRedirect(page);
     } catch (error) {
       if (!retry || error.message === this.errorInvalidCredentials) {
         throw error;
@@ -148,7 +143,7 @@ export class SigaaLogin implements Login {
     }
   }
 
-  private async parseMobileLoginResult(page: Page): Promise<AccountType[]> {
+  private async parseMobileLoginResult(page: Page): Promise<Page> {
     if (page.statusCode === 200) {
       if (page.body.includes('form-login')) {
         if (page.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
@@ -158,26 +153,28 @@ export class SigaaLogin implements Login {
           throw new Error('SIGAA: Invalid response after login attempt.');
         }
       } else {
-        const accounts = (
-          await Promise.all(
-            this.accounts.map((accounts) =>
-              accounts
-                .verifyIfUserType(page)
-                .then((status) => (status ? accounts : null))
-            )
-          )
-        ).filter((accounts) => accounts) as AccountType[];
-        if (!accounts) throw new Error('SIGAA: could not identify user type.');
-        this.session.accounts = accounts;
-        this.session.loginStatus = LoginStatus.Authenticated;
-        return accounts;
+        // This is necessary because the mobile version does not return inactive bonds.
+        if (
+          page.url.href.includes('mobile') &&
+          page.body.includes('Escolha seu V&#237;nculo para operar o sistema')
+        ) {
+          const bondPage = this.http.get('/sigaa/vinculos.jsf');
+          if ((await bondPage).statusCode !== 200)
+            throw new Error('SIGAA: bond page has unexpected status.');
+          this.session.loginStatus = LoginStatus.Authenticated;
+
+          return bondPage;
+        } else {
+          this.session.loginStatus = LoginStatus.Authenticated;
+          return page;
+        }
       }
     } else {
       throw new Error('SIGAA: Invalid status code after login attempt.');
     }
   }
 
-  private async parseDesktopLoginResult(page: Page): Promise<AccountType[]> {
+  private async parseDesktopLoginResult(page: Page): Promise<Page> {
     const accountPage = await this.http.followAllRedirect(page);
     if (accountPage.body.includes('Entrar no Sistema')) {
       if (accountPage.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
@@ -187,18 +184,8 @@ export class SigaaLogin implements Login {
         throw new Error('SIGAA: Invalid response after login attempt.');
       }
     } else {
-      const accounts = (
-        await Promise.all(
-          this.accounts.map((accounts) =>
-            accounts
-              .verifyIfUserType(accountPage)
-              .then((status) => (status ? accounts : null))
-          )
-        )
-      ).filter((accounts) => accounts) as AccountType[];
-      this.session.accounts = accounts;
       this.session.loginStatus = LoginStatus.Authenticated;
-      return accounts;
+      return accountPage;
     }
   }
 }

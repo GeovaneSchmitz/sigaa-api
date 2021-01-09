@@ -17,7 +17,8 @@
       "module-resolver",
       {
         "alias": {
-          "@accounts": "./src/accounts",
+          "@bonds": "./src/bonds",
+          "@account": "./src/account",
           "@attachments": "./src/courses/resources/attachments",
           "@courseResources": "./src/courses/resources",
           "@resources": "./src/resources",

@@ -102,7 +102,7 @@ export interface HTTP {
    * @param page
    * @returns The last page of redirects
    */
-  followAllRedirect(page: Page): Promise<Page>;
+  followAllRedirect(page: Page, options?: SigaaRequestOptions): Promise<Page>;
 
   /**
    * Close http session
@@ -506,9 +506,12 @@ export class SigaaHTTP implements HTTP {
     });
   }
 
-  public async followAllRedirect(page: Page): Promise<Page> {
+  public async followAllRedirect(
+    page: Page,
+    options?: SigaaRequestOptions
+  ): Promise<Page> {
     while (page.headers.location) {
-      page = await this.get(page.headers.location as string);
+      page = await this.get(page.headers.location as string, options);
     }
     return page;
   }

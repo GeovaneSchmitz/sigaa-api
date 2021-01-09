@@ -9,25 +9,35 @@ const username = '';
 const password = '';
 
 const main = async () => {
-  const accounts = await sigaa.login(username, password); // login
-  let account;
-  if (accounts[0] && accounts[0].userType === 'student') {
-    account = accounts[0]; // O usuário pode ter tanto acesso ao portal do aluno quanto ao do professor
-  } else {
-    throw new Error('O usuário não é um aluno.');
-  }
-  // Se for usado account.getCourses(true); todas as turmas são retornadas, incluindo turmas de outros semestres
-  const courses = await account.getCourses();
+  const account = await sigaa.login(username, password); // login
 
-  // Para cada turma
-  for (const course of courses) {
-    // Nome da turma
-    console.log(' > ' + course.title);
-    // Semestre
-    console.log(course.period);
-    // Horário das aulas
-    console.log(course.schedule);
-    console.log(''); // Apenas para separar as linhas
+  /**
+   * O usuário pode ter mais de um vínculo
+   * @see https://github.com/GeovaneSchmitz/sigaa-api/issues/4
+   **/
+  const bonds = await account.getBonds();
+
+  //Para cada vínculo
+  for (const bond of bonds) {
+    if (bond.type !== 'student') continue; // O tipo pode ser student ou teacher
+
+    //Se o tipo do vínculo for student, então tem matrícula e curso
+    console.log('Matrícula do vínculo: ' + bond.registration);
+    console.log('Curso do vínculo: ' + bond.program);
+
+    // Se for usado bond.getCourses(true); todas as turmas são retornadas, incluindo turmas de outros semestres
+    const courses = await bond.getCourses();
+
+    // Para cada turma
+    for (const course of courses) {
+      // Nome da turma
+      console.log(' > ' + course.title);
+      // Semestre
+      console.log(course.period);
+      // Horário das aulas
+      console.log(course.schedule);
+      console.log(''); // Apenas para separar as linhas
+    }
   }
 
   // Encerra a sessão

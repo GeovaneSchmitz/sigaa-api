@@ -1,11 +1,19 @@
-import { AccountType } from '@accounts/sigaa-account';
-import { SigaaAccountStudent } from '@accounts/sigaa-account-student';
-import { SigaaAccountTeacher } from '@accounts/sigaa-account-teacher';
+import { Account } from '@account/sigaa-account';
+import {
+  AccountFactory,
+  SigaaAccountFactory
+} from '@account/sigaa-account-factory';
+import { BondFactory, SigaaBondFactory } from '@bonds/sigaa-bond-factory';
 import { Parser, SigaaParser } from '@helpers/sigaa-parser';
 import { FileData, SigaaFile } from '@resources/sigaa-file';
 import { SigaaSearch } from '@search/sigaa-search';
 import { SigaaHTTPSession } from '@session/http-session';
-import { HTTP, SigaaHTTP } from '@session/sigaa-http';
+import {
+  BondController,
+  SigaaBondController
+} from '@session/sigaa-bond-controller';
+import { HTTP } from '@session/sigaa-http';
+import { HTTPFactory, SigaaHTTPFactory } from '@session/sigaa-http-factory';
 import { Login, SigaaLogin } from '@session/sigaa-login';
 import { SigaaPageCache } from '@session/sigaa-page-cache';
 import { Session, SigaaSession } from '@session/sigaa-session';
@@ -16,15 +24,17 @@ interface SigaaConstructorURL {
   session?: Session;
   login?: Login;
   parser?: Parser;
-  accountTypes?: AccountType[];
+  accountFactory?: AccountFactory;
+  bondController?: BondController;
+  bondFactory?: BondFactory;
 }
 
 interface SigaaConstructorHTTP {
-  http: HTTP;
+  httpFactory: HTTPFactory;
   session?: Session;
   login?: Login;
   parser?: Parser;
-  accountTypes?: AccountType[];
+  accountFactory: AccountFactory;
 }
 
 export type SigaaOptionsConstructor =
@@ -32,33 +42,52 @@ export type SigaaOptionsConstructor =
   | SigaaConstructorHTTP;
 
 export class Sigaa {
-  private loginInstance: Login;
-  http: HTTP;
-  parser: Parser;
-  session: Session;
+  readonly loginInstance: Login;
+  readonly httpFactory: HTTPFactory;
+  readonly parser: Parser;
+  readonly session: Session;
+  readonly accountFactory: AccountFactory;
+  private http: HTTP;
 
   constructor(options: SigaaOptionsConstructor) {
-    if (!(<SigaaConstructorHTTP>options).http) {
+    const optionsTypeURL = <SigaaConstructorURL>options;
+    const optionsTypeHttp = <SigaaConstructorHTTP>options;
+
+    this.parser = options.parser || new SigaaParser();
+    this.session = options.session || new SigaaSession();
+
+    if (!optionsTypeHttp.httpFactory) {
       const pageCache = new SigaaPageCache();
       const tokens = new SigaaTokens();
       const session = new SigaaHTTPSession(
-        (<SigaaConstructorURL>options).url,
+        optionsTypeURL.url,
         tokens,
         pageCache
       );
-      this.http = new SigaaHTTP(session);
-    } else {
-      this.http = (<SigaaConstructorHTTP>options).http;
-    }
-    this.parser = options.parser || new SigaaParser();
-    this.session = options.session || new SigaaSession();
-    const accounts =
-      options.accountTypes ||
-      [SigaaAccountStudent, SigaaAccountTeacher].map(
-        (AccountClass) => new AccountClass(this.http, this.parser, this.session)
+
+      const bondController =
+        optionsTypeURL.bondController || new SigaaBondController();
+
+      this.httpFactory = new SigaaHTTPFactory(session, bondController);
+
+      const bondFactory =
+        optionsTypeURL.bondFactory ||
+        new SigaaBondFactory(this.httpFactory, this.parser);
+
+      const http = this.httpFactory.createHttp();
+      this.accountFactory = new SigaaAccountFactory(
+        http,
+        this.parser,
+        this.session,
+        bondFactory
       );
+    } else {
+      this.httpFactory = optionsTypeHttp.httpFactory;
+      this.accountFactory = optionsTypeHttp.accountFactory;
+    }
+    this.http = this.httpFactory.createHttp();
     this.loginInstance =
-      options.login || new SigaaLogin(this.http, this.session, accounts);
+      options.login || new SigaaLogin(this.http, this.session);
   }
 
   /**
@@ -68,8 +97,9 @@ export class Sigaa {
    * @async
    * @returns
    */
-  async login(username: string, password: string): Promise<AccountType[]> {
-    return this.loginInstance.login(username, password);
+  async login(username: string, password: string): Promise<Account> {
+    const page = await this.loginInstance.login(username, password);
+    return this.accountFactory.getAccount(page);
   }
 
   /**
@@ -81,13 +111,6 @@ export class Sigaa {
    */
   loadFile(options: FileData): SigaaFile {
     return new SigaaFile(this.http, options);
-  }
-
-  get accounts(): AccountType[] {
-    if (this.session.accounts) {
-      return this.session.accounts;
-    }
-    return [];
   }
 
   get sigaaSearch(): SigaaSearch {

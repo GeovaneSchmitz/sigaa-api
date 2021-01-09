@@ -11,7 +11,8 @@
   "modulePathIgnorePatterns": ["dist"],
   "moduleNameMapper": {
     "@sigaa": "<rootDir>/src/main",
-    "@accounts(.*)": "<rootDir>/src/accounts/$1",
+    "@account(.*)": "<rootDir>/src/account/$1",
+    "@bonds(.*)": "<rootDir>/src/bonds/$1",
     "@attachments(.*)": "<rootDir>/src/courses/resources/attachments/$1",
     "@courseResources(.*)": "<rootDir>/src/courses/resources/$1",
     "@resources(.*)": "<rootDir>/src/resources/$1",
