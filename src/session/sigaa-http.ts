@@ -253,9 +253,9 @@ export class SigaaHTTP implements HTTP {
       path: link.pathname + link.search,
       method: method,
       headers: {
-        'User-Agent': options.mobile
-          ? 'SIGAA-Api/1.0 (Android 7.0; https://github.com/GeovaneSchmitz/SIGAA-node-interface)'
-          : 'SIGAA-Api/1.0 (https://github.com/GeovaneSchmitz/SIGAA-node-interface)',
+        'User-Agent': `SIGAA-Api/1.0 (${
+          options.mobile ? 'Android 7.0; ' : ''
+        }https://github.com/GeovaneSchmitz/sigaa-api)`,
         'Accept-Encoding': 'br, gzip, deflate',
         Accept: '*/*',
         'Cache-Control': 'max-age=0',
