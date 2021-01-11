@@ -130,13 +130,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>SigaaHTTPWith<wbr>Bond<span class="tsd-signature-symbol">(</span>http<span class="tsd-signature-symbol">: </span><a href="../interfaces/http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a>, bondController<span class="tsd-signature-symbol">: </span><a href="../interfaces/bondcontroller.html" class="tsd-signature-type" data-tsd-kind="Interface">BondController</a>, bondSwitchUrl<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">URL</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaahttpwithbond.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaHTTPWithBond</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>SigaaHTTPWith<wbr>Bond<span class="tsd-signature-symbol">(</span>http<span class="tsd-signature-symbol">: </span><a href="../interfaces/http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a>, bondController<span class="tsd-signature-symbol">: </span><a href="../interfaces/bondcontroller.html" class="tsd-signature-type" data-tsd-kind="Interface">BondController</a>, pageCacheWithBond<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PageCacheWithBond</span>, bondSwitchUrl<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">URL</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaahttpwithbond.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaHTTPWithBond</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L15">src/session/sigaa-http-with-bond.ts:15</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L16">src/session/sigaa-http-with-bond.ts:16</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -146,6 +146,9 @@
 								</li>
 								<li>
 									<h5>bondController: <a href="../interfaces/bondcontroller.html" class="tsd-signature-type" data-tsd-kind="Interface">BondController</a></h5>
+								</li>
+								<li>
+									<h5>pageCacheWithBond: <span class="tsd-signature-type">PageCacheWithBond</span></h5>
 								</li>
 								<li>
 									<h5>bondSwitchUrl: <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">URL</span></h5>
@@ -169,7 +172,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/http.html">HTTP</a>.<a href="../interfaces/http.html#closesession">closeSession</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L119">src/session/sigaa-http-with-bond.ts:119</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L121">src/session/sigaa-http-with-bond.ts:121</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -192,7 +195,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/http.html">HTTP</a>.<a href="../interfaces/http.html#downloadfilebyget">downloadFileByGet</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L78">src/session/sigaa-http-with-bond.ts:78</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L80">src/session/sigaa-http-with-bond.ts:80</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -236,7 +239,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/http.html">HTTP</a>.<a href="../interfaces/http.html#downloadfilebypost">downloadFileByPost</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L90">src/session/sigaa-http-with-bond.ts:90</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L92">src/session/sigaa-http-with-bond.ts:92</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -283,7 +286,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/http.html">HTTP</a>.<a href="../interfaces/http.html#followallredirect">followAllRedirect</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L108">src/session/sigaa-http-with-bond.ts:108</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L110">src/session/sigaa-http-with-bond.ts:110</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -316,7 +319,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/http.html">HTTP</a>.<a href="../interfaces/http.html#get">get</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L70">src/session/sigaa-http-with-bond.ts:70</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L72">src/session/sigaa-http-with-bond.ts:72</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -343,7 +346,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/http.html">HTTP</a>.<a href="../interfaces/http.html#post">post</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L61">src/session/sigaa-http-with-bond.ts:61</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L63">src/session/sigaa-http-with-bond.ts:63</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -384,7 +387,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/http.html">HTTP</a>.<a href="../interfaces/http.html#postmultipart">postMultipart</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L49">src/session/sigaa-http-with-bond.ts:49</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L51">src/session/sigaa-http-with-bond.ts:51</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -424,7 +427,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L34">src/session/sigaa-http-with-bond.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L38">src/session/sigaa-http-with-bond.ts:38</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -446,7 +449,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/df53791/src/session/sigaa-http-with-bond.ts#L26">src/session/sigaa-http-with-bond.ts:26</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/f1ebcd1/src/session/sigaa-http-with-bond.ts#L28">src/session/sigaa-http-with-bond.ts:28</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
