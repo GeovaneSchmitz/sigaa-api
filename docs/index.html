@@ -1,0 +1,431 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>sigaa-api</title>
+	<meta name="description" content="Documentation for sigaa-api">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">sigaa-api</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>Project sigaa-api</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#disclaimer" id="disclaimer" style="color: inherit; text-decoration: none;">
+					<h1>Disclaimer</h1>
+				</a>
+				<p>Eu sou estudante do IFSC, onde desenvolvo este projeto em tempo livre, por causa disto esta API não oferece suporte para qualquer outro tipo de conta além de estudante. Logo, ela não engloba todas as funcionalidades do SIGAA.</p>
+				<p>Recentemente foi criada uma documentação, ainda não está perfeita, mas você pode ver <a href="https://geovaneschmitz.github.io/sigaa-api/">aqui</a>.</p>
+				<a href="#o-que-ela-já-faz" id="o-que-ela-já-faz" style="color: inherit; text-decoration: none;">
+					<h1>O que ela já faz</h1>
+				</a>
+				<ul>
+					<li>Listar suas turmas</li>
+					<li>Ver suas faltas e notas</li>
+					<li>Alterar a sua senha</li>
+					<li>Ver a sua foto de perfil, de seus colegas e seus professores</li>
+					<li>Ver os membros da turmas</li>
+					<li>Procurar por docentes pelo nome ou pelo campus</li>
+					<li>Baixar todos os arquivos disponibilizado pelos seus professores</li>
+					<li>Ver as noticias publicas nas turmas</li>
+					<li>Ver os planos de ensinos, atendimento, referências bibliográficas, etc</li>
+				</ul>
+				<a href="#caso-de-uso" id="caso-de-uso" style="color: inherit; text-decoration: none;">
+					<h1>Caso de uso</h1>
+				</a>
+				<p>Ela é usada em um <a href="https://github.com/GeovaneSchmitz/SIGAA-telegram-integration">bot</a> para o telegram </p>
+				<a href="#como-usar" id="como-usar" style="color: inherit; text-decoration: none;">
+					<h1>Como usar</h1>
+				</a>
+				<ul>
+					<li>Instalar o nodejs</li>
+					<li>Criar um projeto com o node, pode ser feito com <code>npm init</code></li>
+					<li>Instalar este pacote como dependência <code>npm install sigaa-api</code> ou <code>yarn add sigaa-api</code></li>
+					<li>Escrever algum script, você pode ver alguns exemplos <a href="https://github.com/GeovaneSchmitz/sigaa-api/tree/master/examples">aqui</a></li>
+					<li>Executar o seu script com o nodejs</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-enum">
+						<a href="enums/loginstatus.html" class="tsd-kind-icon">Login<wbr>Status</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaa.html" class="tsd-kind-icon">Sigaa</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaaaccount.html" class="tsd-kind-icon">Sigaa<wbr>Account</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaaaccountfactory.html" class="tsd-kind-icon">Sigaa<wbr>Account<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaabondcontroller.html" class="tsd-kind-icon">Sigaa<wbr>Bond<wbr>Controller</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaabondfactory.html" class="tsd-kind-icon">Sigaa<wbr>Bond<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaacourseforum.html" class="tsd-kind-icon">Sigaa<wbr>Course<wbr>Forum</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaacoursestudent.html" class="tsd-kind-icon">Sigaa<wbr>Course<wbr>Student</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaafile.html" class="tsd-kind-icon">Sigaa<wbr>File</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaahttp.html" class="tsd-kind-icon">SigaaHTTP</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaahttpfactory.html" class="tsd-kind-icon">SigaaHTTPFactory</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaahttpsession.html" class="tsd-kind-icon">SigaaHTTPSession</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaahttpwithbond.html" class="tsd-kind-icon">SigaaHTTPWith<wbr>Bond</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaahomework.html" class="tsd-kind-icon">Sigaa<wbr>Homework</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaalesson.html" class="tsd-kind-icon">Sigaa<wbr>Lesson</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaalogin.html" class="tsd-kind-icon">Sigaa<wbr>Login</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaanews.html" class="tsd-kind-icon">Sigaa<wbr>News</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaapage.html" class="tsd-kind-icon">Sigaa<wbr>Page</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaapagecache.html" class="tsd-kind-icon">Sigaa<wbr>Page<wbr>Cache</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaaparser.html" class="tsd-kind-icon">Sigaa<wbr>Parser</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/sigaapromisestack.html" class="tsd-kind-icon">Sigaa<wbr>Promise<wbr>Stack</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaaquiz.html" class="tsd-kind-icon">Sigaa<wbr>Quiz</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaasearch.html" class="tsd-kind-icon">Sigaa<wbr>Search</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaasearchteacher.html" class="tsd-kind-icon">Sigaa<wbr>Search<wbr>Teacher</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaasearchteacherresult.html" class="tsd-kind-icon">Sigaa<wbr>Search<wbr>Teacher<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaasession.html" class="tsd-kind-icon">Sigaa<wbr>Session</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaastudentbond.html" class="tsd-kind-icon">Sigaa<wbr>Student<wbr>Bond</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaasurvey.html" class="tsd-kind-icon">Sigaa<wbr>Survey</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaateacherbond.html" class="tsd-kind-icon">Sigaa<wbr>Teacher<wbr>Bond</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaatokens.html" class="tsd-kind-icon">Sigaa<wbr>Tokens</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/sigaawebcontent.html" class="tsd-kind-icon">Sigaa<wbr>Web<wbr>Content</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/updatableresource.html" class="tsd-kind-icon">Updatable<wbr>Resource</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/absenceday.html" class="tsd-kind-icon">Absence<wbr>Day</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/absencelist.html" class="tsd-kind-icon">Absence<wbr>List</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/account.html" class="tsd-kind-icon">Account</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/accountfactory.html" class="tsd-kind-icon">Account<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/bondcontroller.html" class="tsd-kind-icon">Bond<wbr>Controller</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/bondfactory.html" class="tsd-kind-icon">Bond<wbr>Factory</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/campus.html" class="tsd-kind-icon">Campus</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/coursestudent.html" class="tsd-kind-icon">Course<wbr>Student</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/exam.html" class="tsd-kind-icon">Exam</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/forumdata.html" class="tsd-kind-icon">Forum<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/functionpromise.html" class="tsd-kind-icon">Function<wbr>Promise</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/genericattachmentdata.html" class="tsd-kind-icon">Generic<wbr>Attachment<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/grade.html" class="tsd-kind-icon">Grade</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/gradegrouponlyaverage.html" class="tsd-kind-icon">Grade<wbr>Group<wbr>Only<wbr>Average</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/gradegroupsumofgrades.html" class="tsd-kind-icon">Grade<wbr>Group<wbr>Sum<wbr>OfGrades</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/gradegroupweightedaverage.html" class="tsd-kind-icon">Grade<wbr>Group<wbr>Weighted<wbr>Average</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/http.html" class="tsd-kind-icon">HTTP</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/httpfactory.html" class="tsd-kind-icon">HTTPFactory</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/httprequestoptions.html" class="tsd-kind-icon">HTTPRequest<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/httpresponse.html" class="tsd-kind-icon">HTTPResponse</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/httpsession.html" class="tsd-kind-icon">HTTPSession</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/homeworkdata.html" class="tsd-kind-icon">Homework<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/lessondata.html" class="tsd-kind-icon">Lesson<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/linkattachment.html" class="tsd-kind-icon">Link<wbr>Attachment</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/login.html" class="tsd-kind-icon">Login</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/member.html" class="tsd-kind-icon">Member</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/memberlist.html" class="tsd-kind-icon">Member<wbr>List</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/newsdata.html" class="tsd-kind-icon">News<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/page.html" class="tsd-kind-icon">Page</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/pagecache.html" class="tsd-kind-icon">Page<wbr>Cache</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/parser.html" class="tsd-kind-icon">Parser</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/promiseitemstack.html" class="tsd-kind-icon">Promise<wbr>Item<wbr>Stack</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/quizdata.html" class="tsd-kind-icon">Quiz<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/request.html" class="tsd-kind-icon">Request</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/requestpromisetracker.html" class="tsd-kind-icon">Request<wbr>Promise<wbr>Tracker</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/session.html" class="tsd-kind-icon">Session</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sigaacoursestudentdata.html" class="tsd-kind-icon">Sigaa<wbr>Course<wbr>Student<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sigaaform.html" class="tsd-kind-icon">Sigaa<wbr>Form</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sigaapageconstructor.html" class="tsd-kind-icon">Sigaa<wbr>Page<wbr>Constructor</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/sigaarequestoptions.html" class="tsd-kind-icon">Sigaa<wbr>Request<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/student.html" class="tsd-kind-icon">Student</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/studentbond.html" class="tsd-kind-icon">Student<wbr>Bond</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/subgrade.html" class="tsd-kind-icon">Sub<wbr>Grade</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/subgradesumofgrades.html" class="tsd-kind-icon">Sub<wbr>Grade<wbr>Sum<wbr>OfGrades</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/subgradeweightedaverage.html" class="tsd-kind-icon">Sub<wbr>Grade<wbr>Weighted<wbr>Average</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/surveydata.html" class="tsd-kind-icon">Survey<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/syllabus.html" class="tsd-kind-icon">Syllabus</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/syllabusday.html" class="tsd-kind-icon">Syllabus<wbr>Day</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/syllabusreference.html" class="tsd-kind-icon">Syllabus<wbr>Reference</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/teacher.html" class="tsd-kind-icon">Teacher</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/teacherbond.html" class="tsd-kind-icon">Teacher<wbr>Bond</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/teacherresult.html" class="tsd-kind-icon">Teacher<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/teacherresultdata.html" class="tsd-kind-icon">Teacher<wbr>Result<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/token.html" class="tsd-kind-icon">Token</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/videoattachment.html" class="tsd-kind-icon">Video<wbr>Attachment</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/webcontentdata.html" class="tsd-kind-icon">Web<wbr>Content<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#attachment" class="tsd-kind-icon">Attachment</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#bondtype" class="tsd-kind-icon">Bond<wbr>Type</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#filedata" class="tsd-kind-icon">File<wbr>Data</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#httpmethod" class="tsd-kind-icon">HTTPMethod</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#progresscallback" class="tsd-kind-icon">Progress<wbr>Callback</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#sigaaoptionsconstructor" class="tsd-kind-icon">Sigaa<wbr>Options<wbr>Constructor</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#updatableresourcecallback" class="tsd-kind-icon">Updatable<wbr>Resource<wbr>Callback</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

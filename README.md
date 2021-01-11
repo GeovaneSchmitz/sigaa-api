@@ -1,6 +1,8 @@
 # Disclaimer
 Eu sou estudante do IFSC, onde desenvolvo este projeto em tempo livre, por causa disto esta API não oferece suporte para qualquer outro tipo de conta além de estudante. Logo, ela não engloba todas as funcionalidades do SIGAA.
 
+Recentemente foi criada uma documentação, ainda não está perfeita, mas você pode ver [aqui](https://geovaneschmitz.github.io/sigaa-api/).
+
 # O que ela já faz
 * Listar suas turmas
 * Ver suas faltas e notas
@@ -11,8 +13,10 @@ Eu sou estudante do IFSC, onde desenvolvo este projeto em tempo livre, por causa
 * Baixar todos os arquivos disponibilizado pelos seus professores
 * Ver as noticias publicas nas turmas
 * Ver os planos de ensinos, atendimento, referências bibliográficas, etc
+
+
 # Caso de uso
-  Ela é usada em um [bot](https://github.com/GeovaneSchmitz/SIGAA-telegram-integration) para o telegram 
+Ela é usada em um [bot](https://github.com/GeovaneSchmitz/SIGAA-telegram-integration) para o telegram 
 
 # Como usar 
 * Instalar o nodejs
