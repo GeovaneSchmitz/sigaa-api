@@ -258,7 +258,7 @@ export interface GradeGroupSumOfGrades extends Grade {
 /**
  * @category Public
  */
-type GradeGroup =
+export type GradeGroup =
   | GradeGroupSumOfGrades
   | GradeGroupOnlyAverage
   | GradeGroupWeightedAverage;
