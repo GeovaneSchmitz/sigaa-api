@@ -15,6 +15,7 @@ test('if sigaa search loads campus list', async () => {
     expect(campus.name).toMatch(/^([A-Z]|[0-9]|[ÁÉÓÍÚÃÇÂÊÎÔÛ. \-()])+$/);
     expect(campus.value).toMatch(/^[0-9]+$/g);
   }
+  sigaa.close();
 }, 30000);
 
 test('if sigaa search returns results', async () => {
@@ -26,6 +27,7 @@ test('if sigaa search returns results', async () => {
     expect(teacher).toBeInstanceOf(SigaaSearchTeacherResult);
     expect(teacher.name).toMatch(/^([A-Z]|[ÁÉÓÍÚÃÇÂÊÎÔÛ ])+$/);
   }
+  sigaa.close();
 }, 30000);
 
 test('if sigaa search returns emails', async () => {
@@ -48,6 +50,7 @@ test('if sigaa search returns emails', async () => {
     }
     expect(someEmail).toMatch(/[^@]+@(aluno\.)?ifsc\.edu\.br/g);
   }
+  sigaa.close();
 }, 300000);
 
 test('if sigaa search returns profile picture url', async () => {
@@ -65,4 +68,5 @@ test('if sigaa search returns profile picture url', async () => {
       expect(profilePictureURL).toBeNull;
     }
   }
+  sigaa.close();
 }, 300000);

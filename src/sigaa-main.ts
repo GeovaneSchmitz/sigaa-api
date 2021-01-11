@@ -7,7 +7,7 @@ import { BondFactory, SigaaBondFactory } from '@bonds/sigaa-bond-factory';
 import { Parser, SigaaParser } from '@helpers/sigaa-parser';
 import { FileData, SigaaFile } from '@resources/sigaa-file';
 import { SigaaSearch } from '@search/sigaa-search';
-import { SigaaHTTPSession } from '@session/sigaa-http-session';
+import { HTTPSession, SigaaHTTPSession } from '@session/sigaa-http-session';
 import {
   BondController,
   SigaaBondController
@@ -41,6 +41,7 @@ interface SigaaConstructorHTTP {
   login?: Login;
   parser?: Parser;
   accountFactory: AccountFactory;
+  httpSession: HTTPSession;
 }
 
 /**
@@ -81,6 +82,11 @@ export class Sigaa {
   readonly accountFactory: AccountFactory;
 
   /**
+   * Instance of http session.
+   */
+  readonly httpSession: HTTPSession;
+
+  /**
    * Instance of http.
    */
   private http: HTTP;
@@ -95,7 +101,7 @@ export class Sigaa {
     if (!optionsTypeHttp.httpFactory) {
       const pageCache = new SigaaPageCache();
       const tokens = new SigaaTokens();
-      const session = new SigaaHTTPSession(
+      this.httpSession = new SigaaHTTPSession(
         optionsTypeURL.url,
         tokens,
         pageCache
@@ -104,7 +110,7 @@ export class Sigaa {
       const bondController =
         optionsTypeURL.bondController || new SigaaBondController();
 
-      this.httpFactory = new SigaaHTTPFactory(session, bondController);
+      this.httpFactory = new SigaaHTTPFactory(this.httpSession, bondController);
 
       const bondFactory =
         optionsTypeURL.bondFactory ||
@@ -120,6 +126,7 @@ export class Sigaa {
     } else {
       this.httpFactory = optionsTypeHttp.httpFactory;
       this.accountFactory = optionsTypeHttp.accountFactory;
+      this.httpSession = optionsTypeHttp.httpSession;
     }
     this.http = this.httpFactory.createHttp();
     this.loginInstance =
@@ -153,5 +160,12 @@ export class Sigaa {
    */
   get search(): SigaaSearch {
     return new SigaaSearch(this.http, this.parser);
+  }
+
+  /**
+   * Close the instance, it just clears the session data, if you want to log off the system you must use Account.logoff().
+   */
+  close(): void {
+    this.httpSession.close();
   }
 }

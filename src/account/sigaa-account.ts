@@ -19,12 +19,18 @@ export interface Account {
   getName(): Promise<string>;
 
   /**
-   * Returns all bonds, in IFSC it is called "Vínculos".
+   * Returns active bonds, in IFSC it is called "Vínculos ativos".
    *
    * A user can have more than one bond.
    * Eg. A user takes two courses.
    */
-  getBonds(): Promise<BondType[]>;
+  getActiveBonds(): Promise<BondType[]>;
+
+  /**
+   * Returns inactive bonds, in IFSC it is called "Vínculos inativos".
+   * An inactive bond is a bond that the user has completed, for example, courses completed by the user.
+   */
+  getInactiveBonds(): Promise<BondType[]>;
 
   /**
    * Download profile url and save in basepath.
@@ -90,9 +96,19 @@ export class SigaaAccount implements Account {
     'SIGAA: Insufficent password complexity.';
 
   /**
-   * Array of bonds.
+   * Array of active bonds.
    */
-  private bonds: BondType[] = [];
+  private activeBonds: BondType[] = [];
+
+  /**
+   * Array of inactive bonds.
+   */
+  private inactiveBonds: BondType[] = [];
+
+  /**
+   * It is a promise that stores if the page parser has already completed
+   */
+  private pagehomeParsePromise?: Promise<void>;
 
   /**
    * Parse login result page to fill the instance.
@@ -102,49 +118,23 @@ export class SigaaAccount implements Account {
   private parseHomepage(homepage: Page): void {
     //As the login page can vary, we should check the type of page.
 
-    // If the page is mobile version.
-    if (homepage.url.href.includes('mobile')) {
-      if (homepage.body.includes('form-portal-discente')) {
-        // if is home page of student version.
-        this.parseStudentHomeMobilePage(homepage);
-      } else if (homepage.body.includes('form-portal-docente')) {
-        //// If it is the home page of the teacher version, add the teacher bond to the bonds.
-        this.bonds.push(this.bondFactory.createTeacherBond());
-      }
-    } else if (homepage.url.href.includes('/portais/discente/discente.jsf')) {
+    if (homepage.url.href.includes('/portais/discente/discente.jsf')) {
       //If it is home page student of desktop version.
-      this.parseStudentHomePage(homepage);
+      this.pagehomeParsePromise = this.parseStudentHomePage(homepage);
     } else if (
-      homepage.url.href.includes('sigaa/vinculos.jsf') ||
+      homepage.url.href.includes('/sigaa/vinculos.jsf') ||
       homepage.url.href.includes('/sigaa/escolhaVinculo.do')
     ) {
       //If it is bond page.
-      this.parseBondPage(homepage);
+      this.pagehomeParsePromise = this.parseBondPage(homepage);
     }
-  }
-
-  /**
-   * Parse student home page of mobile version.
-   * @param page page to parse.
-   */
-  private parseStudentHomeMobilePage(page: Page) {
-    const registration = this.parser.removeTagsHtml(
-      page.$('#form-portal-discente\\:matricula').html()
-    );
-    const homePageDescription = this.parser
-      .removeTagsHtml(page.$('div[data-role="fieldcontain"] > small').html())
-      .split('\n');
-    const program = homePageDescription[homePageDescription.length - 1];
-    this.bonds.push(
-      this.bondFactory.createStudentBond(registration, program, null)
-    );
   }
 
   /**
    * Parse bond page.
    * @param page page to parse.
    */
-  private parseBondPage(page: Page) {
+  private async parseBondPage(page: Page) {
     const rows = page.$('table.subFormulario tbody tr').toArray();
     for (const row of rows) {
       const cells = page.$(row).find('td').toArray();
@@ -153,6 +143,8 @@ export class SigaaAccount implements Account {
       const bondType = this.parser.removeTagsHtml(
         page.$(row).find('#tdTipo').html()
       );
+      const status = this.parser.removeTagsHtml(page.$(cells[3]).html());
+      let bond;
       switch (bondType) {
         case 'Discente': {
           const registration = this.parser.removeTagsHtml(
@@ -167,37 +159,69 @@ export class SigaaAccount implements Account {
           const program = this.parser
             .removeTagsHtml(page.$(cells[4]).html())
             .replace(/^Curso: /g, '');
-
-          this.bonds.push(
-            this.bondFactory.createStudentBond(
-              registration,
-              program,
-              bondSwitchUrl
-            )
+          bond = this.bondFactory.createStudentBond(
+            registration,
+            program,
+            bondSwitchUrl
           );
+          if (status === 'Sim') {
+            this.activeBonds.push(bond);
+          } else {
+            this.inactiveBonds.push(bond);
+          }
           break;
         }
         case 'Docente': {
-          this.bonds.push(this.bondFactory.createTeacherBond());
+          bond = this.bondFactory.createTeacherBond();
           break;
         }
       }
+      if (bond)
+        if (status === 'Sim') {
+          this.activeBonds.push(bond);
+        } else if (status === 'Não') {
+          this.inactiveBonds.push(bond);
+        } else {
+          console.log('SIGAA: WARNING invalid status: ' + status);
+        }
     }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async getActiveBonds(): Promise<BondType[]> {
+    await this.pagehomeParsePromise;
+    return this.activeBonds;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async getInactiveBonds(): Promise<BondType[]> {
+    await this.pagehomeParsePromise;
+    return this.inactiveBonds;
   }
 
   /**
    * Parse desktop version of student home page page.
    */
-  private parseStudentHomePage(loginPage: Page) {
-    const rows = loginPage
-      .$('#perfil-docente table')
-      .eq(0)
-      .find('tr')
-      .toArray();
+  private async parseStudentHomePage(homepage: Page) {
+    const rows = homepage.$('#perfil-docente table').eq(0).find('tr').toArray();
     let registration;
     let program;
+    let status;
+
+    const buttonSwitchBond = this.parser.removeTagsHtml(
+      homepage.$('#info-usuario > i small a').html()
+    );
+    if (buttonSwitchBond === 'Alterar vínculo') {
+      const bondPage = await this.http.get('/sigaa/vinculos.jsf');
+      return this.parseBondPage(bondPage);
+    }
+
     for (const row of rows) {
-      const cells = loginPage.$(row).find('td');
+      const cells = homepage.$(row).find('td');
       if (cells.length !== 2) {
         throw new Error('SIGAA: Invalid student details page.');
       }
@@ -210,8 +234,11 @@ export class SigaaAccount implements Account {
           program = this.parser
             .removeTagsHtml(cells.eq(1).html())
             .replace(/ - (M|T|N)$/g, ''); // Remove schedule letter
+          break;
+        case 'Status:':
+          status = this.parser.removeTagsHtml(cells.eq(1).html());
       }
-      if (registration && program) break;
+      if (registration && program && status) break;
     }
 
     if (!registration)
@@ -219,16 +246,15 @@ export class SigaaAccount implements Account {
 
     if (!program) throw new Error('SIGAA: Student bond program not found.');
 
-    this.bonds.push(
-      this.bondFactory.createStudentBond(registration, program, null)
-    );
-  }
-
-  /**
-   * @inheritdoc
-   */
-  async getBonds(): Promise<BondType[]> {
-    return this.bonds;
+    if (!status) throw new Error('SIGAA: Student bond status not found.');
+    if (status === 'CURSANDO')
+      this.activeBonds.push(
+        this.bondFactory.createStudentBond(registration, program, null)
+      );
+    else
+      this.inactiveBonds.push(
+        this.bondFactory.createStudentBond(registration, program, null)
+      );
   }
 
   /**

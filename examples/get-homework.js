@@ -15,7 +15,7 @@ const main = async () => {
    * O usuário pode ter mais de um vínculo
    * @see https://github.com/GeovaneSchmitz/sigaa-api/issues/4
    **/
-  const bonds = await account.getBonds();
+  const bonds = await account.getActiveBonds();
 
   //Para cada vínculo
   for (const bond of bonds) {

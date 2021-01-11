@@ -35,7 +35,8 @@ export class SigaaStudentBond implements StudentBond {
     private http: HTTP,
     private parser: Parser,
     readonly program: string,
-    readonly registration: string
+    readonly registration: string,
+    readonly bondSwitchUrl: URL | null
   ) {}
 
   readonly type = 'student';

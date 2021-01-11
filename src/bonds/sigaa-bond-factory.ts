@@ -62,7 +62,13 @@ export class SigaaBondFactory implements BondFactory {
     } else {
       http = this.httpFactory.createHttp();
     }
-    return new SigaaStudentBond(http, this.parser, program, registration);
+    return new SigaaStudentBond(
+      http,
+      this.parser,
+      program,
+      registration,
+      bondSwitchUrl
+    );
   }
 
   /**
