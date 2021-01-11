@@ -15,9 +15,10 @@ import {
 import { HTTP } from '@session/sigaa-http';
 import { HTTPFactory, SigaaHTTPFactory } from '@session/sigaa-http-factory';
 import { Login, SigaaLogin } from '@session/sigaa-login';
-import { SigaaPageCache } from '@session/sigaa-page-cache';
 import { Session, SigaaSession } from '@session/sigaa-session';
 import { SigaaTokens } from '@session/sigaa-tokens';
+import { SigaaPageCacheWithBond } from '@session/sigaa-page-cache-with-bond';
+import { SigaaPageCacheFactory } from '@session/sigaa-page-cache-factory';
 
 /**
  * @category Internal
@@ -95,11 +96,13 @@ export class Sigaa {
     const optionsTypeURL = <SigaaConstructorURL>options;
     const optionsTypeHttp = <SigaaConstructorHTTP>options;
 
+    const pageCacheFactory = new SigaaPageCacheFactory();
+    const pageCache = new SigaaPageCacheWithBond(pageCacheFactory);
+
     this.parser = options.parser || new SigaaParser();
     this.session = options.session || new SigaaSession();
 
     if (!optionsTypeHttp.httpFactory) {
-      const pageCache = new SigaaPageCache();
       const tokens = new SigaaTokens();
       this.httpSession = new SigaaHTTPSession(
         optionsTypeURL.url,
@@ -110,7 +113,11 @@ export class Sigaa {
       const bondController =
         optionsTypeURL.bondController || new SigaaBondController();
 
-      this.httpFactory = new SigaaHTTPFactory(this.httpSession, bondController);
+      this.httpFactory = new SigaaHTTPFactory(
+        this.httpSession,
+        pageCache,
+        bondController
+      );
 
       const bondFactory =
         optionsTypeURL.bondFactory ||

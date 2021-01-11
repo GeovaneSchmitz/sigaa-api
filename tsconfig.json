@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
     "experimentalDecorators": true,
-    "target": "es5",
+    "target": "es2015",
     "declaration": true,
     "outDir": "./dist",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
     "baseUrl": ".",
     "rootDir": "./src",
     "strict": true,

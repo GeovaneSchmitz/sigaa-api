@@ -1,7 +1,7 @@
 {
   "name": "sigaa-api",
   "description": "Unofficial high performance API for SIGAA IFSC using web scraping.",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "dist/sigaa-all-types.js",
   "types": "dist/sigaa-all-types.d.ts",
   "author": "Geovane Schmitz <contato@geovanems.com.br>",
@@ -9,7 +9,7 @@
   "private": false,
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
-    "formdata-node": "^2.1.1",
+    "formdata-node": "^2.4.0",
     "he": "^1.2.0",
     "lodash": "^4.17.20",
     "source-map-support": "^0.5.19"

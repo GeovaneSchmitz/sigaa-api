@@ -2,6 +2,7 @@ import { HTTPSession } from './sigaa-http-session';
 import { BondController } from './sigaa-bond-controller';
 import { HTTP, SigaaHTTP } from './sigaa-http';
 import { SigaaHTTPWithBond } from './sigaa-http-with-bond';
+import { PageCacheWithBond } from './sigaa-page-cache-with-bond';
 
 /**
  * @category Internal
@@ -25,6 +26,7 @@ export interface HTTPFactory {
 export class SigaaHTTPFactory implements HTTPFactory {
   constructor(
     private session: HTTPSession,
+    private pageCacheWithBond: PageCacheWithBond,
     private bondController: BondController
   ) {}
 
@@ -42,6 +44,7 @@ export class SigaaHTTPFactory implements HTTPFactory {
     return new SigaaHTTPWithBond(
       new SigaaHTTP(this.session),
       this.bondController,
+      this.pageCacheWithBond,
       bondSwitchUrl
     );
   }

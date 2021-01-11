@@ -2,6 +2,7 @@ import FormData from 'formdata-node/type/FormData';
 import { Page } from './sigaa-page';
 import { HTTP, ProgressCallback, SigaaRequestOptions } from './sigaa-http';
 import { BondController } from './sigaa-bond-controller';
+import { PageCacheWithBond } from './sigaa-page-cache-with-bond';
 
 /**
  * Implements sigaa bond in HTTP request class.
@@ -16,6 +17,7 @@ export class SigaaHTTPWithBond implements HTTP {
   constructor(
     private http: HTTP,
     private bondController: BondController,
+    private pageCacheWithBond: PageCacheWithBond,
     private bondSwitchUrl: URL | null
   ) {}
 
@@ -24,8 +26,10 @@ export class SigaaHTTPWithBond implements HTTP {
    * Otherwise, switch bond
    */
   private async verifyIfBondIsCorrect(): Promise<void> {
-    if (this.bondSwitchUrl !== this.bondController.currentBond)
+    if (this.bondSwitchUrl !== this.bondController.currentBond) {
+      this.pageCacheWithBond.setCurrentBond(this.bondSwitchUrl?.href || null);
       return this.switchBond();
+    }
   }
 
   /**
@@ -33,9 +37,7 @@ export class SigaaHTTPWithBond implements HTTP {
    */
   private async switchBond(): Promise<void> {
     if (this.bondSwitchUrl) {
-      const page = await this.http.get(this.bondSwitchUrl.href, {
-        noCache: true
-      });
+      const page = await this.http.get(this.bondSwitchUrl.href);
       const finalPage = await this.http.followAllRedirect(page);
       if (finalPage.statusCode !== 200)
         throw new Error('SIGAA: Could not switch bond.');
