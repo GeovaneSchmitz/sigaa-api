@@ -213,7 +213,7 @@ export class SigaaAccount implements Account {
     let status;
 
     const buttonSwitchBond = this.parser.removeTagsHtml(
-      homepage.$('#info-usuario > i small a').html()
+      homepage.$('#info-usuario p i small a').html()
     );
     if (buttonSwitchBond === 'Alterar vínculo') {
       const bondPage = await this.http.get('/sigaa/vinculos.jsf');
