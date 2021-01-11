@@ -1,68 +1,74 @@
 type PromiseStackOrder = 'normal' | 'reverse';
 
+/**
+ * @category Internal
+ */
 export interface FunctionPromise<T> {
   (): Promise<T>;
 }
 
+/**
+ * Item in stack.
+ * @category Internal
+ */
 export interface PromiseItemStack<K, T> {
   key: K;
   promiseFunction?(): Promise<void>;
   promise?: Promise<T>;
 }
 
+/**
+ * Abstraction to represent a class that performs chain functions and waits for each promise that the functions return.
+ * @category Internal
+ */
 interface PromiseStack<K, T> {
   /**
-   * Add promise in stack
+   * Add promise in stack.
+   * The function is not called the moment it is added to the stack, but when it is your turn on the stack
    * @param promiseFunction function to generate the promise
-   * @param key key of promise array
-   * @return {Promise} promise execution
-   * @async
+   * @param key Key of promise array, to identify a function.
+   * @return {Promise} Returns a promise that resolves with the function's response.
    */
   addPromise(key: K, promiseFunction: FunctionPromise<T>): Promise<T>;
 
   /**
-   * get promises objects
+   * Get promises objects.
+   * Returns the functions that are still in the stack.
    */
   readonly promises: PromiseItemStack<K, T>[];
 }
 
 /**
  * Class to control promise order
- * @class SigaaStackPromise
- * @private
+ * Performs chain functions and waits for each promise that the functions return.
+ * @category Internal
  */
 export class SigaaPromiseStack<K, T> implements PromiseStack<K, T> {
   /**
-   * Order type
-   * if it is reverse, the last entered will be the first executed. default is normal
-   * @property {PromiseStackOrder}
-   * @private
+   * Order type.
+   * If it is reverse, the last entered will be the first executed. default is normal.
    */
-  order: PromiseStackOrder;
+  private order: PromiseStackOrder;
 
   /**
-   * Current promise running object as {key, promiseFunction, promise}
-   * @property {Object}
-   * @private
+   * Current promise running object as {key, promiseFunction, promise}.
    */
-  promiseRunning?: PromiseItemStack<K, T>;
+  private promiseRunning?: PromiseItemStack<K, T>;
 
   /**
    * store all promises objects as {key, promiseFunction, promise}
-   * @property {Array<promiseItemStack<K,T>>}
-   * @private
    */
-  storedPromises: PromiseItemStack<K, T>[] = [];
+  private storedPromises: PromiseItemStack<K, T>[] = [];
 
   /**
-   * @param PromiseStackOrder [order] order of execution of the promises, if it is reverse, the last entered will be the first executed. default is normal
+   * @param PromiseStackOrder [order] order of execution of the promises, if it is reverse, the last entered will be the first executed. default is normal.
    */
   constructor(order?: PromiseStackOrder) {
     this.order = order || 'normal';
   }
 
   /**
-   * get promises objects
+   * Get promises objects.
    */
   get promises(): PromiseItemStack<K, T>[] {
     if (this.promiseRunning) {
@@ -95,10 +101,11 @@ export class SigaaPromiseStack<K, T> implements PromiseStack<K, T> {
   }
 
   /**
-   * Add promise in stack
+   * Add promise in stack.
+   * The function is not called the moment it is added to the stack, but when it is your turn on the stack
    * @param promiseFunction function to generate the promise
-   * @param key key of promise array
-   * @async
+   * @param key Key of promise array, to identify a function.
+   * @return {Promise} Returns a promise that resolves with the function's response.
    */
   public addPromise(key: K, promiseFunction: FunctionPromise<T>): Promise<T> {
     const promiseObject: PromiseItemStack<K, T> = { key };

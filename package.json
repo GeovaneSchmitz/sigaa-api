@@ -2,8 +2,8 @@
   "name": "sigaa-api",
   "description": "Unofficial high performance API for SIGAA IFSC using web scraping.",
   "version": "1.0.8",
-  "main": "dist/main.js",
-  "types": "dist/main.d.ts",
+  "main": "dist/sigaa-all-types.js",
+  "types": "dist/sigaa-all-types.d.ts",
   "author": "Geovane Schmitz <contato@geovanems.com.br>",
   "license": "MIT",
   "private": false,
@@ -58,6 +58,7 @@
     "jsdoc": "^3.6.3",
     "prettier": "^2.2.1",
     "ts-jest": "^26.4.4",
+    "typedoc": "^0.20.14",
     "typescript": "^4.1.3"
   }
 }

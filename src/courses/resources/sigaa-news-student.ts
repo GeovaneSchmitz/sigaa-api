@@ -6,12 +6,18 @@ import {
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm } from '@session/sigaa-page';
 
+/**
+ * @category Internal
+ */
 export interface NewsData {
   title: string;
   form: SigaaForm;
   id: string;
 }
 
+/**
+ * @category Public
+ */
 export class SigaaNews extends UpdatableResource<NewsData> {
   private _form!: SigaaForm;
   private _title!: string;

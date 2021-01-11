@@ -5,6 +5,9 @@ import {
   UpdatableResourceCallback
 } from './updatable-resource';
 
+/**
+ * @category Internal
+ */
 interface FileDataKey {
   id: string;
   key: string;
@@ -12,6 +15,9 @@ interface FileDataKey {
   description: string;
 }
 
+/**
+ * @category Internal
+ */
 interface FileDataForm {
   form: SigaaForm;
   id: string;
@@ -19,10 +25,14 @@ interface FileDataForm {
   description: string;
 }
 
+/**
+ * @category Internal
+ */
 export type FileData = FileDataForm | FileDataKey;
 
 /**
  * Class to manager file
+ * @category Public
  */
 export class SigaaFile extends UpdatableResource<FileData> {
   /**

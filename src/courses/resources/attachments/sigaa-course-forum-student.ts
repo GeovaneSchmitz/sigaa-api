@@ -10,31 +10,119 @@ import {
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm, Page } from '@session/sigaa-page';
 
+/**
+ * Object that contains basic information about the class forum.
+ * @category Internal
+ */
 export interface ForumData {
+  /**
+   * Title of the forum.
+   */
   title: string;
+
+  /**
+   * Id of the forum. This is unique
+   */
   id: string;
+
+  /**
+   * Form with parameters and url to load the forum page.
+   */
   form: SigaaForm;
+
+  /**
+   * Whether it is the home forum or a topic in forum.
+   */
   isMain: boolean;
+
+  /**
+   * creation date of the forum.
+   */
   creationDate?: Date;
+
+  /**
+   * Like 'Uma única discussão simples'
+   */
   forumType?: string;
+
+  /**
+   * Forum creator.
+   */
   author?: string;
+
+  /**
+   * Number of topics
+   */
   numOfTopics?: number;
 }
 
+/**
+ * @category Public
+ */
 export class SigaaCourseForum extends UpdatableResource<ForumData> {
+  /**
+   * Type of class
+   */
   readonly type = 'forum';
 
+  /**
+   * Whether it is the home forum or a topic in forum.
+   */
   private _isMain!: boolean;
+
+  /**
+   * Form with parameters and url to load the forum page.
+   */
   private _form!: SigaaForm;
+
+  /**
+   * Title of the forum.
+   */
   private _title!: string;
+
+  /**
+   * Number of topics
+   */
   private _numOfTopics?: number;
+
+  /**
+   * Forum creator.
+   */
   private _author?: string;
+
+  /**
+   * Like 'Uma única discussão simples'
+   */
   private _forumType?: string;
+
+  /**
+   * Description of the forum.
+   */
   private _description?: string;
+
+  /**
+   * Form to submit topics in the forum.
+   */
   private _submitTopicPageForm?: SigaaForm;
+
+  /**
+   * File attached to the forum.
+   */
   private _file?: SigaaFile;
+
+  /**
+   * If read monitoring is enabled.
+   */
   private _monitorReading?: boolean;
+
+  /**
+   *
+   */
   private _fullForumPromise: Promise<void> | null = null;
+
+  /**
+   * creation date of the forum.
+   */
   private _creationDate?: Date;
 
   constructor(
@@ -65,7 +153,7 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
   }
 
   /**
-   * If is first page
+   * Whether it is the home forum or a topic in forum.
    */
   get isMain(): boolean {
     return this._isMain;
@@ -122,6 +210,9 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
     return this._author;
   }
 
+  /**
+   * File attached to the forum.
+   */
   async getFile(): Promise<SigaaFile | undefined> {
     this.checkIfItWasClosed();
     if (this._file === undefined) {
@@ -130,6 +221,9 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
     return this._file;
   }
 
+  /**
+   * Number of topics
+   */
   async getNumOfTopics(): Promise<number> {
     this.checkIfItWasClosed();
     if (this._numOfTopics === undefined) {
@@ -139,6 +233,7 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
       throw new Error('SIGAA: Forum number of topics could not be loaded.');
     return this._numOfTopics;
   }
+
   /**
    * Post topic in forum
    * @param title title of topic
@@ -153,10 +248,10 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
     notify: boolean
   ): Promise<void> {
     if (!title) {
-      throw new Error('SIGAA: title topic forum cannot be empty.');
+      throw new Error('SIGAA: Title topic forum cannot be empty.');
     }
     if (!body) {
-      throw new Error('SIGAA: title body forum cannot be empty.');
+      throw new Error('SIGAA: Title body forum cannot be empty.');
     }
     if (!this._submitTopicPageForm) {
       await this.loadForumPage();
@@ -225,26 +320,36 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
     }
   }
 
+  /**
+   * creation date of the forum.
+   */
   async getCreationDate(): Promise<Date> {
     this.checkIfItWasClosed();
     if (this._creationDate === undefined) {
       await this.loadForumPage();
     }
     if (!this._creationDate)
-      throw new Error('SIGAA: forum creation date could not be loaded.');
+      throw new Error('SIGAA: Forum creation date could not be loaded.');
     return this._creationDate;
   }
 
+  /**
+   * If read monitoring is enabled.
+   */
   async getMonitorReading(): Promise<boolean> {
     this.checkIfItWasClosed();
     if (this._monitorReading === undefined) {
       await this.loadForumPage();
     }
     if (this._monitorReading !== false && this._monitorReading !== true)
-      throw new Error('SIGAA: forum monitor reading could not be loaded.');
+      throw new Error('SIGAA: Forum monitor reading could not be loaded.');
     return this._monitorReading;
   }
 
+  /**
+   * Loads the forum page.
+   * @param retry
+   */
   private async getForumPage(retry = true): Promise<void> {
     try {
       const page = await this.http.post(
@@ -264,6 +369,10 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
     }
   }
 
+  /**
+   * Parse submit form in forum page.
+   * @param page
+   */
   private parseSubmitPageForm(page: Page): void {
     const formElement = page.$('form#form');
     const action = formElement.attr('action');
@@ -284,6 +393,10 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
     };
   }
 
+  /**
+   * Parse main page of forum.
+   * @param page
+   */
   private parseForumTable(page: Page): void {
     const tableElement = page.$('table.formAva > tbody');
     if (tableElement.length === 0)

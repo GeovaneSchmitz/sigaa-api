@@ -23,8 +23,11 @@ import { SigaaFile, FileData } from '@resources/sigaa-file';
 import { UpdatableResource } from '@resources/updatable-resource';
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm, Page } from '@session/sigaa-page';
-import { Course } from './sigaa-course';
+import { CourseStudent } from './sigaa-course';
 
+/**
+ * @category Internal
+ */
 export interface SigaaCourseStudentData {
   id: string;
   title: string;
@@ -35,20 +38,32 @@ export interface SigaaCourseStudentData {
   form: SigaaForm;
 }
 
+/**
+ * @category Internal
+ */
 interface TextAttachment {
   type: 'text';
   body: string;
 }
 
+/**
+ * @category Public
+ */
 export interface Exam {
   description: string;
   date?: Date;
 }
 
+/**
+ * @category Internal
+ */
 interface WithId {
   id: string;
 }
 
+/**
+ * @category Internal
+ */
 export interface GenericAttachmentData {
   title: string;
   description: string;
@@ -56,6 +71,9 @@ export interface GenericAttachmentData {
   id: string;
 }
 
+/**
+ * @category Public
+ */
 export interface VideoAttachment {
   type: 'video';
   src: string;
@@ -63,6 +81,9 @@ export interface VideoAttachment {
   description: string;
 }
 
+/**
+ * @category Internal
+ */
 export interface LinkAttachment {
   type: 'link';
   title: string;
@@ -82,16 +103,26 @@ interface Instances {
   webContents: SigaaWebContent[];
 }
 
+/**
+ * @category Public
+ */
 export interface AbsenceDay {
   date: Date;
   numOfAbsences: number;
 }
+
+/**
+ * @category Public
+ */
 export interface AbsenceList {
   list: AbsenceDay[];
   totalAbsences: number;
   maxAbsences: number;
 }
 
+/**
+ * @category Public
+ */
 export type Attachment =
   | SigaaFile
   | SigaaHomework
@@ -102,38 +133,61 @@ export type Attachment =
   | LinkAttachment
   | VideoAttachment;
 
+/**
+ * @category Internal
+ */
 export interface Member {
   name: string;
   username: string;
   email: string;
   photoURL?: URL;
 }
+
+/**
+ * @category Public
+ */
 export interface Teacher extends Member {
   formation?: string;
   department?: string;
 }
+
+/**
+ * @category Public
+ */
 export interface Student extends Member {
   registration: string;
   program: string;
   registrationDate: Date;
 }
 
+/**
+ * @category Public
+ */
 export interface MemberList {
   students: Student[];
   teachers: Teacher[];
 }
 
+/**
+ * @category Public
+ */
 export interface SyllabusDay {
   description: string;
   startDate?: Date;
   endDate?: Date;
 }
 
+/**
+ * @category Public
+ */
 export interface SyllabusReference {
   type?: string;
   description: string;
 }
 
+/**
+ * @category Public
+ */
 export interface Syllabus {
   methods?: string;
   assessmentProcedures?: string;
@@ -149,37 +203,61 @@ interface UpdaterOptions<T extends UpdatableResource<U>, U> {
   constructor: (options: U) => T;
 }
 
+/**
+ * @category Public
+ */
 export interface Grade {
   name: string;
   value?: number;
 }
 
+/**
+ * @category Public
+ */
 export interface SubGrade extends Grade {
   code: string;
 }
 
+/**
+ * @category Public
+ */
 export interface SubGradeSumOfGrades extends SubGrade {
   maxValue: number;
 }
 
+/**
+ * @category Public
+ */
 export interface SubGradeWeightedAverage extends SubGrade {
   weight: number;
 }
 
+/**
+ * @category Public
+ */
 export interface GradeGroupOnlyAverage extends Grade {
   type: 'only-average';
 }
 
+/**
+ * @category Public
+ */
 export interface GradeGroupWeightedAverage extends Grade {
   grades: SubGradeWeightedAverage[];
   type: 'weighted-average';
 }
 
+/**
+ * @category Public
+ */
 export interface GradeGroupSumOfGrades extends Grade {
   grades: SubGradeSumOfGrades[];
   type: 'sum-of-grades';
 }
 
+/**
+ * @category Public
+ */
 type GradeGroup =
   | GradeGroupSumOfGrades
   | GradeGroupOnlyAverage
@@ -187,8 +265,10 @@ type GradeGroup =
 
 /**
  * course in the student's view
- */
-export class SigaaCourseStudent implements Course {
+ *
+ * @category Public
+ **/
+export class SigaaCourseStudent implements CourseStudent {
   /**
    * Course title
    * Nome da turma
@@ -252,8 +332,6 @@ export class SigaaCourseStudent implements Course {
    * it is slower than requestCoursePageUsingForm,
    * but works if the form is invalid
    * @return response page
-   * @private
-   * @async
    */
   private async requestCoursePageUsingId() {
     const page = await this.http.get('/sigaa/portais/discente/turmas.jsf');
@@ -281,7 +359,7 @@ export class SigaaCourseStudent implements Course {
       }
     });
     if (!foundCourse) {
-      throw new Error('SIGAA: not found course with id:' + this.id);
+      throw new Error('SIGAA: Not found course with id:' + this.id);
     }
     return this.requestCoursePageUsingForm();
   }
@@ -290,8 +368,6 @@ export class SigaaCourseStudent implements Course {
    * Request the course page using the course POST Form,
    * it is faster than requestCoursePageUsingId,
    * but don`t works if the form is invalid or expired
-   * @private
-   * @async
    */
   private async requestCoursePageUsingForm() {
     const page = await this.http.post(
@@ -303,18 +379,17 @@ export class SigaaCourseStudent implements Course {
     );
     if (page.statusCode === 200) {
       if (page.body.includes('Comportamento Inesperado!')) {
-        throw new Error('Sigaa: Unexpected behavior on the course page.');
+        throw new Error('SIGAA: Unexpected behavior on the course page.');
       }
       return page;
     } else {
-      throw new Error('Sigaa: Unexpected course page status code.');
+      throw new Error('SIGAA: Unexpected course page status code.');
     }
   }
 
   /**
    * Request the course page using requestCoursePageUsingForm,
    * fallback to requestCoursePageUsingId
-   * @private
    * @return {<Promise>Object} response page
    */
   private async requestCoursePage(): Promise<Page> {
@@ -360,7 +435,7 @@ export class SigaaCourseStudent implements Course {
   }
 
   /**
-   *  Parse each lesson topic HTML element
+   * Parse each lesson topic HTML element
    * @param page
    */
   private lessonParser(page: Page, lessonElement: cheerio.Element): LessonData {
@@ -385,7 +460,7 @@ export class SigaaCourseStudent implements Course {
     const lessonContentElement = page.$(lessonElement).find('.conteudotopico');
 
     const lessonHTML = lessonContentElement.html();
-    if (!lessonHTML) throw new Error('SIGAA: lesson without content.');
+    if (!lessonHTML) throw new Error('SIGAA: Lesson without content.');
 
     const lessonContent = this.parser.removeTagsHtml(
       lessonHTML.replace(/<div([\S\s]*?)div>/gm, '')
@@ -633,7 +708,7 @@ export class SigaaCourseStudent implements Course {
     const title = this.parser.removeTagsHtml(titleElement.html());
     const titleOnClick = titleElement.attr('onclick');
     if (!titleOnClick)
-      throw new Error('SIGA: Survey title without onclick event');
+      throw new Error('SIGAA: Survey title without onclick event.');
     const form = page.parseJSFCLJS(titleOnClick);
     const surveyOptions = {
       title,
@@ -743,7 +818,7 @@ export class SigaaCourseStudent implements Course {
     const titleElement = page.$(attachmentElement).find('span[id] > a');
     const title = this.parser.removeTagsHtml(titleElement.html());
     const href = titleElement.attr('href');
-    if (!href) throw new Error('SIGAA: link attachment does not have href.');
+    if (!href) throw new Error('SIGAA: Link attachment does not have href.');
 
     const descriptionElement = page
       .$(attachmentElement)
@@ -826,7 +901,7 @@ export class SigaaCourseStudent implements Course {
         )[0];
         const titleOnClick = titleElement.attr('onclick');
         if (!titleOnClick)
-          throw new Error('SIGAA: forum title does not have onclick event.');
+          throw new Error('SIGAA: Forum title does not have onclick event.');
 
         const form = page.parseJSFCLJS(titleOnClick);
         const id = forumsIdIndex;
@@ -1008,7 +1083,7 @@ export class SigaaCourseStudent implements Course {
         );
       });
     if (!titleElement) {
-      throw new Error('SIGAA: course sidebar card not found.');
+      throw new Error('SIGAA: Course sidebar card not found.');
     } else {
       return page.$(titleElement).parent().parent();
     }
@@ -1209,7 +1284,7 @@ export class SigaaCourseStudent implements Course {
       if (buttonSendHomeworkElement.length !== 0) {
         const onClick = buttonSendHomeworkElement.attr('onclick');
         if (!onClick)
-          throw new Error('SIGAA: button send homework without onclick event.');
+          throw new Error('SIGAA: Button send homework without onclick event.');
         formSendHomework = page.parseJSFCLJS(onClick);
       }
       const buttonViewHomeworkSubmittedElement = page.$(
@@ -1219,7 +1294,7 @@ export class SigaaCourseStudent implements Course {
       if (buttonViewHomeworkSubmittedElement.length !== 0) {
         const onClick = buttonViewHomeworkSubmittedElement.attr('onclick');
         if (!onClick)
-          throw new Error('SIGAA: button view homework without onclick event.');
+          throw new Error('SIGAA: Button view homework without onclick event.');
         formViewHomeworkSubmitted = page.parseJSFCLJS(onClick);
       }
       const form = formSendHomework || formViewHomeworkSubmitted;
@@ -1264,9 +1339,9 @@ export class SigaaCourseStudent implements Course {
   }
 
   /**
-   * Closes and removes the instance if not in idsToKeep
-   * @param {String} type type of instance E.g lessons, news, files.
-   * @param {Array<String>} idsToKeep array with ids to keep E.g. ["1234", "4321"]
+   * Closes and removes the instance if not in idsToKeep.
+   * @param instances array of current instances.
+   * @param idsToKeep array with ids to keep E.g. ["1234", "4321"]
    */
   private closeClassInstances<T>(
     instances: UpdatableResource<T>[],
@@ -1324,7 +1399,6 @@ export class SigaaCourseStudent implements Course {
 
   /**
    * Get members object
-   * @async
    * @returns {Promise<object>}
    */
   async getMembers(): Promise<MemberList> {
@@ -1333,7 +1407,7 @@ export class SigaaCourseStudent implements Course {
     const tables = page.$('table.participantes').toArray();
     const tablesNames = page.$('fieldset').toArray();
     if (tables.length !== tablesNames.length) {
-      throw new Error('SIGAA: unexpected page members format.');
+      throw new Error('SIGAA: Unexpected page members format.');
     }
     let tableTeacher;
     let tableStudent;
@@ -1384,7 +1458,7 @@ export class SigaaCourseStudent implements Course {
           page.$(teacherElement).find('strong > a').html()
         );
         if (!username || !email)
-          throw new Error('SIGAA: invalid teacher format at member page.');
+          throw new Error('SIGAA: Invalid teacher format at member page.');
         const teacher: Teacher = {
           name,
           username,
@@ -1469,7 +1543,7 @@ export class SigaaCourseStudent implements Course {
             !registration ||
             !program
           )
-            throw new Error('SIGAA: invalid student format at member page.');
+            throw new Error('SIGAA: Invalid student format at member page.');
 
           const name = this.parser.removeTagsHtml(
             page.$(row).find('strong').eq(column).html()
@@ -1512,7 +1586,6 @@ export class SigaaCourseStudent implements Course {
 
   /**
    * Get grades array
-   * @async
    */
   async getGrades(): Promise<GradeGroup[]> {
     const page = await this.getCourseSubMenu('Ver Notas');
@@ -1539,7 +1612,7 @@ export class SigaaCourseStudent implements Course {
     const theadTrs = page.$('thead tr').toArray();
     const valueCells = page.$(table).find('tbody tr').children();
     if (valueCells.length === 0) {
-      throw new Error('SIGAA: .');
+      throw new Error('SIGAA: Page grades without grades.');
     }
     const grades: GradeGroup[] = [];
 
@@ -1657,7 +1730,6 @@ export class SigaaCourseStudent implements Course {
 
   /**
    * Get Syllabus (Plano de ensino)
-   * @async
    */
   async getSyllabus(): Promise<Syllabus> {
     const page = await this.getCourseSubMenu('Plano de Ensino');

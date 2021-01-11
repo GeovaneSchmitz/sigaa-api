@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/**
+ * @category Internal
+ */
 export type UpdatableResourceCallback = () => Promise<void>;
 
+/**
+ * @category Internal
+ */
 export abstract class UpdatableResource<T> {
   protected isClosed = false;
 
@@ -9,12 +15,12 @@ export abstract class UpdatableResource<T> {
   constructor(protected updater?: UpdatableResourceCallback) {}
 
   protected async updateInstance(): Promise<void> {
-    if (!this.updater) throw new Error('SIGAA: resource updater not exists.');
+    if (!this.updater) throw new Error('SIGAA: Resource updater not exists.');
     await this.updater();
   }
 
   public update(T: T): void {
-    throw new Error('SIGAA: update method not implemented.');
+    throw new Error('SIGAA: Update method not implemented.');
   }
 
   checkIfItWasClosed(): void {

@@ -1,4 +1,4 @@
-import { SigaaHTTPSession } from '@session/http-session';
+import { SigaaHTTPSession } from '@session/sigaa-http-session';
 import { SigaaHTTP } from '@session/sigaa-http';
 import { SigaaPage } from '@session/sigaa-page';
 import { SigaaPageCache } from '@session/sigaa-page-cache';

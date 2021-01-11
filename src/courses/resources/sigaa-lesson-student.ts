@@ -4,6 +4,9 @@ import {
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
 
+/**
+ * @category Internal
+ */
 export interface LessonData {
   title: string;
   contentText: string;
@@ -13,6 +16,9 @@ export interface LessonData {
   attachments: Attachment[];
 }
 
+/**
+ * @category Public
+ */
 export class SigaaLesson extends UpdatableResource<LessonData> {
   private _title!: string;
   private _contextText!: string;

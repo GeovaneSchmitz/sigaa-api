@@ -30,7 +30,7 @@ export * from '@search/sigaa-search';
 
 export * from '@session/sigaa-page-cache';
 export * from '@session/sigaa-tokens';
-export * from '@session/http-session';
+export * from '@session/sigaa-http-session';
 export * from '@session/sigaa-session';
 export * from '@session/sigaa-page';
 export * from '@session/sigaa-http';
@@ -40,4 +40,4 @@ export * from '@session/sigaa-http-factory';
 export * from '@session/sigaa-http-with-bond';
 
 export * from './sigaa-types';
-export * from './sigaa-root';
+export * from './sigaa-main';

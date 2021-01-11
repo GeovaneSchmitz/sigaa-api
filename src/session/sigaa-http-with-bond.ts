@@ -4,11 +4,13 @@ import { HTTP, ProgressCallback, SigaaRequestOptions } from './sigaa-http';
 import { BondController } from './sigaa-bond-controller';
 
 /**
- * Implements sigaa bond in HTTP request class
+ * Implements sigaa bond in HTTP request class.
+ *
  * @param http http instamce implementation
  * @param bondController A instance of BondController to read current bond
  * @param bondSwitchUrl url to switch bond
- * @private
+ *
+ * @category Internal
  */
 export class SigaaHTTPWithBond implements HTTP {
   constructor(
@@ -19,7 +21,7 @@ export class SigaaHTTPWithBond implements HTTP {
 
   /**
    * Verify if current bond is correct.
-   * If not switch bond
+   * Otherwise, switch bond
    */
   private async verifyIfBondIsCorrect(): Promise<void> {
     if (this.bondSwitchUrl !== this.bondController.currentBond)
@@ -41,6 +43,9 @@ export class SigaaHTTPWithBond implements HTTP {
     }
   }
 
+  /**
+   * @inheritdoc
+   */
   async postMultipart(
     path: string,
     formData: FormData,
@@ -50,6 +55,9 @@ export class SigaaHTTPWithBond implements HTTP {
     return this.http.postMultipart(path, formData, options);
   }
 
+  /**
+   * @inheritdoc
+   */
   async post(
     path: string,
     postValues: Record<string, string>,
@@ -64,6 +72,9 @@ export class SigaaHTTPWithBond implements HTTP {
     return this.http.get(path, options);
   }
 
+  /**
+   * @inheritdoc
+   */
   async downloadFileByGet(
     urlPath: string,
     basepath: string,
@@ -73,6 +84,9 @@ export class SigaaHTTPWithBond implements HTTP {
     return this.http.downloadFileByGet(urlPath, basepath, callback);
   }
 
+  /**
+   * @inheritdoc
+   */
   async downloadFileByPost(
     urlPath: string,
     postValues: Record<string, string>,
@@ -88,6 +102,9 @@ export class SigaaHTTPWithBond implements HTTP {
     );
   }
 
+  /**
+   * @inheritdoc
+   */
   async followAllRedirect(
     page: Page,
     options?: SigaaRequestOptions
@@ -96,6 +113,9 @@ export class SigaaHTTPWithBond implements HTTP {
     return this.http.followAllRedirect(page, options);
   }
 
+  /**
+   * @inheritdoc
+   */
   closeSession(): void {
     this.http.closeSession();
   }

@@ -4,8 +4,14 @@ import { Session } from '@session/sigaa-session';
 import { LoginStatus } from '../sigaa-types';
 import { URL } from 'url';
 import { BondFactory, BondType } from '@bonds/sigaa-bond-factory';
-import { Page } from '@sigaa';
+import { Page } from '@session/sigaa-page';
 
+/**
+ * Abstraction of account type.
+ *
+ * Responsible for representing the user account.
+ * @category Internal
+ */
 export interface Account {
   /**
    * get user's name
@@ -13,69 +19,114 @@ export interface Account {
   getName(): Promise<string>;
 
   /**
-   * Returns all bonds
+   * Returns all bonds, in IFSC it is called "Vínculos".
+   *
+   * A user can have more than one bond.
+   * Eg. A user takes two courses.
    */
   getBonds(): Promise<BondType[]>;
 
   /**
-   * Download user profile picture, save in filepath
-   * File path can be a directory
-   * @param basepath Path to save the image
-   * @returns Full filepath of image
+   * Download profile url and save in basepath.
+   * @param destpath It can be either a folder or a file name, if the path is a directory then it will be saved inside the folder, if it is a file name it will be saved exactly in this place, but if the folder does not exist it will throw an error.
+   * @param callback To know the progress of the download, each downloaded part will be called informing how much has already been downloaded.
+   * @retuns Full path of the downloaded file, useful if the destpath is a directory, or null if the user has no photo.
    */
   downloadProfilePicture(
-    basepath: string,
+    destpath: string,
     callback?: ProgressCallback
-  ): Promise<string>;
+  ): Promise<string | null>;
+
   /**
    * Get profile picture URL
-   * @returns URL of profile picture
+   * @retuns Picture url or null if the user has no photo.
    */
-  getProfilePictureURL(): Promise<URL>;
+  getProfilePictureURL(): Promise<URL | null>;
+
   /**
    * Ends the session
    */
   logoff(): Promise<void>;
+
+  /**
+   * Change the password of account.
+   * @param oldPassword current password.
+   * @param newPassword new password.
+   * @throws {errorInvalidCredentials} If current password is not correct.
+   * @throws {errorInsufficientPasswordComplexity} If the new password does not have the complexity requirement.
+   */
+  changePassword(oldPassword: string, newPassword: string): Promise<void>;
 }
 
-export class SigaaAccount {
+/**
+ * Responsible for representing the user account.
+ * @category Public
+ */
+export class SigaaAccount implements Account {
   /**
-   * userType
+   * @param homepage homepage (page after login) of user.
    */
-  readonly errorInvalidCredentials = 'SIGAA: Invalid credentials.';
-  readonly errorInsufficientPasswordComplexity =
-    'SIGAA: Insufficent password complexity.';
-
-  private bonds: BondType[] = [];
   constructor(
-    loginPage: Page,
+    homepage: Page,
     private http: HTTP,
     private parser: Parser,
     private session: Session,
     private bondFactory: BondFactory
   ) {
-    this.parseLoginPage(loginPage);
+    this.parseHomepage(homepage);
   }
 
-  private parseLoginPage(loginResultPage: Page): void {
-    if (loginResultPage.url.href.includes('mobile')) {
-      if (loginResultPage.body.includes('form-portal-discente')) {
-        this.parseStudentHomeMobilePage(loginResultPage);
-      } else if (loginResultPage.body.includes('form-portal-docente')) {
+  /**
+   * Error message when the new password chosen does not meet the security requirements of SIGAA.
+   * It is thrown by the changePassword() method
+   */
+  readonly errorInvalidCredentials = 'SIGAA: Invalid credentials.';
+
+  /**
+   * Error message when the old password is not the current password.
+   * It is thrown by the changePassword() method.
+   */
+  readonly errorInsufficientPasswordComplexity =
+    'SIGAA: Insufficent password complexity.';
+
+  /**
+   * Array of bonds.
+   */
+  private bonds: BondType[] = [];
+
+  /**
+   * Parse login result page to fill the instance.
+   *
+   * @param homepage home page to parse.
+   */
+  private parseHomepage(homepage: Page): void {
+    //As the login page can vary, we should check the type of page.
+
+    // If the page is mobile version.
+    if (homepage.url.href.includes('mobile')) {
+      if (homepage.body.includes('form-portal-discente')) {
+        // if is home page of student version.
+        this.parseStudentHomeMobilePage(homepage);
+      } else if (homepage.body.includes('form-portal-docente')) {
+        //// If it is the home page of the teacher version, add the teacher bond to the bonds.
         this.bonds.push(this.bondFactory.createTeacherBond());
       }
+    } else if (homepage.url.href.includes('/portais/discente/discente.jsf')) {
+      //If it is home page student of desktop version.
+      this.parseStudentHomePage(homepage);
     } else if (
-      loginResultPage.url.href.includes('/portais/discente/discente.jsf')
+      homepage.url.href.includes('sigaa/vinculos.jsf') ||
+      homepage.url.href.includes('/sigaa/escolhaVinculo.do')
     ) {
-      this.parseStudentHomePage(loginResultPage);
-    } else if (
-      loginResultPage.url.href.includes('sigaa/vinculos.jsf') ||
-      loginResultPage.url.href.includes('/sigaa/escolhaVinculo.do')
-    ) {
-      this.parseBondPage(loginResultPage);
+      //If it is bond page.
+      this.parseBondPage(homepage);
     }
   }
 
+  /**
+   * Parse student home page of mobile version.
+   * @param page page to parse.
+   */
   private parseStudentHomeMobilePage(page: Page) {
     const registration = this.parser.removeTagsHtml(
       page.$('#form-portal-discente\\:matricula').html()
@@ -89,6 +140,10 @@ export class SigaaAccount {
     );
   }
 
+  /**
+   * Parse bond page.
+   * @param page page to parse.
+   */
   private parseBondPage(page: Page) {
     const rows = page.$('table.subFormulario tbody tr').toArray();
     for (const row of rows) {
@@ -130,6 +185,9 @@ export class SigaaAccount {
     }
   }
 
+  /**
+   * Parse desktop version of student home page page.
+   */
   private parseStudentHomePage(loginPage: Page) {
     const rows = loginPage
       .$('#perfil-docente table')
@@ -141,7 +199,7 @@ export class SigaaAccount {
     for (const row of rows) {
       const cells = loginPage.$(row).find('td');
       if (cells.length !== 2) {
-        throw new Error('SIGAA: Invalid student details page');
+        throw new Error('SIGAA: Invalid student details page.');
       }
       const rowName = this.parser.removeTagsHtml(cells.eq(0).html());
       switch (rowName) {
@@ -157,19 +215,25 @@ export class SigaaAccount {
     }
 
     if (!registration)
-      throw new Error('SIGAA: Student bond with registration code');
+      throw new Error('SIGAA: Student bond with registration code.');
 
-    if (!program) throw new Error('SIGAA:  Student bond program not found');
+    if (!program) throw new Error('SIGAA: Student bond program not found.');
 
     this.bonds.push(
       this.bondFactory.createStudentBond(registration, program, null)
     );
   }
 
+  /**
+   * @inheritdoc
+   */
   async getBonds(): Promise<BondType[]> {
     return this.bonds;
   }
 
+  /**
+   * @inheritdoc
+   */
   logoff(): Promise<void> {
     return this.http
       .get('/sigaa/logar.do?dispatch=logOff')
@@ -185,28 +249,39 @@ export class SigaaAccount {
       });
   }
 
-  async getProfilePictureURL(): Promise<URL> {
+  /**
+   * Get profile picture URL.
+   * @retuns Picture url or null if the user has no photo.
+   */
+  async getProfilePictureURL(): Promise<URL | null> {
     const page = await this.http.get('/sigaa/mobile/touch/menu.jsf');
 
     const pictureElement = page.$('div[data-role="fieldcontain"] img');
-    if (pictureElement.length === 0)
-      throw new Error('SIGAA: User has no picture.');
-
+    if (pictureElement.length === 0) return null;
     const pictureSrc = pictureElement.attr('src');
-    if (!pictureSrc || pictureSrc.includes('/img/avatar.jpg'))
-      throw new Error('SIGAA: User has no picture.');
+    if (!pictureSrc || pictureSrc.includes('/img/avatar.jpg')) return null;
 
     return new URL(pictureSrc, page.url);
   }
 
+  /**
+   * Download profile url and save in basepath.
+   * @param destpath It can be a folder or a file name, if it is a directory then it will be saved inside the folder, if it is a file name it will be saved exactly in this place, but if the folder does not exist it will throw an error.
+   * @param callback To know the progress of the download, each downloaded part will be called informing how much has already been downloaded.
+   * @retuns Full path of the downloaded file, useful if the destpath is a directory, or null if the user has no photo.
+   */
   async downloadProfilePicture(
-    basepath: string,
+    destpath: string,
     callback?: ProgressCallback
-  ): Promise<string> {
+  ): Promise<string | null> {
     const pictureURL = await this.getProfilePictureURL();
-    return this.http.downloadFileByGet(pictureURL.href, basepath, callback);
+    if (!pictureURL) return null;
+    return this.http.downloadFileByGet(pictureURL.href, destpath, callback);
   }
 
+  /**
+   * Returns a promise with user name.
+   */
   async getName(): Promise<string> {
     const page = await this.http.get('/sigaa/portais/discente/discente.jsf');
     if (page.statusCode === 200) {
@@ -215,17 +290,16 @@ export class SigaaAccount {
       );
       return username;
     } else {
-      throw new Error('SIGAA: unexpected status code at student profile page.');
+      throw new Error('SIGAA: Unexpected status code at student profile page.');
     }
   }
 
   /**
-   * Change the password of account
-   * @async
-   * @param oldPassword current Password
-   * @param newPassword new password
-   * @throws {errorInvalidCredentials} If current password is not correct
-   * @throws {errorInsufficientPasswordComplexity} If the new password does not have the complexity requirement
+   * Change the password of account.
+   * @param oldPassword current password.
+   * @param newPassword new password.
+   * @throws {errorInvalidCredentials} If current password is not correct.
+   * @throws {errorInsufficientPasswordComplexity} If the new password does not have the complexity requirement.
    */
   async changePassword(
     oldPassword: string,
@@ -233,7 +307,7 @@ export class SigaaAccount {
   ): Promise<void> {
     const formPage = await this.http.get('/sigaa/alterar_dados.jsf');
     if (formPage.statusCode !== 302)
-      throw new Error('SIGAA: unexpected status code at change password form.');
+      throw new Error('SIGAA: Unexpected status code at change password form.');
 
     const prePage = await this.http.followAllRedirect(formPage);
     if (
@@ -301,6 +375,7 @@ export class SigaaAccount {
         throw new Error(this.errorInvalidCredentials);
       }
     }
+
     if (resultPage.statusCode !== 302) {
       throw new Error(
         'SIGAA: The change password page status code is different than expected.'

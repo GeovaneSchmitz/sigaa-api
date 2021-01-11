@@ -31,7 +31,7 @@ const parserDir = (dirpath) =>
               );
               fileContent = fileContent.replace(
                 new RegExp(`from '\\${find}`, 'g'),
-                `from '${newPath.charAt(0) === '.' ? '' : './'}${newPath}` //Adiciona  ./ se o path não começar com .
+                `from '${newPath.charAt(0) === '.' ? '' : './'}${newPath}` //Adiciona ./ se o path não começar com .
               );
             }
             fs.promises.writeFile(filepath, fileContent);

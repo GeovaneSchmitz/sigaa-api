@@ -7,7 +7,7 @@ import { BondFactory, SigaaBondFactory } from '@bonds/sigaa-bond-factory';
 import { Parser, SigaaParser } from '@helpers/sigaa-parser';
 import { FileData, SigaaFile } from '@resources/sigaa-file';
 import { SigaaSearch } from '@search/sigaa-search';
-import { SigaaHTTPSession } from '@session/http-session';
+import { SigaaHTTPSession } from '@session/sigaa-http-session';
 import {
   BondController,
   SigaaBondController
@@ -19,6 +19,9 @@ import { SigaaPageCache } from '@session/sigaa-page-cache';
 import { Session, SigaaSession } from '@session/sigaa-session';
 import { SigaaTokens } from '@session/sigaa-tokens';
 
+/**
+ * @category Internal
+ */
 interface SigaaConstructorURL {
   url: string;
   session?: Session;
@@ -29,6 +32,9 @@ interface SigaaConstructorURL {
   bondFactory?: BondFactory;
 }
 
+/**
+ * @category Internal
+ */
 interface SigaaConstructorHTTP {
   httpFactory: HTTPFactory;
   session?: Session;
@@ -37,16 +43,46 @@ interface SigaaConstructorHTTP {
   accountFactory: AccountFactory;
 }
 
+/**
+ * @category Public
+ */
 export type SigaaOptionsConstructor =
   | SigaaConstructorURL
   | SigaaConstructorHTTP;
 
+/**
+ * Main class, used to instantiate other classes in standard use.
+ * @category Public
+ */
 export class Sigaa {
+  /**
+   * Instance of login class.
+   */
   readonly loginInstance: Login;
+
+  /**
+   * Instance of http factory.
+   */
   readonly httpFactory: HTTPFactory;
+
+  /**
+   * Instance of parser.
+   */
   readonly parser: Parser;
+
+  /**
+   * Instance of session.
+   */
   readonly session: Session;
+
+  /**
+   * Instance of account factory.
+   */
   readonly accountFactory: AccountFactory;
+
+  /**
+   * Instance of http.
+   */
   private http: HTTP;
 
   constructor(options: SigaaOptionsConstructor) {
@@ -91,10 +127,9 @@ export class Sigaa {
   }
 
   /**
-   * User authentication
+   * User authentication.
    * @param username
    * @param password
-   * @async
    * @returns
    */
   async login(username: string, password: string): Promise<Account> {
@@ -103,9 +138,9 @@ export class Sigaa {
   }
 
   /**
-   * Load file to download
+   * Load file to download.
    * @param options
-   * @param options.id  file id
+   * @param options.id file id
    * @param options.key file key
    * @returns
    */
@@ -113,7 +148,10 @@ export class Sigaa {
     return new SigaaFile(this.http, options);
   }
 
-  get sigaaSearch(): SigaaSearch {
+  /**
+   * Returns instance of SigaaSearch.
+   */
+  get search(): SigaaSearch {
     return new SigaaSearch(this.http, this.parser);
   }
 }

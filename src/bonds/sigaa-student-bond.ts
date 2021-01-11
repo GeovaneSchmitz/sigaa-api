@@ -4,22 +4,31 @@ import {
 } from '@courses/sigaa-course-student';
 import { Parser } from '@helpers/sigaa-parser';
 import { HTTP } from '@session/sigaa-http';
-
+/**
+ * Abstraction to represent a student bond.
+ * @category Public
+ */
 export interface StudentBond {
   readonly type: 'student';
+  /**
+   * It's the name of the student program, in IFSC it is called "curso".
+   */
   readonly program: string;
+  /**
+   * It is the student registration code, in IFSC it is called "matrícula".
+   */
   readonly registration: string;
   /**
-   * Get courses
-   * @param [allPeriods=false] if true, all courses will be returned; otherwise, only current courses
-   * @returns
-   * @async
+   * Get courses, in IFSC it is called "Turmas Virtuais".
+   * @param allPeriods if true, all courses will be returned; otherwise, only current courses.
+   * @returns Promise with array of courses.
    */
   getCourses(allPeriods?: boolean): Promise<SigaaCourseStudent[]>;
 }
 
 /**
- * class to represent student bond
+ * Class to represent student bond.
+ * @category Public
  */
 export class SigaaStudentBond implements StudentBond {
   constructor(
@@ -31,6 +40,11 @@ export class SigaaStudentBond implements StudentBond {
 
   readonly type = 'student';
 
+  /**
+   * Get courses, in IFSC it is called "Turmas Virtuais".
+   * @param allPeriods if true, all courses will be returned; otherwise, only current courses.
+   * @returns Promise with array of courses.
+   */
   async getCourses(allPeriods = false): Promise<SigaaCourseStudent[]> {
     const coursesPage = await this.http.get(
       '/sigaa/portais/discente/turmas.jsf'

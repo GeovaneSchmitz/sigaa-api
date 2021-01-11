@@ -5,14 +5,23 @@ import { Page } from '@session/sigaa-page';
 import { Session } from '@session/sigaa-session';
 import { SigaaAccount, Account } from './sigaa-account';
 
+/**
+ * Abstraction to represent the class that instantiates the account.
+ * @category Internal
+ */
 export interface AccountFactory {
   /**
-   * creates account instance.
-   * @param page result login page
+   * Creates a new instance of Account.
+   * @param page home page of account (page after login).
    */
   getAccount: (page: Page) => Promise<Account>;
 }
 
+/**
+ *
+ * Serves to create account instances.
+ * @category Internal
+ */
 export class SigaaAccountFactory implements AccountFactory {
   constructor(
     private http: HTTP,
@@ -21,6 +30,10 @@ export class SigaaAccountFactory implements AccountFactory {
     private bondFactory: BondFactory
   ) {}
 
+  /**
+   * Creates a new instance of Account.
+   * @param page home page of account (page after login).
+   */
   async getAccount(page: Page): Promise<Account> {
     return new SigaaAccount(
       page,

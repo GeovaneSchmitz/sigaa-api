@@ -8,36 +8,51 @@ import { request as HTTPRequest, RequestOptions } from 'https';
 import { createBrotliDecompress, createGunzip, createInflate } from 'zlib';
 import { stringify } from 'querystring';
 import { HTTPMethod } from '../sigaa-types';
-import { HTTPSession } from './http-session';
+import { HTTPSession } from './sigaa-http-session';
 import { Page, SigaaPage } from './sigaa-page';
 
+/**
+ * @category Public
+ */
 export type ProgressCallback = (
   totalSize: number,
   downloadedSize?: number
 ) => void;
 
+/**
+ * @category Internal
+ */
 export interface SigaaRequestOptions {
   mobile?: boolean;
   noCache?: boolean;
   shareSameRequest?: boolean;
 }
 
+/**
+ * @category Internal
+ */
 export interface HTTPRequestOptions extends RequestOptions {
   hostname: string;
   method: HTTPMethod;
   headers: Record<string, string>;
 }
 
+/**
+ * @category Internal
+ */
 export interface HTTPResponse {
   bodyStream: NodeJS.ReadableStream;
   headers: http.IncomingHttpHeaders;
   statusCode: number;
 }
 
+/**
+ * @category Internal
+ * @instance
+ */
 export interface HTTP {
   /**
    * Make a POST multipart request
-   * @async
    * @param path The path of request or full URL
    * @param formData instance of FormData
    */
@@ -49,7 +64,6 @@ export interface HTTP {
 
   /**
    * Make a POST request
-   * @async
    * @param path The path of request or full URL
    * @param postValues Post values in format, key as field name, and value as field value.
    * @param [options]
@@ -64,7 +78,6 @@ export interface HTTP {
 
   /**
    * Make a GET request
-   * @async
    * @param path The path of request or full URL
    * @param [options]
    * @param [options.noCache] If can retrieve from cache
@@ -75,12 +88,12 @@ export interface HTTP {
   /**
    * Download a file
    * @param urlPath file url
-   * @param basepath path to save file
+   * @param destpath path to save file
    * @param callback callback to view download progress
    */
   downloadFileByGet(
     urlPath: string,
-    basepath: string,
+    destpath: string,
     callback?: ProgressCallback
   ): Promise<string>;
 
@@ -113,11 +126,15 @@ export interface HTTP {
 /**
  * HTTP request class
  * @param sigaaSession A instance of SigaaSession
- * @private
+ *
+ * @category Internal
  */
 export class SigaaHTTP implements HTTP {
   constructor(private session: HTTPSession) {}
 
+  /**
+   * @inheritdoc
+   */
   async downloadFileByGet(
     urlPath: string,
     basepath: string,
@@ -128,6 +145,9 @@ export class SigaaHTTP implements HTTP {
     return this.downloadFile(url, basepath, httpOptions, undefined, callback);
   }
 
+  /**
+   * @inheritdoc
+   */
   downloadFileByPost(
     urlPath: string,
     postValues: Record<string, string>,
@@ -139,6 +159,9 @@ export class SigaaHTTP implements HTTP {
     return this.downloadFile(url, basepath, httpOptions, body, callback);
   }
 
+  /**
+   * @inheritdoc
+   */
   private async downloadFile(
     url: URL,
     basepath: string,
@@ -226,6 +249,9 @@ export class SigaaHTTP implements HTTP {
     );
   }
 
+  /**
+   * @inheritdoc
+   */
   closeSession(): void {
     this.session.close();
   }
@@ -237,7 +263,6 @@ export class SigaaHTTP implements HTTP {
    * @param [options.withoutCookies=true] Disable cookies in headers, default = true
    * @param [options.mobile=false] Use mobile User-Agent
    * @returns The basic options for request
-   * @private
    */
   private getRequestBasicOptions(
     method: HTTPMethod,
@@ -267,6 +292,9 @@ export class SigaaHTTP implements HTTP {
     return basicOptions;
   }
 
+  /**
+   * @inheritdoc
+   */
   public async postMultipart(
     path: string,
     formData: FormData,
@@ -283,11 +311,11 @@ export class SigaaHTTP implements HTTP {
     const buffer = await this.convertReadebleToBuffer(formData.stream);
     return this.requestPage(url, httpOptions, buffer);
   }
+
   /**
    * Convert stream.Readable to buffer
    * @param stream readable stream
    * @return {Promise<Buffer>}
-   * @async
    */
   private convertReadebleToBuffer(
     stream: NodeJS.ReadableStream
@@ -324,7 +352,8 @@ export class SigaaHTTP implements HTTP {
         escapedString += str.charAt(i);
       } else {
         const codePoint = str.codePointAt(i);
-        if (codePoint === undefined) throw new Error('Invalid code point');
+        if (codePoint === undefined)
+          throw new Error('SIGAA: Invalid code point.');
         codePoint.toString(16).replace(/..?/g, '%$&');
         escapedString += codePoint.toString(16).replace(/..?/g, '%$&');
       }
@@ -332,6 +361,9 @@ export class SigaaHTTP implements HTTP {
     return escapedString;
   }
 
+  /**
+   * @inheritdoc
+   */
   public async post(
     path: string,
     postValues: Record<string, string>,
@@ -387,7 +419,6 @@ export class SigaaHTTP implements HTTP {
 
   /**
    * Make a HTTP request for a page
-   * @async
    * @param url url of request
    * @param options http.request options
    * @param [requestBody] body of request
@@ -443,7 +474,6 @@ export class SigaaHTTP implements HTTP {
 
   /**
    * Make a HTTP request
-   * @async
    * @param optionsHTTP http.request options
    * @param [body] body of request
    */

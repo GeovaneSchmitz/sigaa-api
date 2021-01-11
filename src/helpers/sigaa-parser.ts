@@ -1,7 +1,8 @@
 import { decode as htmlEntitiesDecode } from 'he';
 
 /**
- * Text sanitizer and date parser
+ * Text sanitizer and date parser.
+ * @category Internal
  */
 export interface Parser {
   /**
@@ -20,6 +21,9 @@ export interface Parser {
   removeTagsHtmlKeepingEmphasis(html?: string | null): string;
 }
 
+/**
+ * @category Internal
+ */
 export class SigaaParser implements Parser {
   private toFullYear(year: string): string {
     if (year.length !== 2) return year;
@@ -33,6 +37,9 @@ export class SigaaParser implements Parser {
     return (parsedYear + (currentCentury - 1) * 100).toString();
   }
 
+  /**
+   * @inheritdoc
+   */
   private createDateFromString(
     dataString: string,
     timeString = '00:00',
@@ -109,6 +116,9 @@ export class SigaaParser implements Parser {
     return dates;
   }
 
+  /**
+   * @inheritdoc
+   */
   removeTagsHtml(html?: string | null): string {
     if (!html) return '';
     try {
@@ -196,11 +206,9 @@ export class SigaaParser implements Parser {
       return '';
     }
   }
+
   /**
    * Fix encoding characters and clears text by removing all HTML tags except strong, em, b and i
-   * @param text
-   * @returns
-   * @protected
    */
   removeTagsHtmlKeepingEmphasis(text?: string | null): string {
     if (!text) return '';

@@ -1,5 +1,5 @@
 import { SigaaSearchTeacherResult } from '@search/sigaa-search-teacher-result';
-import { Sigaa } from '@session/../sigaa-root';
+import { Sigaa } from '../../sigaa-main';
 import { URL } from 'url';
 
 
@@ -7,7 +7,7 @@ test('if sigaa search loads campus list', async () => {
   const sigaa = new Sigaa({
     url: 'https://sigaa.ifsc.edu.br'
   });
-  const list = await sigaa.sigaaSearch.teacher().getCampusList();
+  const list = await sigaa.search.teacher().getCampusList();
   for (const campus of list) {
     expect(campus.name).toMatch(
       /CAMPUS|INSTITUTO|COORDENADORIA|DIRETORIA|TODOS/g
@@ -21,7 +21,7 @@ test('if sigaa search returns results', async () => {
   const sigaa = new Sigaa({
     url: 'https://sigaa.ifsc.edu.br'
   });
-  const list = await sigaa.sigaaSearch.teacher().search('José');
+  const list = await sigaa.search.teacher().search('José');
   for (const teacher of list) {
     expect(teacher).toBeInstanceOf(SigaaSearchTeacherResult);
     expect(teacher.name).toMatch(/^([A-Z]|[ÁÉÓÍÚÃÇÂÊÎÔÛ ])+$/);
@@ -32,7 +32,7 @@ test('if sigaa search returns emails', async () => {
   const sigaa = new Sigaa({
     url: 'https://sigaa.ifsc.edu.br'
   });
-  const list = (await sigaa.sigaaSearch.teacher().search('José')).slice(0, 5);
+  const list = (await sigaa.search.teacher().search('José')).slice(0, 5);
   expect(list.length).toBe(5);
   for (const teacher of list) {
     expect(teacher).toBeInstanceOf(SigaaSearchTeacherResult);
@@ -54,7 +54,7 @@ test('if sigaa search returns profile picture url', async () => {
   const sigaa = new Sigaa({
     url: 'https://sigaa.ifsc.edu.br'
   });
-  const list = (await sigaa.sigaaSearch.teacher().search('José')).slice(0, 10);
+  const list = (await sigaa.search.teacher().search('José')).slice(0, 10);
   for (const teacher of list) {
     expect(teacher).toBeInstanceOf(SigaaSearchTeacherResult);
     const profilePictureURL = await teacher.profilePictureURL;

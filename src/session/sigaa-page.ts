@@ -5,6 +5,9 @@ import { load as $load } from 'cheerio';
 import { HTTPMethod } from '../sigaa-types';
 import { HTTPRequestOptions } from './sigaa-http';
 
+/**
+ * @category Internal
+ */
 export interface SigaaPageConstructor {
   requestBody?: string | Buffer;
   body: string;
@@ -14,19 +17,32 @@ export interface SigaaPageConstructor {
   statusCode: number;
 }
 
+/**
+ * Represents an html form.
+ * @category Internal
+ */
 export interface SigaaForm {
+  /**
+   * The URL that should be used to submit this form.
+   */
   action: URL;
+  /**
+   * List of form fields.
+   */
   postValues: Record<string, string>;
 }
 
+/**
+ * @category Internal
+ */
 export interface Page {
   /**
-   * @param method Page HTTP request method. ex: POST, GET
+   * @param method Page HTTP request method. ex: POST, GET.
    */
   readonly method: HTTPMethod;
 
   /**
-   * @param statusCode HTTP status code
+   * @param statusCode HTTP status code,
    */
   readonly statusCode: number;
 
@@ -36,12 +52,12 @@ export interface Page {
   readonly url: URL;
 
   /**
-   * @param requestHeaders Page HTTP request Headers
+   * @param requestHeaders Page HTTP request headers.
    */
   readonly requestHeaders: Record<string, string>;
 
   /**
-   * @param headers The page HTTP response Headers
+   * @param headers The page HTTP response headers.
    */
   readonly headers: Record<string, string[] | string | undefined>;
 
@@ -63,19 +79,27 @@ export interface Page {
 
   readonly viewState?: string;
   /**
-   * Cheerio page
+   * Cheerio page.
    */
   readonly $: cheerio.Root;
 
+  /**
+   * Page request http options.
+   *
+   * This is the object that was passed to the node to make the request.
+   */
   readonly requestOptions: HTTPRequestOptions;
 
+  /**
+   * Only if request method is POST.
+   */
   readonly requestBody?: string | Buffer;
 
   /**
    * Extracts the javascript function JSFCLJS from the page,
    * this function on the page redirects the user to another
    * page using the POST method, often this function is in
-   * the onclick attribute on a page element.
+   * the onclick attribute in some element.
    * @param javaScriptCode
    * @returns Object with URL action and POST values equivalent to function
    */
@@ -83,9 +107,8 @@ export interface Page {
 }
 
 /**
- * response page of sigaa
- * @class SigaaPage
- * @private
+ * Response page of sigaa.
+ * @category Internal
  */
 export class SigaaPage implements Page {
   constructor(options: SigaaPageConstructor) {
@@ -100,17 +123,54 @@ export class SigaaPage implements Page {
     this.checkPageStatusCodeAndExpired();
   }
 
+  /**
+   * @inheritdoc
+   */
   public readonly requestOptions: HTTPRequestOptions;
+
+  /**
+   * @inheritdoc
+   */
   public readonly requestBody?: string | Buffer;
 
+  /**
+   * @inheritdoc
+   */
   public readonly statusCode: number;
+
+  /**
+   * @inheritdoc
+   */
   public readonly url: URL;
+
+  /**
+   * @inheritdoc
+   */
   public readonly headers: Record<string, string[] | string | undefined>;
+
+  /**
+   * @inheritdoc
+   */
   public readonly body: string;
+
+  /**
+   * @inheritdoc
+   */
   public modifiedAt: number;
+
+  /**
+   * Current cheerio instance.
+   */
   private _$?: cheerio.Root;
+
+  /**
+   * current page view state.
+   **/
   private _viewState?: string;
 
+  /**
+   * HTTP request method that originated page.
+   **/
   public get method(): HTTPMethod {
     return this.requestOptions.method;
   }
@@ -136,7 +196,7 @@ export class SigaaPage implements Page {
       this.statusCode === 302 &&
       this.headers.location?.includes('/sigaa/expirada.jsp')
     )
-      throw new Error('SIGAA session expired');
+      throw new Error('SIGAA: Session expired.');
   }
 
   /**
@@ -152,9 +212,12 @@ export class SigaaPage implements Page {
     return this._viewState;
   }
 
+  /**
+   * @inheritdoc
+   */
   parseJSFCLJS(javaScriptCode: string): SigaaForm {
     if (!javaScriptCode.includes('getElementById'))
-      throw new Error('SIGAA form not found');
+      throw new Error('SIGAA: Form not found.');
 
     const formQuery = javaScriptCode.replace(
       /if([\S\s]*?)getElementById\('|'([\S\s]*?)false/gm,
@@ -163,11 +226,12 @@ export class SigaaPage implements Page {
 
     const formEl = this.$(`#${formQuery}`);
     if (!formEl) {
-      throw new Error('SIGAA form not found');
+      throw new Error('SIGAA: Form not found.');
     }
 
     const formAction = formEl.attr('action');
-    if (formAction === undefined) throw new Error('SIGAA form without action');
+    if (formAction === undefined)
+      throw new Error('SIGAA: Form without action.');
 
     const action = new URL(formAction, this.url);
     const postValues: Record<string, string> = {};

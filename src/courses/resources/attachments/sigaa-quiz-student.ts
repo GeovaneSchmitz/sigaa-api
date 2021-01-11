@@ -5,6 +5,9 @@ import {
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm } from '@session/sigaa-page';
 
+/**
+ * @category Internal
+ */
 export interface QuizData {
   title: string;
   id: string;
@@ -14,10 +17,9 @@ export interface QuizData {
   formViewAnswersSubmitted?: SigaaForm;
 }
 
-export class SigaaQuizAttempt {
-  private _title!: string;
-}
-
+/**
+ * @category Public
+ */
 export class SigaaQuiz extends UpdatableResource<QuizData> {
   readonly type = 'quiz';
 
@@ -94,9 +96,9 @@ export class SigaaQuiz extends UpdatableResource<QuizData> {
             throw new Error(this.errorQuizYetNoSendAnswers);
           break;
         case 302:
-          throw new Error('Sigaa: Quiz expired.');
+          throw new Error('SIGAA: Quiz expired.');
         default:
-          throw new Error('Sigaa: Quiz page status code unexpected.');
+          throw new Error('SIGAA: Quiz page status code unexpected.');
       }
     } catch (err) {
       if (

@@ -6,14 +6,14 @@ const sigaa = new Sigaa({
 
 const searchTerm = 'José'; // Nome do professor para procurar
 
-const searchTeacher = sigaa.sigaaSearch.teacher();
+const searchTeacher = sigaa.search.teacher();
 async function main() {
   try {
     /**
      * Retorna a lista de campus, você não precisa usar,
      * mas se você quiser filtrar os resultados para um
      * campus específico você pode.
-     *  */
+     **/
 
     const campusList = await searchTeacher.getCampusList();
     console.log('Lista de campus');

@@ -4,6 +4,11 @@ import { HTTP } from './sigaa-http';
 import { Page, SigaaForm } from './sigaa-page';
 import { Session } from './sigaa-session';
 
+/**
+ * Abstraction representing class that logs in.
+ *
+ * @category Internal
+ */
 export interface Login {
   /**
    * login on Sigaa
@@ -15,8 +20,8 @@ export interface Login {
 }
 
 /**
- * responsible for logging in
- * @class SigaaLogin
+ * Responsible for logging in.
+ * @category Internal
  */
 export class SigaaLogin implements Login {
   constructor(private http: HTTP, private session: Session) {}
@@ -24,8 +29,6 @@ export class SigaaLogin implements Login {
 
   /**
    * Get page of login
-   * @async
-   * @
    */
   private async getMobileLoginPage(): Promise<Page> {
     return this.http
@@ -127,7 +130,7 @@ export class SigaaLogin implements Login {
    */
   async login(username: string, password: string, retry = true): Promise<Page> {
     if (this.session.loginStatus === LoginStatus.Authenticated)
-      throw new Error('Sigaa: This session already has a user logged in.');
+      throw new Error('SIGAA: This session already has a user logged in.');
     try {
       const page = await this.mobileLogin(username, password).catch((error) => {
         if (error.message === this.errorInvalidCredentials) throw error;
@@ -160,7 +163,7 @@ export class SigaaLogin implements Login {
         ) {
           const bondPage = this.http.get('/sigaa/vinculos.jsf');
           if ((await bondPage).statusCode !== 200)
-            throw new Error('SIGAA: bond page has unexpected status.');
+            throw new Error('SIGAA: Bond page has unexpected status.');
           this.session.loginStatus = LoginStatus.Authenticated;
 
           return bondPage;

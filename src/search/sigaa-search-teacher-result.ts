@@ -2,6 +2,9 @@ import { Parser } from '@helpers/sigaa-parser';
 import { HTTP, ProgressCallback } from '@session/sigaa-http';
 import { URL } from 'url';
 
+/**
+ * @category Internal
+ */
 export interface TeacherResultData {
   name: string;
   department: string;
@@ -9,6 +12,9 @@ export interface TeacherResultData {
   pageURL: URL;
 }
 
+/**
+ * @category Internal
+ */
 export interface TeacherResult {
   readonly name: string;
   readonly department: string;
@@ -31,6 +37,9 @@ export interface TeacherResult {
   ): Promise<string>;
 }
 
+/**
+ * @category Public
+ */
 export class SigaaSearchTeacherResult implements TeacherResult {
   private _name: string;
   private _department: string;

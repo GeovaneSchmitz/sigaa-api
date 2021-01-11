@@ -2,6 +2,9 @@ import { isEqual } from 'lodash';
 import { HTTPRequestOptions } from './sigaa-http';
 import { Page } from './sigaa-page';
 
+/**
+ * @category Internal
+ */
 export interface PageCache {
   /**
    * Get Page from cache
@@ -24,18 +27,17 @@ export interface PageCache {
 }
 
 /**
- * @class SigaaSession
- * Store information like: states, cookies, page cache
+ * Store page cache.
+ * @category Internal
  */
 export class SigaaPageCache implements PageCache {
   /**
-   * @property {SigaaPage} Array of all pages in cache
-   * @private
+   * Array of all pages in cache.
    */
   private cachePages: Page[] = [];
 
   /**
-   * @property {NodeJS.Timeout | null } intervalId interval id to clear the cache
+   * Interval id to clear the cache.
    */
   private intervalId?: NodeJS.Timeout;
 
@@ -45,7 +47,7 @@ export class SigaaPageCache implements PageCache {
   public timeoutCache = 5 * 60 * 1000; // 5min
 
   /**
-   * Flush states of instance
+   * @inheritdoc
    */
   clearCachePage(): void {
     if (this.intervalId) {
@@ -54,6 +56,9 @@ export class SigaaPageCache implements PageCache {
     this.cachePages = [];
   }
 
+  /**
+   * @inheritdoc
+   */
   storePage(page: Page): void {
     if (this.intervalId === undefined) {
       this.intervalId = setInterval(() => {
@@ -85,6 +90,9 @@ export class SigaaPageCache implements PageCache {
     }
   }
 
+  /**
+   * @inheritdoc
+   */
   getPage(
     httpOptions: HTTPRequestOptions,
     body?: string | Buffer

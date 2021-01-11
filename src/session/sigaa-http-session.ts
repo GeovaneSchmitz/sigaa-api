@@ -13,6 +13,7 @@ import { Token } from './sigaa-tokens';
 
 /**
  * Manage a http session
+ * @category Internal
  */
 export interface HTTPSession {
   /**
@@ -97,13 +98,14 @@ export interface HTTPSession {
   ): Promise<HTTPRequestOptions>;
 
   /**
-   *  flush all cookies and cache of session
+   *  Flush all cookies and cache of session
    */
   close(): void;
 }
 
 /**
  * Interface for request params
+ * @category Internal
  */
 export interface Request {
   httpOptions: HTTPRequestOptions;
@@ -112,6 +114,7 @@ export interface Request {
 
 /**
  * Interface to join beforeRequest and afterRequest
+ * @category Internal
  */
 export interface RequestPromiseTracker {
   request: Request;
@@ -119,6 +122,9 @@ export interface RequestPromiseTracker {
   reject(err: Error): void;
 }
 
+/**
+ * @category Internal
+ */
 export class SigaaHTTPSession implements HTTPSession {
   /**
    * @param url base of all request, example: https://sigaa.ifsc.edu.br
@@ -129,6 +135,9 @@ export class SigaaHTTPSession implements HTTPSession {
     private pageCache: PageCache
   ) {}
 
+  /**
+   * @inheritdoc
+   */
   async afterDownloadRequest(
     url: URL,
     downloadPath: string,
@@ -138,6 +147,9 @@ export class SigaaHTTPSession implements HTTPSession {
     return finalPath;
   }
 
+  /**
+   * @inheritdoc
+   */
   async beforeDownloadRequest(): Promise<null> {
     return null;
   }
@@ -150,10 +162,16 @@ export class SigaaHTTPSession implements HTTPSession {
 
   private requestPromises: RequestPromiseTracker[] = [];
 
+  /**
+   * @inheritdoc
+   */
   getURL(path: string): URL {
     return new URL(path, this.url);
   }
 
+  /**
+   * @inheritdoc
+   */
   async afterUnsuccessfulRequest(
     err: Error,
     httpOptions: HTTPRequestOptions,
@@ -169,6 +187,9 @@ export class SigaaHTTPSession implements HTTPSession {
     throw err;
   }
 
+  /**
+   * @inheritdoc
+   */
   private findAndRemovePromiseRequest(
     request: Request
   ): RequestPromiseTracker | null {
@@ -183,6 +204,9 @@ export class SigaaHTTPSession implements HTTPSession {
     return null;
   }
 
+  /**
+   * @inheritdoc
+   */
   async afterSuccessfulRequest(page: SigaaPage): Promise<Page> {
     const requestPromise = this.findAndRemovePromiseRequest({
       body: page.requestBody,
@@ -213,6 +237,9 @@ export class SigaaHTTPSession implements HTTPSession {
     return page;
   }
 
+  /**
+   * @inheritdoc
+   */
   async afterHTTPOptions(
     link: URL,
     httpOptions: HTTPRequestOptions
@@ -224,6 +251,9 @@ export class SigaaHTTPSession implements HTTPSession {
     return httpOptions;
   }
 
+  /**
+   * @inheritdoc
+   */
   async beforeRequest(
     url: URL,
     httpOptions: HTTPRequestOptions,
@@ -270,6 +300,9 @@ export class SigaaHTTPSession implements HTTPSession {
     return null;
   }
 
+  /**
+   * @inheritdoc
+   */
   close(): void {
     this.token.clearTokens();
     this.pageCache.clearCachePage();

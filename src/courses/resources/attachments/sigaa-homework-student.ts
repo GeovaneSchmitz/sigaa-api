@@ -8,6 +8,9 @@ import {
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm } from '@session/sigaa-page';
 
+/**
+ * @category Internal
+ */
 export interface HomeworkData {
   title: string;
   startDate: Date;
@@ -19,6 +22,9 @@ export interface HomeworkData {
   formViewHomeworkSubmitted?: SigaaForm;
 }
 
+/**
+ * @category Public
+ */
 export class SigaaHomework extends UpdatableResource<HomeworkData> {
   readonly type = 'homework';
 
@@ -91,7 +97,6 @@ export class SigaaHomework extends UpdatableResource<HomeworkData> {
   /**
    * Get SigaaFile or throws if you don't have a file
    * @returns
-   * @async
    */
   async getAttachmentFile(): Promise<SigaaFile> {
     if (
@@ -107,12 +112,12 @@ export class SigaaHomework extends UpdatableResource<HomeworkData> {
     );
 
     const path = page.$('ul.form > li > div > a').attr('href');
-    if (!path) throw new Error('Sigaa: Homework has no file.');
+    if (!path) throw new Error('SIGAA: Homework has no file.');
     const url = new URL(path, page.url);
     const fileKey = url.searchParams.get('key');
     const fileId = url.searchParams.get('idArquivo');
     if (fileId == null || fileKey == null)
-      throw new Error('SIGAA: file URL is invalid.');
+      throw new Error('SIGAA: File URL is invalid.');
 
     const file: FileData = {
       title: '',

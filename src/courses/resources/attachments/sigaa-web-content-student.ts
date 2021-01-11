@@ -6,6 +6,9 @@ import {
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm } from '@session/sigaa-page';
 
+/**
+ * @category Internal
+ */
 export interface WebContentData {
   title: string;
   id: string;
@@ -13,6 +16,9 @@ export interface WebContentData {
   date?: Date;
 }
 
+/**
+ * @category Public
+ */
 export class SigaaWebContent extends UpdatableResource<WebContentData> {
   readonly type = 'webcontent';
 

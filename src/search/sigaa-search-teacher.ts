@@ -7,11 +7,17 @@ import {
   SigaaSearchTeacherResult
 } from './sigaa-search-teacher-result';
 
+/**
+ * @category Public
+ */
 export interface Campus {
   name: string;
   value: string;
 }
 
+/**
+ * @category Public
+ */
 export class SigaaSearchTeacher {
   page: Page | null = null;
 

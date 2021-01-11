@@ -4,11 +4,17 @@ import {
 } from '@resources/updatable-resource';
 import { SigaaForm } from '@session/sigaa-page';
 
+/**
+ * @category Internal
+ */
 export interface SurveyData {
   title: string;
   form: SigaaForm;
 }
 
+/**
+ * @category Public
+ */
 export class SigaaSurvey extends UpdatableResource<SurveyData> {
   readonly type = 'survey';
 

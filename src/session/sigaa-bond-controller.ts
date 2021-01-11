@@ -1,8 +1,14 @@
+/**
+ * Interface that abstracts the class that stores the current bond.
+ * @category Internal
+ */
 export interface BondController {
   currentBond: URL | null;
 }
+
 /**
- * Store current bond
+ * Class to store current bond.
+ * @category Internal
  */
 export class SigaaBondController implements BondController {
   private _currentBond: URL | null = null;
