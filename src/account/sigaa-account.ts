@@ -164,11 +164,6 @@ export class SigaaAccount implements Account {
             program,
             bondSwitchUrl
           );
-          if (status === 'Sim') {
-            this.activeBonds.push(bond);
-          } else {
-            this.inactiveBonds.push(bond);
-          }
           break;
         }
         case 'Docente': {
