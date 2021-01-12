@@ -1052,7 +1052,7 @@ export class SigaaCourseStudent implements CourseStudent {
       if (page.statusCode !== 200)
         throw new Error('SIGAA: Invalid course page status code.');
 
-      if (page.body.includes('Menu Turma Virtual')) {
+      if (pageResponse.body.includes('Menu Turma Virtual')) {
         this.currentPageCache = pageResponse;
       }
       return pageResponse;
