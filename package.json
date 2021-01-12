@@ -1,7 +1,7 @@
 {
   "name": "sigaa-api",
   "description": "Unofficial high performance API for SIGAA IFSC using web scraping.",
-  "version": "1.0.11",
+  "version": "1.0.13",
   "main": "dist/sigaa-all-types.js",
   "types": "dist/sigaa-all-types.d.ts",
   "author": "Geovane Schmitz <contato@geovanems.com.br>",
@@ -30,7 +30,8 @@
     "prepare": "npm run build"
   },
   "files": [
-    "dist/**"
+    "dist/**",
+    "src/**"
   ],
   "devDependencies": {
     "@babel/cli": "^7.12.10",

@@ -19,11 +19,6 @@ export interface PageCacheWithBond extends PageCache {
  */
 export class SigaaPageCacheWithBond implements PageCacheWithBond {
   /**
-   * List of all cache instances.
-   */
-  private cacheInstances = new Map<string | null, PageCache>();
-
-  /**
    * Cache for the current bond
    */
   private currentCache: PageCache;
@@ -35,23 +30,21 @@ export class SigaaPageCacheWithBond implements PageCacheWithBond {
 
   constructor(private cachePageFactory: PageCacheFactory) {
     this.currentCache = this.cachePageFactory.createPageCache();
-    this.cacheInstances.set(null, this.currentCache);
   }
 
+  /**
+   * @inheritdoc
+   */
   setCurrentBond(bondSwitchUrl: string | null): void {
     if (bondSwitchUrl !== this.currentBond) {
-      const oldCacheInstance = this.cacheInstances.get(bondSwitchUrl);
-      if (oldCacheInstance) {
-        this.currentCache === oldCacheInstance;
-      } else {
-        const newCacheInstance = this.cachePageFactory.createPageCache();
-        this.cacheInstances.set(bondSwitchUrl, newCacheInstance);
-        this.currentCache = newCacheInstance;
-      }
+      this.currentCache.clearCachePage();
       this.currentBond = bondSwitchUrl;
     }
   }
 
+  /**
+   * @inheritdoc
+   */
   getPage(
     httpOptions: HTTPRequestOptions,
     body?: string | Buffer
@@ -59,14 +52,17 @@ export class SigaaPageCacheWithBond implements PageCacheWithBond {
     return this.currentCache.getPage(httpOptions, body);
   }
 
+  /**
+   * @inheritdoc
+   */
   storePage(page: Page): void {
     return this.currentCache.storePage(page);
   }
 
+  /**
+   * @inheritdoc
+   */
   clearCachePage(): void {
-    for (const cacheInstance of this.cacheInstances.values()) {
-      cacheInstance.clearCachePage();
-    }
-    this.cacheInstances.clear();
+    this.currentCache.clearCachePage();
   }
 }
