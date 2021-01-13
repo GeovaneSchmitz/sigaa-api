@@ -19,6 +19,11 @@ export interface PageCacheWithBond extends PageCache {
  */
 export class SigaaPageCacheWithBond implements PageCacheWithBond {
   /**
+   * List of all cache instances.
+   */
+  private cacheInstances = new Map<string | null, PageCache>();
+
+  /**
    * Cache for the current bond
    */
   private currentCache: PageCache;
@@ -30,6 +35,7 @@ export class SigaaPageCacheWithBond implements PageCacheWithBond {
 
   constructor(private cachePageFactory: PageCacheFactory) {
     this.currentCache = this.cachePageFactory.createPageCache();
+    this.cacheInstances.set(null, this.currentCache);
   }
 
   /**
@@ -37,7 +43,14 @@ export class SigaaPageCacheWithBond implements PageCacheWithBond {
    */
   setCurrentBond(bondSwitchUrl: string | null): void {
     if (bondSwitchUrl !== this.currentBond) {
-      this.currentCache.clearCachePage();
+      const oldCacheInstance = this.cacheInstances.get(bondSwitchUrl);
+      if (oldCacheInstance) {
+        this.currentCache === oldCacheInstance;
+      } else {
+        const newCacheInstance = this.cachePageFactory.createPageCache();
+        this.cacheInstances.set(bondSwitchUrl, newCacheInstance);
+        this.currentCache = newCacheInstance;
+      }
       this.currentBond = bondSwitchUrl;
     }
   }
@@ -63,6 +76,9 @@ export class SigaaPageCacheWithBond implements PageCacheWithBond {
    * @inheritdoc
    */
   clearCachePage(): void {
-    this.currentCache.clearCachePage();
+    for (const cacheInstance of this.cacheInstances.values()) {
+      cacheInstance.clearCachePage();
+    }
+    this.cacheInstances.clear();
   }
 }
