@@ -1606,7 +1606,7 @@ export class SigaaCourseStudent implements CourseStudent {
     const removeCellsWithName = ['', 'Matrícula', 'Nome', 'Sit.', 'Faltas'];
 
     const table = page.$('table.tabelaRelatorio');
-    if (table.length !== 1)
+    if (table.length < 1)
       throw new Error('SIGAA: Received empty table on grade page.');
 
     const theadTrs = page.$('thead tr').toArray();
