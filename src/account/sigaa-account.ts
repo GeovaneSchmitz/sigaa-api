@@ -10,7 +10,7 @@ import { Page } from '@session/sigaa-page';
  * Abstraction of account type.
  *
  * Responsible for representing the user account.
- * @category Internal
+ * @category Public
  */
 export interface Account {
   /**
@@ -66,7 +66,7 @@ export interface Account {
 
 /**
  * Responsible for representing the user account.
- * @category Public
+ * @category Internal
  */
 export class SigaaAccount implements Account {
   /**

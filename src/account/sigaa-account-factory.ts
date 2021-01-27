@@ -14,7 +14,7 @@ export interface AccountFactory {
    * Creates a new instance of Account.
    * @param page home page of account (page after login).
    */
-  getAccount: (page: Page) => Promise<Account>;
+  getAccount(page: Page): Promise<Account>;
 }
 
 /**

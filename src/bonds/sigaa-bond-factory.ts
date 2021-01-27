@@ -1,3 +1,4 @@
+import { CourseFactory } from '@courses/sigaa-course-student-factory';
 import { Parser } from '@helpers/sigaa-parser';
 import { HTTP } from '@session/sigaa-http';
 import { HTTPFactory } from '@session/sigaa-http-factory';
@@ -23,16 +24,16 @@ export interface BondFactory {
    * @param program It's the name of the student program, in IFSC it is called "curso".
    * @param bondSwitchUrl If the user has more than one bond, the bond link will be used to change the bond
    */
-  createStudentBond: (
+  createStudentBond(
     registration: string,
     program: string,
     bondSwitchUrl: URL | null
-  ) => StudentBond;
+  ): StudentBond;
 
   /**
    * Creates a teacher bond instance.
    */
-  createTeacherBond: () => TeacherBond;
+  createTeacherBond(): TeacherBond;
 }
 
 /**
@@ -42,7 +43,11 @@ export interface BondFactory {
  * @category Internal
  */
 export class SigaaBondFactory implements BondFactory {
-  constructor(private httpFactory: HTTPFactory, private parser: Parser) {}
+  constructor(
+    private httpFactory: HTTPFactory,
+    private parser: Parser,
+    private courseFactory: CourseFactory
+  ) {}
 
   /**
    * Creates a student program instance.
@@ -65,6 +70,7 @@ export class SigaaBondFactory implements BondFactory {
     return new SigaaStudentBond(
       http,
       this.parser,
+      this.courseFactory,
       program,
       registration,
       bondSwitchUrl

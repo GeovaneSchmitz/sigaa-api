@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * @category Internal
  */
@@ -7,7 +6,16 @@ export type UpdatableResourceCallback = () => Promise<void>;
 /**
  * @category Internal
  */
-export abstract class UpdatableResource<T> {
+export interface UpdatableResource<T> {
+  update(T: T): void;
+  readonly id: string;
+  close(): void;
+}
+
+/**
+ * @category Internal
+ */
+export abstract class AbstractUpdatableResource {
   protected isClosed = false;
 
   protected _id!: string;
@@ -19,11 +27,7 @@ export abstract class UpdatableResource<T> {
     await this.updater();
   }
 
-  public update(T: T): void {
-    throw new Error('SIGAA: Update method not implemented.');
-  }
-
-  checkIfItWasClosed(): void {
+  protected checkIfItWasClosed(): void {
     if (this.isClosed) {
       throw new Error('SIGAA: This instance has already been closed.');
     }

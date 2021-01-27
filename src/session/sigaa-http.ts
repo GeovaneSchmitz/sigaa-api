@@ -315,7 +315,6 @@ export class SigaaHTTP implements HTTP {
   /**
    * Convert stream.Readable to buffer
    * @param stream readable stream
-   * @return {Promise<Buffer>}
    */
   private convertReadebleToBuffer(
     stream: NodeJS.ReadableStream
@@ -341,7 +340,6 @@ export class SigaaHTTP implements HTTP {
    * RFC 3986
    * Uses the UTF-8 code point to code, not the hexadecimal binary
    * @param str
-   * @returns
    */
   private encodeWithRFC3986(str: string): string {
     let escapedString = '';
@@ -422,7 +420,6 @@ export class SigaaHTTP implements HTTP {
    * @param url url of request
    * @param options http.request options
    * @param [requestBody] body of request
-   * @returns
    */
   private async requestPage(
     url: URL,

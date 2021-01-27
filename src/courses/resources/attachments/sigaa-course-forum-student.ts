@@ -2,13 +2,15 @@ import { URL } from 'url';
 
 import FormData from 'formdata-node';
 import { Parser } from '@helpers/sigaa-parser';
-import { SigaaFile, FileData } from '@resources/sigaa-file';
+import { File, FileData } from '@resources/sigaa-file';
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm, Page } from '@session/sigaa-page';
+import { CourseResourcesFactory } from '@courses/sigaa-course-resources-factory';
 
 /**
  * Object that contains basic information about the class forum.
@@ -59,9 +61,67 @@ export interface ForumData {
 /**
  * @category Public
  */
-export class SigaaCourseForum extends UpdatableResource<ForumData> {
+export interface CourseForum extends UpdatableResource<ForumData> {
+  readonly type: 'forum';
+
   /**
-   * Type of class
+   * Whether it is the home forum or a topic in forum.
+   */
+  readonly isMain: boolean;
+
+  /**
+   * If read monitoring is enabled.
+   */
+  getMonitorReading(): Promise<boolean>;
+
+  /**
+   * Number of topics
+   */
+  getNumOfTopics(): Promise<number>;
+
+  /**
+   * Post topic in forum
+   * @param title title of topic
+   * @param body body of topic
+   * @param file buffer of file attachment
+   * @param notify if notify members
+   */
+  postTopic(
+    title: string,
+    body: string,
+    file: string,
+    notify: boolean
+  ): Promise<void>;
+
+  /**
+   * Post author
+   */
+  getAuthor(): Promise<string>;
+  /**
+   * File attached to the forum.
+   */
+  getFile(): Promise<File | undefined>;
+  /**
+   * Like 'Uma única discussão simples'
+   */
+  getForumType(): Promise<string>;
+
+  readonly title: string;
+
+  /**
+   * creation date of the forum.
+   */
+  getCreationDate(): Promise<Date>;
+}
+
+/**
+ * @category Internal
+ */
+export class SigaaCourseForum
+  extends AbstractUpdatableResource
+  implements CourseForum {
+  /**
+   * Type of instance
    */
   readonly type = 'forum';
 
@@ -108,7 +168,7 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
   /**
    * File attached to the forum.
    */
-  private _file?: SigaaFile;
+  private _file?: File;
 
   /**
    * If read monitoring is enabled.
@@ -128,6 +188,7 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
   constructor(
     private http: HTTP,
     private parser: Parser,
+    private courseResourcesFactory: CourseResourcesFactory,
     forumOptions: ForumData,
     updater: UpdatableResourceCallback
   ) {
@@ -213,7 +274,7 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
   /**
    * File attached to the forum.
    */
-  async getFile(): Promise<SigaaFile | undefined> {
+  async getFile(): Promise<File | undefined> {
     this.checkIfItWasClosed();
     if (this._file === undefined) {
       await this.loadForumPage();
@@ -438,10 +499,12 @@ export class SigaaCourseForum extends UpdatableResource<ForumData> {
             if (this._file) {
               this._file.update(fileObj);
             } else {
-              this._file = new SigaaFile(
+              this._file = this.courseResourcesFactory.createFileFromFileData(
                 this.http,
                 fileObj,
-                this.getForumPage.bind(this)
+                async () => {
+                  await this.getForumPage();
+                }
               );
             }
           } else {

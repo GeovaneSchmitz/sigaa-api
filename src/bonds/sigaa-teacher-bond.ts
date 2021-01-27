@@ -10,7 +10,7 @@ export interface TeacherBond {
 /**
  * Class to represent teacher bond. In IFSC it is called "Vínculo de professor".
  * @TODO
- * @category Public
+ * @category Internal
  */
 export class SigaaTeacherBond implements TeacherBond {
   readonly type = 'teacher';

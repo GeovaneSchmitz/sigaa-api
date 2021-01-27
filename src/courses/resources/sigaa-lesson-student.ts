@@ -1,8 +1,29 @@
-import { Attachment } from '@courses/sigaa-course-student';
+import { CourseForum } from '@attachments/sigaa-course-forum-student';
+import { Homework } from '@attachments/sigaa-homework-student';
+import { LinkAttachment } from '@attachments/sigaa-link-student';
+import { Quiz } from '@attachments/sigaa-quiz-student';
+import { Survey } from '@attachments/sigaa-survey-student';
+import { VideoAttachment } from '@attachments/sigaa-video-student';
+import { WebContent } from '@attachments/sigaa-web-content-student';
+import { File } from '@resources/sigaa-file';
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
+
+/**
+ * @category Public
+ */
+export type Attachment =
+  | File
+  | Homework
+  | Quiz
+  | CourseForum
+  | WebContent
+  | Survey
+  | LinkAttachment
+  | VideoAttachment;
 
 /**
  * @category Internal
@@ -19,7 +40,18 @@ export interface LessonData {
 /**
  * @category Public
  */
-export class SigaaLesson extends UpdatableResource<LessonData> {
+export interface Lesson extends UpdatableResource<LessonData> {
+  readonly title: string;
+  readonly contentText: string;
+  readonly endDate: Date;
+  readonly startDate: Date;
+  readonly attachments: Attachment[];
+}
+
+/**
+ * @category Internal
+ */
+export class SigaaLesson extends AbstractUpdatableResource implements Lesson {
   private _title!: string;
   private _contextText!: string;
   private _startDate!: Date;

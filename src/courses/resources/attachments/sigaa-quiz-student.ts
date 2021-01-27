@@ -1,4 +1,5 @@
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
@@ -20,7 +21,23 @@ export interface QuizData {
 /**
  * @category Public
  */
-export class SigaaQuiz extends UpdatableResource<QuizData> {
+export interface Quiz extends UpdatableResource<QuizData> {
+  readonly title: string;
+  readonly type: 'quiz';
+  readonly endDate: Date;
+  readonly startDate: Date;
+
+  /**
+   * TODO
+   * @param retry
+   */
+  getAnswersSubmitted(): Promise<void>;
+}
+
+/**
+ * @category Internal
+ */
+export class SigaaQuiz extends AbstractUpdatableResource implements Quiz {
   readonly type = 'quiz';
 
   readonly errorDeadlineToReadClosed =

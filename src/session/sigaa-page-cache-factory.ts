@@ -5,7 +5,7 @@ import { PageCache, SigaaPageCache } from './sigaa-page-cache';
  * @category Internal
  */
 export interface PageCacheFactory {
-  createPageCache: () => PageCache;
+  createPageCache(): PageCache;
 }
 
 /**

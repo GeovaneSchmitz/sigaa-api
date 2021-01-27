@@ -1,6 +1,7 @@
 import { HTTP, ProgressCallback } from '@session/sigaa-http';
 import { SigaaForm } from '@session/sigaa-page';
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from './updatable-resource';
@@ -31,10 +32,36 @@ interface FileDataForm {
 export type FileData = FileDataForm | FileDataKey;
 
 /**
- * Class to manager file
  * @category Public
  */
-export class SigaaFile extends UpdatableResource<FileData> {
+export interface File extends UpdatableResource<FileData> {
+  readonly type: 'file';
+  /**
+   * Label in SIGAA.
+   */
+  readonly title?: string;
+  /**
+   * Is a key to download a file, this is a security feature of SIGAA.
+   */
+  readonly key?: string;
+  /**
+   *Description in the sigaa
+   */
+  readonly description?: string;
+  /**
+   * Download the file
+   * @param destpath path to save file
+   * @param callback callback to view download progress
+   * @retuns Promise with the path where the file was saved.
+   */
+  download(destpath: string, callback?: ProgressCallback): Promise<string>;
+}
+
+/**
+ * Class to manager file
+ * @category Internal
+ */
+export class SigaaFile extends AbstractUpdatableResource implements File {
   /**
    * There are two ways to create the class
    * the first is used the file's id and key

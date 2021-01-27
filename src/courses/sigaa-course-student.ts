@@ -1,34 +1,50 @@
-import { createHash } from 'crypto';
 import { URL } from 'url';
 
+import { Lesson } from '@courseResources/sigaa-lesson-student';
+import { NewsData, News } from '@courseResources/sigaa-news-student';
+import { Parser } from '@helpers/sigaa-parser';
+import { File } from '@resources/sigaa-file';
+import { HTTP } from '@session/sigaa-http';
+
+import { SigaaForm, Page } from '@session/sigaa-page';
+import { QuizData, Quiz } from '@attachments/sigaa-quiz-student';
+import { HomeworkData, Homework } from '@attachments/sigaa-homework-student';
+import { SigaaSurvey } from '@attachments/sigaa-survey-student';
+import { CourseResourcesManagerFactory } from './sigaa-course-resources-manager-factory';
+import { Exam } from '@courseResources/sigaa-exam-student';
+import { Syllabus } from '@courseResources/sigaa-syllabus-student';
+import { LessonParserFactory } from './sigaa-lesson-parser-factory';
+
 import {
-  SigaaCourseForum,
-  ForumData
+  GradeGroup,
+  SubGradeSumOfGrades,
+  SubGradeWeightedAverage
+} from '@courseResources/sigaa-grades-student';
+
+import {
+  ForumData,
+  CourseForum
 } from '@attachments/sigaa-course-forum-student';
+
 import {
-  SigaaHomework,
-  HomeworkData
-} from '@attachments/sigaa-homework-student';
-import { SigaaQuiz, QuizData } from '@attachments/sigaa-quiz-student';
-import { SigaaSurvey, SurveyData } from '@attachments/sigaa-survey-student';
-import {
-  SigaaWebContent,
+  WebContent,
   WebContentData
 } from '@attachments/sigaa-web-content-student';
-import { SigaaLesson, LessonData } from '@courseResources/sigaa-lesson-student';
-import { SigaaNews, NewsData } from '@courseResources/sigaa-news-student';
-import { Parser } from '@helpers/sigaa-parser';
+import {
+  AbsenceDay,
+  AbsenceList
+} from '@courseResources/sigaa-absence-list-student';
 
-import { SigaaFile, FileData } from '@resources/sigaa-file';
-import { UpdatableResource } from '@resources/updatable-resource';
-import { HTTP } from '@session/sigaa-http';
-import { SigaaForm, Page } from '@session/sigaa-page';
-import { CourseStudent } from './sigaa-course';
+import {
+  MemberList,
+  Student,
+  Teacher
+} from '@courseResources/sigaa-member-list-student';
 
 /**
  * @category Internal
  */
-export interface SigaaCourseStudentData {
+export interface CourseStudentData {
   id: string;
   title: string;
   code: string;
@@ -39,284 +55,162 @@ export interface SigaaCourseStudentData {
 }
 
 /**
- * @category Internal
- */
-interface TextAttachment {
-  type: 'text';
-  body: string;
-}
-
-/**
+ * Course in the student's view.
  * @category Public
- */
-export interface Exam {
-  description: string;
-  date?: Date;
+ **/
+export interface CourseStudent {
+  /**
+   * Single string indicating the course.
+   *
+   * String única indicando o curso.
+   */
+  readonly id: string;
+
+  /**
+   * Course title (Nome da turma).
+   */
+  readonly title: string;
+
+  /**
+   * Course name abbreviation.
+   *
+   * Código (abreviação) da turma.
+   */
+  readonly code: string;
+
+  /**
+   * Course Schedule.
+   *
+   * Horário das aulas.
+   */
+  readonly schedule: string;
+
+  /**
+   * Number of students, is 0 if the course of the period is not the current one.
+   */
+  readonly numberOfStudents: number;
+
+  /**
+   * Course Semester.
+   */
+  readonly period: string;
+
+  /**
+   * Returns the list of lessons.
+   */
+  getLessons(): Promise<Lesson[]>;
+
+  /**
+   * Returns to the list of files provided by the teacher.
+   */
+  getFiles(): Promise<File[]>;
+
+  /**
+   * Returns the courses forum.
+   */
+  getForums(): Promise<CourseForum[]>;
+
+  /**
+   * Returns the courses news.
+   */
+  getNews(): Promise<News[]>;
+
+  /**
+   * Returns your absences.
+   */
+  getAbsence(): Promise<AbsenceList>;
+
+  /**
+   * Parse the side evaluation card and returns the name of each evaluation and the date if it has
+   */
+  getExamCalendar(): Promise<Exam[]>;
+
+  /**
+   * Returns the courses quizzes.
+   */
+  getQuizzes(): Promise<Quiz[]>;
+
+  /**
+   * Returns the course WebContent Array.
+   */
+  getWebContents(): Promise<WebContent[]>;
+
+  /**
+   * To do
+   */
+  getSurveys(): Promise<SigaaSurvey[]>;
+
+  /**
+   * Returns your homework.
+   */
+  getHomeworks(): Promise<Homework[]>;
+
+  /**
+   * Get members object.
+   */
+  getMembers(): Promise<MemberList>;
+
+  /**
+   * Get grades array.
+   */
+  getGrades(): Promise<GradeGroup[]>;
+
+  /**
+   * Get Syllabus (Plano de ensino).
+   */
+  getSyllabus(): Promise<Syllabus>;
 }
 
 /**
- * @category Internal
- */
-interface WithId {
-  id: string;
-}
-
-/**
- * @category Internal
- */
-export interface GenericAttachmentData {
-  title: string;
-  description: string;
-  form: SigaaForm;
-  id: string;
-}
-
-/**
- * @category Public
- */
-export interface VideoAttachment {
-  type: 'video';
-  src: string;
-  title: string;
-  description: string;
-}
-
-/**
- * @category Internal
- */
-export interface LinkAttachment {
-  type: 'link';
-  title: string;
-  href: string;
-  description: string;
-}
-
-interface Instances {
-  lessons: SigaaLesson[];
-  homework: SigaaHomework[];
-  quizzes: SigaaQuiz[];
-  files: SigaaFile[];
-  videos: VideoAttachment[];
-  forums: SigaaCourseForum[];
-  survey: SigaaSurvey[];
-  news: SigaaNews[];
-  webContents: SigaaWebContent[];
-}
-
-/**
- * @category Public
- */
-export interface AbsenceDay {
-  date: Date;
-  numOfAbsences: number;
-}
-
-/**
- * @category Public
- */
-export interface AbsenceList {
-  list: AbsenceDay[];
-  totalAbsences: number;
-  maxAbsences: number;
-}
-
-/**
- * @category Public
- */
-export type Attachment =
-  | SigaaFile
-  | SigaaHomework
-  | SigaaQuiz
-  | SigaaCourseForum
-  | SigaaWebContent
-  | SigaaSurvey
-  | LinkAttachment
-  | VideoAttachment;
-
-/**
- * @category Internal
- */
-export interface Member {
-  name: string;
-  username: string;
-  email: string;
-  photoURL?: URL;
-}
-
-/**
- * @category Public
- */
-export interface Teacher extends Member {
-  formation?: string;
-  department?: string;
-}
-
-/**
- * @category Public
- */
-export interface Student extends Member {
-  registration: string;
-  program: string;
-  registrationDate: Date;
-}
-
-/**
- * @category Public
- */
-export interface MemberList {
-  students: Student[];
-  teachers: Teacher[];
-}
-
-/**
- * @category Public
- */
-export interface SyllabusDay {
-  description: string;
-  startDate?: Date;
-  endDate?: Date;
-}
-
-/**
- * @category Public
- */
-export interface SyllabusReference {
-  type?: string;
-  description: string;
-}
-
-/**
- * @category Public
- */
-export interface Syllabus {
-  methods?: string;
-  assessmentProcedures?: string;
-  attendanceSchedule?: string;
-  schedule: SyllabusDay[];
-  evaluations: Exam[];
-  basicReferences: SyllabusReference[];
-  supplementaryReferences: SyllabusReference[];
-}
-
-interface UpdaterOptions<T extends UpdatableResource<U>, U> {
-  instanceOptions: U;
-  constructor: (options: U) => T;
-}
-
-/**
- * @category Public
- */
-export interface Grade {
-  name: string;
-  value?: number;
-}
-
-/**
- * @category Public
- */
-export interface SubGrade extends Grade {
-  code: string;
-}
-
-/**
- * @category Public
- */
-export interface SubGradeSumOfGrades extends SubGrade {
-  maxValue: number;
-}
-
-/**
- * @category Public
- */
-export interface SubGradeWeightedAverage extends SubGrade {
-  weight: number;
-}
-
-/**
- * @category Public
- */
-export interface GradeGroupOnlyAverage extends Grade {
-  type: 'only-average';
-}
-
-/**
- * @category Public
- */
-export interface GradeGroupWeightedAverage extends Grade {
-  grades: SubGradeWeightedAverage[];
-  type: 'weighted-average';
-}
-
-/**
- * @category Public
- */
-export interface GradeGroupSumOfGrades extends Grade {
-  grades: SubGradeSumOfGrades[];
-  type: 'sum-of-grades';
-}
-
-/**
- * @category Public
- */
-export type GradeGroup =
-  | GradeGroupSumOfGrades
-  | GradeGroupOnlyAverage
-  | GradeGroupWeightedAverage;
-
-/**
- * course in the student's view
+ * Course in the student's view.
  *
- * @category Public
+ * @category Internal
  **/
 export class SigaaCourseStudent implements CourseStudent {
   /**
-   * Course title
-   * Nome da turma
+   * @inheritdoc
    */
   readonly title;
 
   /**
-   * Course name abbreviation
-   * Código (abreviação) da turma
+   * @inheritdoc
    */
   readonly code;
 
   /**
-   * Number of students, is 0 if the course of the period is not the current one
+   * @inheritdoc
    */
   readonly numberOfStudents;
 
   /**
-   * Course Schedule
-   * Horário das aulas
+   * @inheritdoc
    */
   readonly schedule;
 
   /**
-   * Single string indicating the course
-   * String única indicando o curso
+   * @inheritdoc
    */
   readonly id;
+
+  /**
+   * @inheritdoc
+   */
   readonly period;
+
   private form;
-  private forumsIdIndex = 0;
-  private instances: Instances = {
-    lessons: [],
-    files: [],
-    homework: [],
-    forums: [],
-    quizzes: [],
-    videos: [],
-    survey: [],
-    webContents: [],
-    news: []
-  };
+
+  private resources;
+
+  private lessonParser;
+
   currentPageCache?: Page;
 
   constructor(
-    courseData: SigaaCourseStudentData,
+    courseData: CourseStudentData,
     private http: HTTP,
-    private parser: Parser
+    private parser: Parser,
+    resourcesManagerFactory: CourseResourcesManagerFactory,
+    lessonParserFactory: LessonParserFactory
   ) {
     this.id = courseData.id;
     this.title = courseData.title;
@@ -325,13 +219,19 @@ export class SigaaCourseStudent implements CourseStudent {
     this.period = courseData.period;
     this.schedule = courseData.schedule;
     this.form = courseData.form;
+
+    this.resources = resourcesManagerFactory.createCourseResourcesManager(
+      this.http,
+      this
+    );
+    this.lessonParser = lessonParserFactory.createLessonParser(this.resources);
   }
 
   /**
    * Request the course page using the course ID,
    * it is slower than requestCoursePageUsingForm,
-   * but works if the form is invalid
-   * @return response page
+   * but works if the form is invalid.
+   * @returns Response page.
    */
   private async requestCoursePageUsingId() {
     const page = await this.http.get('/sigaa/portais/discente/turmas.jsf');
@@ -367,7 +267,7 @@ export class SigaaCourseStudent implements CourseStudent {
   /**
    * Request the course page using the course POST Form,
    * it is faster than requestCoursePageUsingId,
-   * but don`t works if the form is invalid or expired
+   * but don`t works if the form is invalid or expired.
    */
   private async requestCoursePageUsingForm() {
     const page = await this.http.post(
@@ -389,631 +289,14 @@ export class SigaaCourseStudent implements CourseStudent {
 
   /**
    * Request the course page using requestCoursePageUsingForm,
-   * fallback to requestCoursePageUsingId
-   * @return {<Promise>Object} response page
+   * fallback to requestCoursePageUsingId.
+   * @returns Response page.
    */
   private async requestCoursePage(): Promise<Page> {
     if (this.currentPageCache) return this.currentPageCache;
     return this.requestCoursePageUsingForm().catch(() =>
       this.requestCoursePageUsingId()
     );
-  }
-
-  /**
-   * Returns the list of lessons
-   * Retorna a lista aulas
-   */
-  async getLessons(): Promise<SigaaLesson[]> {
-    const page = await this.requestCoursePage();
-    const lessonsElements = this.lessonGetElements(page);
-    const usedLessonsIds: string[] = [];
-    this.forumsIdIndex = 0;
-    this.closeClassInstances(this.instances.lessons, usedLessonsIds);
-    for (const lessonElement of lessonsElements) {
-      const lessonOptions = this.lessonParser(page, lessonElement);
-      usedLessonsIds.push(lessonOptions.id);
-      this.updateClassInstances(this.instances.lessons, {
-        instanceOptions: lessonOptions,
-        constructor: (lessonData: LessonData) =>
-          new SigaaLesson(lessonData, async () => {
-            await this.getLessons();
-          })
-      });
-    }
-    this.closeClassInstances(this.instances.lessons, usedLessonsIds);
-    return this.instances.lessons;
-  }
-
-  /**
-   * Parse the page and retrieves the HTML elements that are the topics of the lesson
-   * @param page
-   */
-  private lessonGetElements(page: Page): cheerio.Element[] {
-    const contentElement = page.$('#conteudo');
-
-    return contentElement.find('.topico-aula').toArray();
-  }
-
-  /**
-   * Parse each lesson topic HTML element
-   * @param page
-   */
-  private lessonParser(page: Page, lessonElement: cheerio.Element): LessonData {
-    const titleElement = page.$(lessonElement).find('.titulo');
-    const titleFull = this.parser.removeTagsHtml(titleElement.html());
-    const lessonDatesString = titleFull.slice(
-      titleFull.lastIndexOf('(') + 1,
-      titleFull.lastIndexOf(')')
-    );
-    let startDate, endDate;
-    try {
-      const lessonDate = this.parser.parseDates(lessonDatesString, 2);
-      startDate = lessonDate[0];
-      endDate = lessonDate[1];
-    } catch (err) {
-      const lessonDate = this.parser.parseDates(lessonDatesString, 1);
-      startDate = lessonDate[0];
-      endDate = lessonDate[0];
-    }
-
-    const title = titleFull.slice(0, titleFull.lastIndexOf('(')).trim();
-    const lessonContentElement = page.$(lessonElement).find('.conteudotopico');
-
-    const lessonHTML = lessonContentElement.html();
-    if (!lessonHTML) throw new Error('SIGAA: Lesson without content.');
-
-    const lessonContent = this.parser.removeTagsHtml(
-      lessonHTML.replace(/<div([\S\s]*?)div>/gm, '')
-    );
-
-    const attachments = this.parseAttachmentsFromLesson(
-      page,
-      lessonContentElement
-    );
-    const contentText = attachments.reduce((reducer, attachment) => {
-      if (attachment.type === 'text') return `${reducer}\n${attachment.body}`;
-      return reducer;
-    }, lessonContent);
-
-    const lesson: LessonData = {
-      title,
-      contentText,
-      startDate,
-      id: createHash('sha512')
-        .update(`${title} - ${startDate.toString()} - ${endDate.toString()}`)
-        .digest('hex'),
-      endDate,
-      attachments: attachments.filter(
-        (attachment) => attachment.type !== 'text'
-      ) as Attachment[]
-    };
-
-    return lesson;
-  }
-
-  /**
-   * Returns to the list of files provided by the teacher
-   */
-  async getFiles(): Promise<SigaaFile[]> {
-    const page = await this.getCourseSubMenu('Arquivos');
-    const table = page.$('.listing');
-    const usedFilesId = [];
-    if (table.length !== 0) {
-      const rows = table.find('tr[class]').toArray();
-      for (const row of rows) {
-        const cells = page.$(row).children();
-        const title = this.parser.removeTagsHtml(cells.first().html());
-        const description = this.parser.removeTagsHtml(cells.eq(1).html());
-        const buttonElement = cells.eq(3).find('a[onclick]');
-        const buttonOnclick = buttonElement.attr('onclick');
-        if (!buttonOnclick)
-          throw new Error(
-            'SIGAA: Button in the file table does not have the onclick event.'
-          );
-
-        const form = page.parseJSFCLJS(buttonOnclick);
-        const id = form.postValues['id'];
-        const key = form.postValues['key'];
-        const fileOptions = { title, description, id, key };
-        this.updateClassInstances(this.instances.files, {
-          instanceOptions: fileOptions,
-          constructor: (fileOptions: FileData) =>
-            new SigaaFile(this.http, fileOptions, async () => {
-              await this.getFiles();
-            })
-        });
-        usedFilesId.push(id);
-      }
-    }
-    this.closeClassInstances(this.instances.files, usedFilesId);
-    return this.instances.files;
-  }
-  /**
-   * Receive each class topic and parse each attachment in them
-   * @param page
-   * @param lessonContentElement
-   */
-  private parseAttachmentsFromLesson(
-    page: Page,
-    lessonContentElement: cheerio.Cheerio
-  ): (Attachment | TextAttachment)[] {
-    const lessonAttachments: (Attachment | TextAttachment)[] = [];
-    const attachmentElements = lessonContentElement
-      .find('span[id] > div.item')
-      .toArray();
-    if (attachmentElements.length !== 0) {
-      for (const attachmentElement of attachmentElements) {
-        const iconElement = page.$(attachmentElement).find('img');
-        const iconSrc = iconElement.attr('src');
-        try {
-          if (iconSrc === undefined) {
-            const attachmentText: TextAttachment = {
-              type: 'text',
-              body: this.parser.removeTagsHtml(page.$(attachmentElement).html())
-            };
-            lessonAttachments.push(attachmentText);
-          } else if (iconSrc.includes('questionario.png')) {
-            const quiz = this.parseAttachmentQuiz(page, attachmentElement);
-            lessonAttachments.push(quiz);
-          } else if (iconSrc.includes('video.png')) {
-            const video = this.parseAttachmentVideo(page, attachmentElement);
-            lessonAttachments.push(video);
-          } else if (iconSrc.includes('tarefa.png')) {
-            const homework = this.parseAttachmentHomework(
-              page,
-              attachmentElement
-            );
-            lessonAttachments.push(homework);
-          } else if (iconSrc.includes('pesquisa.png')) {
-            const survey = this.parseAttachmentSurvey(page, attachmentElement);
-            lessonAttachments.push(survey);
-          } else if (iconSrc.includes('conteudo.png')) {
-            const webContents = this.parseAttachmentWebContent(
-              page,
-              attachmentElement
-            );
-            lessonAttachments.push(webContents);
-          } else if (iconSrc.includes('forumava.png')) {
-            const genericOptions = this.parseAttachmentGeneric(
-              page,
-              attachmentElement
-            );
-            const forumOptions: ForumData = {
-              ...genericOptions,
-              id: this.forumsIdIndex.toString(),
-              isMain: true
-            };
-
-            this.forumsIdIndex++;
-            const forum = this.updateClassInstances(this.instances.forums, {
-              instanceOptions: forumOptions,
-              constructor: (options: ForumData) =>
-                new SigaaCourseForum(
-                  this.http,
-                  this.parser,
-                  options,
-                  async () => {
-                    await this.getForums();
-                  }
-                )
-            });
-            lessonAttachments.push(forum);
-          } else if (iconSrc.includes('portal_turma/site_add.png')) {
-            const link = this.parseAttachmentLink(page, attachmentElement);
-            lessonAttachments.push(link);
-          } else {
-            const file = this.parseAttachmentFile(page, attachmentElement);
-            lessonAttachments.push(file);
-          }
-        } catch (error) {
-          error.iconSrc = iconSrc;
-          error.htmlAttachment = page.$(attachmentElement).html();
-          throw error;
-        }
-      }
-    }
-    return lessonAttachments;
-  }
-
-  /**
-   * Parse the file attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentFile(page: Page, attachmentElement: cheerio.Element) {
-    const fileOptions: FileData = this.parseAttachmentGeneric(
-      page,
-      attachmentElement
-    );
-    return this.updateClassInstances(this.instances.files, {
-      instanceOptions: fileOptions,
-      constructor: (fileOptions: FileData) =>
-        new SigaaFile(this.http, fileOptions, async () => {
-          await this.getFiles();
-        })
-    });
-  }
-
-  /**
-   * Parse the web content attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentWebContent(
-    page: Page,
-    attachmentElement: cheerio.Element
-  ) {
-    const webContentOptions = this.parseAttachmentGeneric(
-      page,
-      attachmentElement
-    );
-    const webContents = this.updateClassInstances(this.instances.webContents, {
-      instanceOptions: webContentOptions,
-
-      constructor: (webContentOptions: WebContentData) =>
-        new SigaaWebContent(
-          this.http,
-          this.parser,
-          webContentOptions,
-          async () => {
-            await this.getWebContents();
-          }
-        )
-    });
-    return webContents;
-  }
-
-  /**
-   * Parse a generic attachment (a link) attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentGeneric(
-    page: Page,
-    attachmentElement: cheerio.Element
-  ): GenericAttachmentData {
-    const titleElement = page
-      .$(attachmentElement)
-      .find('span')
-      .children()
-      .first();
-    const title = this.parser.removeTagsHtml(titleElement.html());
-    const titleOnClick = titleElement.attr('onclick');
-    if (!titleOnClick)
-      throw new Error('SIGAA: Attachment title without onclick event.');
-    const form = page.parseJSFCLJS(titleOnClick);
-    const id = form.postValues.id;
-    const descriptionElement = page
-      .$(attachmentElement)
-      .find('div.descricao-item');
-    const description = this.parser.removeTagsHtml(descriptionElement.html());
-    return {
-      title,
-      form,
-      id,
-      description
-    };
-  }
-
-  /**
-   * Parse the survey (Enquete) attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentSurvey(
-    page: Page,
-    attachmentElement: cheerio.Element
-  ): SigaaSurvey {
-    const titleElement = page.$(attachmentElement).find('span > a');
-    const title = this.parser.removeTagsHtml(titleElement.html());
-    const titleOnClick = titleElement.attr('onclick');
-    if (!titleOnClick)
-      throw new Error('SIGAA: Survey title without onclick event.');
-    const form = page.parseJSFCLJS(titleOnClick);
-    const surveyOptions = {
-      title,
-      form,
-      id: form.postValues.id
-    };
-    return this.updateClassInstances(this.instances.survey, {
-      instanceOptions: surveyOptions,
-      constructor: (surveyOptions: SurveyData) =>
-        new SigaaSurvey(surveyOptions, async () => {
-          await this.getSurveys();
-        })
-    });
-  }
-
-  /**
-   * Parse the homework attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentHomework(
-    page: Page,
-    attachmentElement: cheerio.Element
-  ): SigaaHomework {
-    const titleElement = page.$(attachmentElement).find('span > a');
-    const titleOnClick = titleElement.attr('onclick');
-    if (!titleOnClick)
-      throw new Error('SIGAA: Homework title without onclick event.');
-    const form = page.parseJSFCLJS(titleOnClick);
-    const id = form.postValues.id;
-    const title = this.parser.removeTagsHtml(titleElement.html());
-    const descriptionElement = page
-      .$(attachmentElement)
-      .find('div.descricao-item');
-    const description = this.parser.removeTagsHtml(descriptionElement.html());
-    const dates = this.parser.parseDates(description, 2);
-    const startDate = dates[0];
-    const endDate = dates[1];
-    const homeworkOptions = {
-      id,
-      title,
-      startDate,
-      endDate
-    };
-
-    return this.updateClassInstances(this.instances.homework, {
-      instanceOptions: homeworkOptions,
-      constructor: (homeworkOptions: HomeworkData) =>
-        new SigaaHomework(this.http, homeworkOptions, async () => {
-          await this.getHomeworks();
-        })
-    });
-  }
-
-  /**
-   * Parse the video attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentVideo(
-    page: Page,
-    attachmentElement: cheerio.Element
-  ): VideoAttachment {
-    const titleElement = page
-      .$(attachmentElement)
-      .find('span[id] > span[id] a');
-    const href = titleElement.attr('href');
-    const descriptionElement = page
-      .$(attachmentElement)
-      .find('div.descricao-item');
-
-    const description = this.parser.removeTagsHtml(descriptionElement.html());
-    let title = this.parser.removeTagsHtml(titleElement.html());
-    let src: string;
-    if (href) {
-      title = title.replace(/\(Link Externo\)$/g, '');
-      src = href;
-    } else {
-      const titleElement = page
-        .$(attachmentElement)
-        .find('span[id] > span[id]');
-      title = this.parser.removeTagsHtml(titleElement.html());
-      const srcIframe = page.$(attachmentElement).find('iframe').attr('src');
-      if (!srcIframe) throw new Error('SIGAA: Video iframe without url.');
-      src = srcIframe;
-    }
-
-    return {
-      type: 'video',
-      title,
-      src,
-      description
-    };
-  }
-
-  /**
-   * Parse the external link attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentLink(
-    page: Page,
-    attachmentElement: cheerio.Element
-  ): LinkAttachment {
-    const type = 'link';
-
-    const titleElement = page.$(attachmentElement).find('span[id] > a');
-    const title = this.parser.removeTagsHtml(titleElement.html());
-    const href = titleElement.attr('href');
-    if (!href) throw new Error('SIGAA: Link attachment does not have href.');
-
-    const descriptionElement = page
-      .$(attachmentElement)
-      .find('div.descricao-item');
-    const description = this.parser.removeTagsHtml(descriptionElement.html());
-    return {
-      type,
-      title,
-      href,
-      description
-    };
-  }
-
-  /**
-   * Parse the quiz (questionário) attached to the lesson topic
-   * @param page
-   * @param attachmentElement
-   */
-  private parseAttachmentQuiz(
-    page: Page,
-    attachmentElement: cheerio.Element
-  ): SigaaQuiz {
-    const titleElement = page.$(attachmentElement).find('span > a');
-    const title = this.parser.removeTagsHtml(titleElement.html());
-    const onClick = titleElement.attr('onclick');
-
-    if (!onClick)
-      throw new Error('SIGAA: Quiz attachment without onclick event.');
-
-    const form = page.parseJSFCLJS(onClick);
-    const id = form.postValues.id;
-    const descriptionElement = page
-
-      .$(attachmentElement)
-      .find('div.descricao-item');
-    const description = this.parser.removeTagsHtml(descriptionElement.html());
-    const dates = this.parser.parseDates(description, 2);
-    const startDate = dates[0];
-    const endDate = dates[1];
-
-    const quizOptions = {
-      title,
-      id,
-      startDate,
-      endDate
-    };
-    return this.updateClassInstances(this.instances.quizzes, {
-      instanceOptions: quizOptions,
-      constructor: (quizOptions: QuizData) =>
-        new SigaaQuiz(this.http, quizOptions, async () => {
-          await this.getQuizzes();
-        })
-    });
-  }
-
-  /**
-   * Returns the courses forum
-   */
-  async getForums(): Promise<SigaaCourseForum[]> {
-    const page = await this.getCourseSubMenu('Fóruns');
-
-    const table = page.$('.listing');
-    const usedForumIds: string[] = [];
-    if (table.length !== 0) {
-      let forumsIdIndex = 0;
-      const rows = table.find('tr[class]').toArray();
-      for (const row of rows) {
-        const cells = page.$(row).children();
-        const titleElement = cells.first().find('a');
-        const title = this.parser.removeTagsHtml(titleElement.html());
-        const forumType = this.parser.removeTagsHtml(cells.eq(1).html());
-        const numOfTopics = parseInt(
-          this.parser.removeTagsHtml(cells.eq(2).html()),
-          10
-        );
-        const author = this.parser.removeTagsHtml(cells.eq(3).html());
-        const creationDate = this.parser.parseDates(
-          this.parser.removeTagsHtml(cells.eq(4).html()),
-          1
-        )[0];
-        const titleOnClick = titleElement.attr('onclick');
-        if (!titleOnClick)
-          throw new Error('SIGAA: Forum title does not have onclick event.');
-
-        const form = page.parseJSFCLJS(titleOnClick);
-        const id = forumsIdIndex;
-        forumsIdIndex++;
-        const forumOptions: ForumData = {
-          title,
-          id: id.toString(),
-          forumType,
-          numOfTopics: numOfTopics,
-          author,
-          creationDate,
-          form,
-          isMain: true
-        };
-        this.updateClassInstances(this.instances.forums, {
-          instanceOptions: forumOptions,
-          constructor: (options: ForumData) =>
-            new SigaaCourseForum(this.http, this.parser, options, async () => {
-              await this.getForums();
-            })
-        });
-        usedForumIds.push(id.toString());
-      }
-    }
-    this.closeClassInstances(this.instances.forums, usedForumIds);
-    return this.instances.forums;
-  }
-
-  /**
-   * Returns the courses news
-   */
-  async getNews(): Promise<SigaaNews[]> {
-    const page = await this.getCourseSubMenu('Notícias');
-    const table = page.$('.listing');
-    const usedNewsId = [];
-    if (table.length !== 0) {
-      const rows = table.find('tr[class]').toArray();
-      for (const row of rows) {
-        const cell = page.$(row).children();
-        const title = this.parser.removeTagsHtml(cell.first().html());
-
-        const buttonElement = cell.eq(2).children().first();
-        const buttonOnClick = buttonElement.attr('onclick');
-        if (!buttonOnClick)
-          throw new Error(
-            'SIGAA: News onclick button does not have onclick event.'
-          );
-
-        const form = page.parseJSFCLJS(buttonOnClick);
-        const id = form.postValues.id;
-        const newsOptions: NewsData = { title, form, id };
-        this.updateClassInstances(this.instances.news, {
-          instanceOptions: newsOptions,
-          constructor: (newsOptions: NewsData) =>
-            new SigaaNews(this.http, this.parser, newsOptions, async () => {
-              await this.getNews();
-            })
-        });
-        usedNewsId.push(id);
-      }
-    }
-    this.closeClassInstances(this.instances.news, usedNewsId);
-    return this.instances.news;
-  }
-
-  /**
-   * Returns your absences
-   */
-  async getAbsence(): Promise<AbsenceList> {
-    const page = await this.getCourseSubMenu('Frequência');
-    const table = page.$('.listing');
-    const absences: AbsenceDay[] = [];
-    const rows = table.find('tr[class]').toArray();
-    for (const row of rows) {
-      const cells = page.$(row).children();
-      const date = this.parser.removeTagsHtml(cells.first().html());
-      const absenceString = this.parser.removeTagsHtml(cells.eq(1).html());
-      let numOfAbsences;
-      if (absenceString === '' || absenceString === 'Não Informada') {
-        continue;
-      } else if (absenceString === 'Presente') {
-        numOfAbsences = 0;
-      } else {
-        numOfAbsences = parseInt(absenceString.replace(/\D/gm, ''), 10);
-      }
-      absences.push({
-        date: this.parser.parseDates(date, 1)[0],
-        numOfAbsences
-      });
-    }
-    const details = this.parser
-      .removeTagsHtml(page.$('.botoes-show').html())
-      .split('\n');
-
-    let totalAbsences, maxAbsences;
-
-    for (const detail of details) {
-      if (detail.includes('Total de Faltas')) {
-        totalAbsences = parseInt(detail.replace(/\D/gm, ''), 10);
-      } else if (detail.includes('Máximo de Faltas Permitido')) {
-        maxAbsences = parseInt(detail.replace(/\D/gm, ''), 10);
-      }
-    }
-
-    if (typeof maxAbsences !== 'number' || typeof totalAbsences !== 'number')
-      throw new Error('SIGAA: Invalid absence page format.');
-
-    return {
-      list: absences,
-      totalAbsences,
-      maxAbsences
-    };
   }
 
   /**
@@ -1090,6 +373,177 @@ export class SigaaCourseStudent implements CourseStudent {
   }
 
   /**
+   * @inheritdoc
+   */
+  async getLessons(): Promise<Lesson[]> {
+    const page = await this.requestCoursePage();
+    this.lessonParser.parserPage(page);
+    return this.resources.lessons.instances;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async getFiles(): Promise<File[]> {
+    const page = await this.getCourseSubMenu('Arquivos');
+    const table = page.$('.listing');
+    const usedFilesId = [];
+    if (table.length !== 0) {
+      const rows = table.find('tr[class]').toArray();
+      for (const row of rows) {
+        const cells = page.$(row).children();
+        const title = this.parser.removeTagsHtml(cells.first().html());
+        const description = this.parser.removeTagsHtml(cells.eq(1).html());
+        const buttonElement = cells.eq(3).find('a[onclick]');
+        const buttonOnclick = buttonElement.attr('onclick');
+        if (!buttonOnclick)
+          throw new Error(
+            'SIGAA: Button in the file table does not have the onclick event.'
+          );
+
+        const form = page.parseJSFCLJS(buttonOnclick);
+        const id = form.postValues['id'];
+        const key = form.postValues['key'];
+        const fileOptions = { title, description, id, key };
+        this.resources.files.upsert(fileOptions);
+        usedFilesId.push(id);
+      }
+    }
+    this.resources.files.keepOnly(usedFilesId);
+    return this.resources.files.instances;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async getForums(): Promise<CourseForum[]> {
+    const page = await this.getCourseSubMenu('Fóruns');
+
+    const table = page.$('.listing');
+    const usedForumIds: string[] = [];
+    if (table.length !== 0) {
+      let forumsIdIndex = 0;
+      const rows = table.find('tr[class]').toArray();
+      for (const row of rows) {
+        const cells = page.$(row).children();
+        const titleElement = cells.first().find('a');
+        const title = this.parser.removeTagsHtml(titleElement.html());
+        const forumType = this.parser.removeTagsHtml(cells.eq(1).html());
+        const numOfTopics = parseInt(
+          this.parser.removeTagsHtml(cells.eq(2).html()),
+          10
+        );
+        const author = this.parser.removeTagsHtml(cells.eq(3).html());
+        const creationDate = this.parser.parseDates(
+          this.parser.removeTagsHtml(cells.eq(4).html()),
+          1
+        )[0];
+        const titleOnClick = titleElement.attr('onclick');
+        if (!titleOnClick)
+          throw new Error('SIGAA: Forum title does not have onclick event.');
+
+        const form = page.parseJSFCLJS(titleOnClick);
+        const id = forumsIdIndex;
+        forumsIdIndex++;
+        const forumOptions: ForumData = {
+          title,
+          id: id.toString(),
+          forumType,
+          numOfTopics: numOfTopics,
+          author,
+          creationDate,
+          form,
+          isMain: true
+        };
+        this.resources.forums.upsert(forumOptions);
+        usedForumIds.push(id.toString());
+      }
+    }
+    this.resources.forums.keepOnly(usedForumIds);
+    return this.resources.forums.instances;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async getNews(): Promise<News[]> {
+    const page = await this.getCourseSubMenu('Notícias');
+    const table = page.$('.listing');
+    const usedNewsId = [];
+    if (table.length !== 0) {
+      const rows = table.find('tr[class]').toArray();
+      for (const row of rows) {
+        const cell = page.$(row).children();
+        const title = this.parser.removeTagsHtml(cell.first().html());
+
+        const buttonElement = cell.eq(2).children().first();
+        const buttonOnClick = buttonElement.attr('onclick');
+        if (!buttonOnClick)
+          throw new Error(
+            'SIGAA: News onclick button does not have onclick event.'
+          );
+
+        const form = page.parseJSFCLJS(buttonOnClick);
+        const id = form.postValues.id;
+        const newsOptions: NewsData = { title, form, id };
+        this.resources.news.upsert(newsOptions);
+        usedNewsId.push(id);
+      }
+    }
+    this.resources.news.keepOnly(usedNewsId);
+    return this.resources.news.instances;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async getAbsence(): Promise<AbsenceList> {
+    const page = await this.getCourseSubMenu('Frequência');
+    const table = page.$('.listing');
+    const absences: AbsenceDay[] = [];
+    const rows = table.find('tr[class]').toArray();
+    for (const row of rows) {
+      const cells = page.$(row).children();
+      const date = this.parser.removeTagsHtml(cells.first().html());
+      const absenceString = this.parser.removeTagsHtml(cells.eq(1).html());
+      let numOfAbsences;
+      if (absenceString === '' || absenceString === 'Não Informada') {
+        continue;
+      } else if (absenceString === 'Presente') {
+        numOfAbsences = 0;
+      } else {
+        numOfAbsences = parseInt(absenceString.replace(/\D/gm, ''), 10);
+      }
+      absences.push({
+        date: this.parser.parseDates(date, 1)[0],
+        numOfAbsences
+      });
+    }
+    const details = this.parser
+      .removeTagsHtml(page.$('.botoes-show').html())
+      .split('\n');
+
+    let totalAbsences, maxAbsences;
+
+    for (const detail of details) {
+      if (detail.includes('Total de Faltas')) {
+        totalAbsences = parseInt(detail.replace(/\D/gm, ''), 10);
+      } else if (detail.includes('Máximo de Faltas Permitido')) {
+        maxAbsences = parseInt(detail.replace(/\D/gm, ''), 10);
+      }
+    }
+
+    if (typeof maxAbsences !== 'number' || typeof totalAbsences !== 'number')
+      throw new Error('SIGAA: Invalid absence page format.');
+
+    return {
+      list: absences,
+      totalAbsences,
+      maxAbsences
+    };
+  }
+
+  /**
    * Parse the side evaluation card and returns the name of each evaluation and the date if it has
    */
   async getExamCalendar(): Promise<Exam[]> {
@@ -1126,7 +580,10 @@ export class SigaaCourseStudent implements CourseStudent {
     return examList;
   }
 
-  async getQuizzes(): Promise<SigaaQuiz[]> {
+  /**
+   * @inheritdoc
+   */
+  async getQuizzes(): Promise<Quiz[]> {
     const page = await this.getCourseSubMenu('Questionários');
 
     const table = page.$('.listing');
@@ -1169,10 +626,10 @@ export class SigaaCourseStudent implements CourseStudent {
       const form = formSendAnswers || formViewAnswersSubmitted;
       let id;
       if (!form) {
-        if (!this.instances.lessons) {
+        if (!this.resources.lessons.instances.length) {
           await this.getLessons();
         }
-        const quiz = this.instances.quizzes.find(
+        const quiz = this.resources.quizzes.instances.find(
           (quiz) => quiz.title === title
         );
         if (quiz) {
@@ -1192,20 +649,17 @@ export class SigaaCourseStudent implements CourseStudent {
         formSendAnswers,
         formViewAnswersSubmitted
       };
-      this.updateClassInstances(this.instances.quizzes, {
-        instanceOptions: quizOptions,
-        constructor: (quizOptions: QuizData) =>
-          new SigaaQuiz(this.http, quizOptions, async () => {
-            await this.getQuizzes();
-          })
-      });
+      this.resources.quizzes.upsert(quizOptions);
       usedQuizzesIds.push(id);
     }
-    this.closeClassInstances(this.instances.quizzes, usedQuizzesIds);
-    return this.instances.quizzes;
+    this.resources.quizzes.keepOnly(usedQuizzesIds);
+    return this.resources.quizzes.instances;
   }
 
-  async getWebContents(): Promise<SigaaWebContent[]> {
+  /**
+   * @inheritdoc
+   */
+  async getWebContents(): Promise<WebContent[]> {
     const page = await this.getCourseSubMenu('Conteúdo/Página web');
 
     const table = page.$('.listing');
@@ -1237,30 +691,26 @@ export class SigaaCourseStudent implements CourseStudent {
           form,
           id
         };
-
-        this.updateClassInstances(this.instances.webContents, {
-          instanceOptions: webContentOptions,
-          constructor: (options: WebContentData) =>
-            new SigaaWebContent(this.http, this.parser, options, async () => {
-              await this.getWebContents();
-            })
-        });
+        this.resources.webContents.upsert(webContentOptions);
         usedWebContentsIds.push(id);
       }
     }
-    this.closeClassInstances(this.instances.webContents, usedWebContentsIds);
-    return this.instances.webContents;
+    this.resources.webContents.keepOnly(usedWebContentsIds);
+    return this.resources.webContents.instances;
   }
 
   /**
-   * To do
+   * @inheritdoc
    */
   async getSurveys(): Promise<SigaaSurvey[]> {
     // TODO
     throw new Error('SIGAA: getSurveys not implemented.');
   }
 
-  async getHomeworks(): Promise<SigaaHomework[]> {
+  /**
+   * @inheritdoc
+   */
+  async getHomeworks(): Promise<Homework[]> {
     const page = await this.getCourseSubMenu('Tarefas');
 
     const table = page.$('.listing');
@@ -1300,10 +750,10 @@ export class SigaaCourseStudent implements CourseStudent {
       const form = formSendHomework || formViewHomeworkSubmitted;
       let id;
       if (!form) {
-        if (!this.instances.lessons) {
+        if (!this.resources.lessons.instances.length) {
           await this.getLessons();
         }
-        const homework = this.instances.homework.find(
+        const homework = this.resources.homework.instances.find(
           (homework) => homework.title === title
         );
         if (homework) {
@@ -1324,82 +774,15 @@ export class SigaaCourseStudent implements CourseStudent {
         formViewHomeworkSubmitted,
         haveGrade
       };
-
-      this.updateClassInstances(this.instances.homework, {
-        instanceOptions: homeworkOptions,
-        constructor: (options: HomeworkData) =>
-          new SigaaHomework(this.http, options, async () => {
-            await this.getHomeworks();
-          })
-      });
+      this.resources.homework.upsert(homeworkOptions);
       usedHomeworksIds.push(id);
     }
-    this.closeClassInstances(this.instances.homework, usedHomeworksIds);
-    return this.instances.homework;
+    this.resources.homework.keepOnly(usedHomeworksIds);
+    return this.resources.homework.instances;
   }
 
   /**
-   * Closes and removes the instance if not in idsToKeep.
-   * @param instances array of current instances.
-   * @param idsToKeep array with ids to keep E.g. ["1234", "4321"]
-   */
-  private closeClassInstances<T>(
-    instances: UpdatableResource<T>[],
-    idsToKeep: string[]
-  ): UpdatableResource<T>[] {
-    return (instances = instances.filter((instance) => {
-      try {
-        if (idsToKeep.includes(instance.id)) {
-          return true;
-        } else {
-          instance.close();
-          return false;
-        }
-      } catch (err) {
-        return false;
-      }
-    }));
-  }
-
-  /**
-   * Update instance with new information
-   * If there is an instance with the ID equal to options.id and
-   * the same type, the update method will be called with
-   * instanceOptions
-   * E.g. instance.update(options.instanceOptions)
-   * or create new instance with constructor
-   * @param options
-   * @param options.instanceOptions Object with new informations
-   * @param options.constructor Constructor if no instance with id
-   * @return return the instance updated/created
-   */
-  private updateClassInstances<
-    T extends UpdatableResource<U>,
-    U extends WithId
-  >(instances: T[], options: UpdaterOptions<T, U>): T {
-    const { instanceOptions, constructor } = options;
-
-    const instance = instances.find((classItem) => {
-      try {
-        return instanceOptions.id === classItem.id;
-      } catch (err) {
-        return false;
-      }
-    });
-
-    if (!instance) {
-      const newInstance = constructor(instanceOptions);
-      instances.push(newInstance);
-      return newInstance;
-    } else {
-      instance.update(instanceOptions);
-      return instance;
-    }
-  }
-
-  /**
-   * Get members object
-   * @returns {Promise<object>}
+   * @inheritdoc
    */
   async getMembers(): Promise<MemberList> {
     const page = await this.getCourseSubMenu('Participantes');
@@ -1585,7 +968,7 @@ export class SigaaCourseStudent implements CourseStudent {
   }
 
   /**
-   * Get grades array
+   * @inheritdoc
    */
   async getGrades(): Promise<GradeGroup[]> {
     const page = await this.getCourseSubMenu('Ver Notas');
@@ -1729,7 +1112,7 @@ export class SigaaCourseStudent implements CourseStudent {
   }
 
   /**
-   * Get Syllabus (Plano de ensino)
+   * @inheritdoc
    */
   async getSyllabus(): Promise<Syllabus> {
     const page = await this.getCourseSubMenu('Plano de Ensino');

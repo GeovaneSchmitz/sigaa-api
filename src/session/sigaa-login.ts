@@ -11,10 +11,10 @@ import { Session } from './sigaa-session';
  */
 export interface Login {
   /**
-   * login on Sigaa
+   * Login on Sigaa
    * @param username
    * @param password'
-   * @returns login page result
+   * @returns Login page result.
    */
   login(username: string, password: string): Promise<Page>;
 }
