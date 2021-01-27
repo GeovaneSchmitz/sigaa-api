@@ -120,13 +120,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Sigaa<wbr>Student<wbr>Bond<span class="tsd-signature-symbol">(</span>http<span class="tsd-signature-symbol">: </span><a href="../interfaces/http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a>, parser<span class="tsd-signature-symbol">: </span><a href="../interfaces/parser.html" class="tsd-signature-type" data-tsd-kind="Interface">Parser</a>, program<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, registration<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, bondSwitchUrl<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">URL</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaastudentbond.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaStudentBond</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Sigaa<wbr>Student<wbr>Bond<span class="tsd-signature-symbol">(</span>http<span class="tsd-signature-symbol">: </span><a href="../interfaces/http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a>, parser<span class="tsd-signature-symbol">: </span><a href="../interfaces/parser.html" class="tsd-signature-type" data-tsd-kind="Interface">Parser</a>, courseFactory<span class="tsd-signature-symbol">: </span><a href="../interfaces/coursefactory.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseFactory</a>, program<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, registration<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, bondSwitchUrl<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">URL</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaastudentbond.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaStudentBond</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/bonds/sigaa-student-bond.ts#L33">src/bonds/sigaa-student-bond.ts:33</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/a3c3806/src/bonds/sigaa-student-bond.ts#L36">src/bonds/sigaa-student-bond.ts:36</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -136,6 +136,9 @@
 								</li>
 								<li>
 									<h5>parser: <a href="../interfaces/parser.html" class="tsd-signature-type" data-tsd-kind="Interface">Parser</a></h5>
+								</li>
+								<li>
+									<h5>courseFactory: <a href="../interfaces/coursefactory.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseFactory</a></h5>
 								</li>
 								<li>
 									<h5>program: <span class="tsd-signature-type">string</span></h5>
@@ -184,7 +187,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/studentbond.html">StudentBond</a>.<a href="../interfaces/studentbond.html#type">type</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/bonds/sigaa-student-bond.ts#L42">src/bonds/sigaa-student-bond.ts:42</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/a3c3806/src/bonds/sigaa-student-bond.ts#L46">src/bonds/sigaa-student-bond.ts:46</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -195,14 +198,14 @@
 					<a name="getcourses" class="tsd-anchor"></a>
 					<h3>get<wbr>Courses</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Courses<span class="tsd-signature-symbol">(</span>allPeriods<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="sigaacoursestudent.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaCourseStudent</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Courses<span class="tsd-signature-symbol">(</span>allPeriods<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/coursestudent.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseStudent</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/studentbond.html">StudentBond</a>.<a href="../interfaces/studentbond.html#getcourses">getCourses</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/bonds/sigaa-student-bond.ts#L49">src/bonds/sigaa-student-bond.ts:49</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/a3c3806/src/bonds/sigaa-student-bond.ts#L53">src/bonds/sigaa-student-bond.ts:53</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -219,7 +222,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="sigaacoursestudent.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaCourseStudent</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/coursestudent.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseStudent</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
 							<p>Promise with array of courses.</p>
 						</li>
 					</ul>

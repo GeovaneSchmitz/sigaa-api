@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>GenericAttachmentData | sigaa-api</title>
+	<title>CourseResourcesManagerFactory | sigaa-api</title>
 	<meta name="description" content="Documentation for sigaa-api">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,22 +55,35 @@
 					<a href="../modules.html">sigaa-api</a>
 				</li>
 				<li>
-					<a href="genericattachmentdata.html">GenericAttachmentData</a>
+					<a href="courseresourcesmanagerfactory.html">CourseResourcesManagerFactory</a>
 				</li>
 			</ul>
-			<h1>Interface GenericAttachmentData</h1>
+			<h1>Interface CourseResourcesManagerFactory</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>Abstraction to represent the class that create instances of CourseResourceManager.</p>
+					</div>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">GenericAttachmentData</span>
+						<span class="target">CourseResourcesManagerFactory</span>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implemented by</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../classes/sigaacourseresourcemanagerfactory.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaCourseResourceManagerFactory</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -78,58 +91,41 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
+							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="genericattachmentdata.html#description" class="tsd-kind-icon">description</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="genericattachmentdata.html#form" class="tsd-kind-icon">form</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="genericattachmentdata.html#id" class="tsd-kind-icon">id</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="genericattachmentdata.html#title" class="tsd-kind-icon">title</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="courseresourcesmanagerfactory.html#createcourseresourcesmanager" class="tsd-kind-icon">create<wbr>Course<wbr>Resources<wbr>Manager</a></li>
 							</ul>
 						</section>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="description" class="tsd-anchor"></a>
-					<h3>description</h3>
-					<div class="tsd-signature tsd-kind-icon">description<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/sigaa-course-student.ts#L69">src/courses/sigaa-course-student.ts:69</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="form" class="tsd-anchor"></a>
-					<h3>form</h3>
-					<div class="tsd-signature tsd-kind-icon">form<span class="tsd-signature-symbol">:</span> <a href="sigaaform.html" class="tsd-signature-type" data-tsd-kind="Interface">SigaaForm</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/sigaa-course-student.ts#L70">src/courses/sigaa-course-student.ts:70</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="id" class="tsd-anchor"></a>
-					<h3>id</h3>
-					<div class="tsd-signature tsd-kind-icon">id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/sigaa-course-student.ts#L71">src/courses/sigaa-course-student.ts:71</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="title" class="tsd-anchor"></a>
-					<h3>title</h3>
-					<div class="tsd-signature tsd-kind-icon">title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/sigaa-course-student.ts#L68">src/courses/sigaa-course-student.ts:68</a></li>
-						</ul>
-					</aside>
+				<h2>Methods</h2>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="createcourseresourcesmanager" class="tsd-anchor"></a>
+					<h3>create<wbr>Course<wbr>Resources<wbr>Manager</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Course<wbr>Resources<wbr>Manager<span class="tsd-signature-symbol">(</span>http<span class="tsd-signature-symbol">: </span><a href="http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a>, course<span class="tsd-signature-symbol">: </span><a href="coursestudent.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseStudent</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/courseresourcesmanager.html" class="tsd-signature-type" data-tsd-kind="Class">CourseResourcesManager</a></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/a3c3806/src/courses/sigaa-course-resources-manager-factory.ts#L11">src/courses/sigaa-course-resources-manager-factory.ts:11</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>http: <a href="http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a></h5>
+								</li>
+								<li>
+									<h5>course: <a href="coursestudent.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseStudent</a></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <a href="../classes/courseresourcesmanager.html" class="tsd-signature-type" data-tsd-kind="Class">CourseResourcesManager</a></h4>
+						</li>
+					</ul>
 				</section>
 			</section>
 		</div>
@@ -146,19 +142,10 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="genericattachmentdata.html" class="tsd-kind-icon">Generic<wbr>Attachment<wbr>Data</a>
+						<a href="courseresourcesmanagerfactory.html" class="tsd-kind-icon">Course<wbr>Resources<wbr>Manager<wbr>Factory</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="genericattachmentdata.html#description" class="tsd-kind-icon">description</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="genericattachmentdata.html#form" class="tsd-kind-icon">form</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="genericattachmentdata.html#id" class="tsd-kind-icon">id</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="genericattachmentdata.html#title" class="tsd-kind-icon">title</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="courseresourcesmanagerfactory.html#createcourseresourcesmanager" class="tsd-kind-icon">create<wbr>Course<wbr>Resources<wbr>Manager</a>
 							</li>
 						</ul>
 					</li>
