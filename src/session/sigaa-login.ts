@@ -24,10 +24,10 @@ export interface Login {
  * @category Internal
  */
 export class SigaaLogin implements Login {
-  constructor(private http: HTTP, private session: Session) {}
+  constructor(protected http: HTTP, protected session: Session) {}
   readonly errorInvalidCredentials = 'SIGAA: Invalid credentials.';
 
-  private parseLoginForm(page: Page): SigaaForm {
+  protected parseLoginForm(page: Page): SigaaForm {
     const formElement = page.$("form[name='loginForm']");
 
     const actionUrl = formElement.attr('action');
@@ -49,7 +49,7 @@ export class SigaaLogin implements Login {
   /**
    * Current login form.
    */
-  private form?: SigaaForm;
+  protected form?: SigaaForm;
 
   /**
    * Retuns HTML form
@@ -68,7 +68,7 @@ export class SigaaLogin implements Login {
    * @param username
    * @param password
    */
-  private async desktopLogin(
+  protected async desktopLogin(
     username: string,
     password: string
   ): Promise<Page> {
@@ -100,7 +100,7 @@ export class SigaaLogin implements Login {
     }
   }
 
-  private async parseDesktopLoginResult(page: Page): Promise<Page> {
+  protected async parseDesktopLoginResult(page: Page): Promise<Page> {
     const accountPage = await this.http.followAllRedirect(page);
     if (accountPage.body.includes('Entrar no Sistema')) {
       if (accountPage.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
