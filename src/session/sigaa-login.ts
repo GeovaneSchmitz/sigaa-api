@@ -31,7 +31,6 @@ export class SigaaLogin implements Login {
     const formElement = page.$("form[name='loginForm']");
 
     const actionUrl = formElement.attr('action');
-
     if (!actionUrl) throw new Error('SIGAA: No action form on login page.');
 
     const action = new URL(actionUrl, page.url.href);
@@ -103,7 +102,7 @@ export class SigaaLogin implements Login {
   protected async parseDesktopLoginResult(page: Page): Promise<Page> {
     const accountPage = await this.http.followAllRedirect(page);
     if (accountPage.body.includes('Entrar no Sistema')) {
-      if (accountPage.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
+      if (accountPage.body.includes('Usuário e/ou senha inválidos')) {
         this.form = await this.parseLoginForm(accountPage);
         throw new Error(this.errorInvalidCredentials);
       } else {

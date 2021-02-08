@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as stream from 'stream';
+import iconv from 'iconv-lite';
 import FormData from 'formdata-node/type/FormData';
 import { URL } from 'url';
 import { request as HTTPRequest, RequestOptions } from 'https';
@@ -321,8 +322,12 @@ export class SigaaHTTP implements HTTP {
   ): Promise<Buffer> {
     const buffers: Uint8Array[] = [];
     return new Promise((resolve, reject) => {
-      stream.on('data', (buffer: Uint8Array) => {
-        buffers.push(buffer);
+      stream.on('data', (data: Uint8Array | string) => {
+        if (typeof data === 'string') {
+          buffers.push(Buffer.from(data));
+        } else {
+          buffers.push(data);
+        }
       });
 
       stream.on('close', () => {
@@ -525,8 +530,26 @@ export class SigaaHTTP implements HTTP {
       if (Array.isArray(response.headers.location)) {
         response.headers.location = response.headers.location[0];
       }
+
+      const contentTypeEncoding = response.headers['content-type']?.match(
+        /charset=[^;]+/
+      );
+
+      let bodyStream:
+        | http.IncomingMessage
+        | stream.Transform
+        | NodeJS.ReadWriteStream = streamDecompressed || response;
+
+      let iconvStream: NodeJS.ReadWriteStream | undefined = undefined;
+      if (contentTypeEncoding) {
+        const encoding = contentTypeEncoding[0].replace(/^charset=/, '');
+
+        iconvStream = iconv.decodeStream(encoding);
+
+        bodyStream = bodyStream.pipe(iconvStream);
+      }
       resolve({
-        bodyStream: streamDecompressed ? streamDecompressed : response,
+        bodyStream,
         headers: response.headers,
         statusCode: response.statusCode as number
       });
