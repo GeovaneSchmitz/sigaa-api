@@ -275,13 +275,12 @@ export class SigaaAccount implements Account {
    * @retuns Picture url or null if the user has no photo.
    */
   async getProfilePictureURL(): Promise<URL | null> {
-    const page = await this.http.get('/sigaa/mobile/touch/menu.jsf');
+    const page = await this.http.get('/sigaa/portais/discente/discente.jsf');
 
-    const pictureElement = page.$('div[data-role="fieldcontain"] img');
+    const pictureElement = page.$('div[class="foto"] img');
     if (pictureElement.length === 0) return null;
     const pictureSrc = pictureElement.attr('src');
-    if (!pictureSrc || pictureSrc.includes('/img/avatar.jpg')) return null;
-
+    if (!pictureSrc) return null;
     return new URL(pictureSrc, page.url);
   }
 
