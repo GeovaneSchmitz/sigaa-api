@@ -27,7 +27,7 @@ interface PromiseStack<K, T> {
    * The function is not called the moment it is added to the stack, but when it is your turn on the stack
    * @param promiseFunction function to generate the promise
    * @param key Key of promise array, to identify a function.
-   * @return {Promise} Returns a promise that resolves with the function's response.
+   * @returns A promise that resolves with the function's response.
    */
   addPromise(key: K, promiseFunction: FunctionPromise<T>): Promise<T>;
 
@@ -68,7 +68,7 @@ export class SigaaPromiseStack<K, T> implements PromiseStack<K, T> {
   }
 
   /**
-   * Get promises objects.
+   * @inheritdoc
    */
   get promises(): PromiseItemStack<K, T>[] {
     if (this.promiseRunning) {
@@ -101,11 +101,7 @@ export class SigaaPromiseStack<K, T> implements PromiseStack<K, T> {
   }
 
   /**
-   * Add promise in stack.
-   * The function is not called the moment it is added to the stack, but when it is your turn on the stack
-   * @param promiseFunction function to generate the promise
-   * @param key Key of promise array, to identify a function.
-   * @return {Promise} Returns a promise that resolves with the function's response.
+   * @inheritdoc
    */
   public addPromise(key: K, promiseFunction: FunctionPromise<T>): Promise<T> {
     const promiseObject: PromiseItemStack<K, T> = { key };

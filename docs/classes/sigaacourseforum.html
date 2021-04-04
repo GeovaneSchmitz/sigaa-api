@@ -69,13 +69,19 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<a href="updatableresource.html" class="tsd-signature-type" data-tsd-kind="Class">UpdatableResource</a><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/forumdata.html" class="tsd-signature-type" data-tsd-kind="Interface">ForumData</a><span class="tsd-signature-symbol">&gt;</span>
+						<a href="abstractupdatableresource.html" class="tsd-signature-type" data-tsd-kind="Class">AbstractUpdatableResource</a>
 						<ul class="tsd-hierarchy">
 							<li>
 								<span class="target">SigaaCourseForum</span>
 							</li>
 						</ul>
 					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel">
+				<h3>Implements</h3>
+				<ul class="tsd-hierarchy">
+					<li><a href="../interfaces/courseforum.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseForum</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -120,7 +126,7 @@
 						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="sigaacourseforum.html#checkifitwasclosed" class="tsd-kind-icon">check<wbr>IfIt<wbr>Was<wbr>Closed</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="sigaacourseforum.html#checkifitwasclosed" class="tsd-kind-icon">check<wbr>IfIt<wbr>Was<wbr>Closed</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><a href="sigaacourseforum.html#close" class="tsd-kind-icon">close</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sigaacourseforum.html#getauthor" class="tsd-kind-icon">get<wbr>Author</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sigaacourseforum.html#getcreationdate" class="tsd-kind-icon">get<wbr>Creation<wbr>Date</a></li>
@@ -134,7 +140,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sigaacourseforum.html#parseforumtable" class="tsd-kind-icon">parse<wbr>Forum<wbr>Table</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sigaacourseforum.html#parsesubmitpageform" class="tsd-kind-icon">parse<wbr>Submit<wbr>Page<wbr>Form</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sigaacourseforum.html#posttopic" class="tsd-kind-icon">post<wbr>Topic</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-overwrite"><a href="sigaacourseforum.html#update" class="tsd-kind-icon">update</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sigaacourseforum.html#update" class="tsd-kind-icon">update</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="sigaacourseforum.html#updateinstance" class="tsd-kind-icon">update<wbr>Instance</a></li>
 							</ul>
 						</section>
@@ -147,14 +153,14 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Sigaa<wbr>Course<wbr>Forum<span class="tsd-signature-symbol">(</span>http<span class="tsd-signature-symbol">: </span><a href="../interfaces/http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a>, parser<span class="tsd-signature-symbol">: </span><a href="../interfaces/parser.html" class="tsd-signature-type" data-tsd-kind="Interface">Parser</a>, forumOptions<span class="tsd-signature-symbol">: </span><a href="../interfaces/forumdata.html" class="tsd-signature-type" data-tsd-kind="Interface">ForumData</a>, updater<span class="tsd-signature-symbol">: </span><a href="../modules.html#updatableresourcecallback" class="tsd-signature-type" data-tsd-kind="Type alias">UpdatableResourceCallback</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaacourseforum.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaCourseForum</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Sigaa<wbr>Course<wbr>Forum<span class="tsd-signature-symbol">(</span>http<span class="tsd-signature-symbol">: </span><a href="../interfaces/http.html" class="tsd-signature-type" data-tsd-kind="Interface">HTTP</a>, parser<span class="tsd-signature-symbol">: </span><a href="../interfaces/parser.html" class="tsd-signature-type" data-tsd-kind="Interface">Parser</a>, courseResourcesFactory<span class="tsd-signature-symbol">: </span><a href="../interfaces/courseresourcesfactory.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseResourcesFactory</a>, forumOptions<span class="tsd-signature-symbol">: </span><a href="../interfaces/forumdata.html" class="tsd-signature-type" data-tsd-kind="Interface">ForumData</a>, updater<span class="tsd-signature-symbol">: </span><a href="../modules.html#updatableresourcecallback" class="tsd-signature-type" data-tsd-kind="Type alias">UpdatableResourceCallback</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaacourseforum.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaCourseForum</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#constructor">constructor</a></p>
+								<p>Inherited from <a href="abstractupdatableresource.html">AbstractUpdatableResource</a>.<a href="abstractupdatableresource.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L126">src/courses/resources/attachments/sigaa-course-forum-student.ts:126</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L186">src/courses/resources/attachments/sigaa-course-forum-student.ts:186</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -164,6 +170,9 @@
 								</li>
 								<li>
 									<h5>parser: <a href="../interfaces/parser.html" class="tsd-signature-type" data-tsd-kind="Interface">Parser</a></h5>
+								</li>
+								<li>
+									<h5>courseResourcesFactory: <a href="../interfaces/courseresourcesfactory.html" class="tsd-signature-type" data-tsd-kind="Interface">CourseResourcesFactory</a></h5>
 								</li>
 								<li>
 									<h5>forumOptions: <a href="../interfaces/forumdata.html" class="tsd-signature-type" data-tsd-kind="Interface">ForumData</a></h5>
@@ -185,7 +194,7 @@
 					<div class="tsd-signature tsd-kind-icon">_author<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L91">src/courses/resources/attachments/sigaa-course-forum-student.ts:91</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L151">src/courses/resources/attachments/sigaa-course-forum-student.ts:151</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -200,7 +209,7 @@
 					<div class="tsd-signature tsd-kind-icon">_creation<wbr>Date<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Date</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L126">src/courses/resources/attachments/sigaa-course-forum-student.ts:126</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L186">src/courses/resources/attachments/sigaa-course-forum-student.ts:186</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -215,7 +224,7 @@
 					<div class="tsd-signature tsd-kind-icon">_description<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L101">src/courses/resources/attachments/sigaa-course-forum-student.ts:101</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L161">src/courses/resources/attachments/sigaa-course-forum-student.ts:161</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -227,10 +236,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a name="_file" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> _file</h3>
-					<div class="tsd-signature tsd-kind-icon">_file<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="sigaafile.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaFile</a></div>
+					<div class="tsd-signature tsd-kind-icon">_file<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/file.html" class="tsd-signature-type" data-tsd-kind="Interface">File</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L111">src/courses/resources/attachments/sigaa-course-forum-student.ts:111</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L171">src/courses/resources/attachments/sigaa-course-forum-student.ts:171</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -245,7 +254,7 @@
 					<div class="tsd-signature tsd-kind-icon">_form<span class="tsd-signature-symbol">:</span> <a href="../interfaces/sigaaform.html" class="tsd-signature-type" data-tsd-kind="Interface">SigaaForm</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L76">src/courses/resources/attachments/sigaa-course-forum-student.ts:76</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L136">src/courses/resources/attachments/sigaa-course-forum-student.ts:136</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -260,7 +269,7 @@
 					<div class="tsd-signature tsd-kind-icon">_forum<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L96">src/courses/resources/attachments/sigaa-course-forum-student.ts:96</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L156">src/courses/resources/attachments/sigaa-course-forum-student.ts:156</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -275,7 +284,7 @@
 					<div class="tsd-signature tsd-kind-icon">_full<wbr>Forum<wbr>Promise<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> = null</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L121">src/courses/resources/attachments/sigaa-course-forum-student.ts:121</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L181">src/courses/resources/attachments/sigaa-course-forum-student.ts:181</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -284,9 +293,9 @@
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> _id</h3>
 					<div class="tsd-signature tsd-kind-icon">_id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#_id">_id</a></p>
+						<p>Inherited from <a href="abstractupdatableresource.html">AbstractUpdatableResource</a>.<a href="abstractupdatableresource.html#_id">_id</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/resources/updatable-resource.ts#L13">src/resources/updatable-resource.ts:13</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/resources/updatable-resource.ts#L21">src/resources/updatable-resource.ts:21</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -296,7 +305,7 @@
 					<div class="tsd-signature tsd-kind-icon">_is<wbr>Main<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L71">src/courses/resources/attachments/sigaa-course-forum-student.ts:71</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L131">src/courses/resources/attachments/sigaa-course-forum-student.ts:131</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -311,7 +320,7 @@
 					<div class="tsd-signature tsd-kind-icon">_monitor<wbr>Reading<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L116">src/courses/resources/attachments/sigaa-course-forum-student.ts:116</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L176">src/courses/resources/attachments/sigaa-course-forum-student.ts:176</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -326,7 +335,7 @@
 					<div class="tsd-signature tsd-kind-icon">_num<wbr>OfTopics<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L86">src/courses/resources/attachments/sigaa-course-forum-student.ts:86</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L146">src/courses/resources/attachments/sigaa-course-forum-student.ts:146</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -341,7 +350,7 @@
 					<div class="tsd-signature tsd-kind-icon">_submit<wbr>Topic<wbr>Page<wbr>Form<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/sigaaform.html" class="tsd-signature-type" data-tsd-kind="Interface">SigaaForm</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L106">src/courses/resources/attachments/sigaa-course-forum-student.ts:106</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L166">src/courses/resources/attachments/sigaa-course-forum-student.ts:166</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -356,7 +365,7 @@
 					<div class="tsd-signature tsd-kind-icon">_title<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L81">src/courses/resources/attachments/sigaa-course-forum-student.ts:81</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L141">src/courses/resources/attachments/sigaa-course-forum-student.ts:141</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -370,9 +379,9 @@
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> is<wbr>Closed</h3>
 					<div class="tsd-signature tsd-kind-icon">is<wbr>Closed<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> = false</span></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#isclosed">isClosed</a></p>
+						<p>Inherited from <a href="abstractupdatableresource.html">AbstractUpdatableResource</a>.<a href="abstractupdatableresource.html#isclosed">isClosed</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/resources/updatable-resource.ts#L11">src/resources/updatable-resource.ts:11</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/resources/updatable-resource.ts#L19">src/resources/updatable-resource.ts:19</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -381,13 +390,14 @@
 					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> type</h3>
 					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;forum&quot;</span><span class="tsd-signature-symbol"> = &#x27;forum&#x27;</span></div>
 					<aside class="tsd-sources">
+						<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#type">type</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L66">src/courses/resources/attachments/sigaa-course-forum-student.ts:66</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L126">src/courses/resources/attachments/sigaa-course-forum-student.ts:126</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Type of class</p>
+							<p>Type of instance</p>
 						</div>
 					</div>
 				</section>
@@ -396,7 +406,7 @@
 					<h3><span class="tsd-flag ts-flagProtected">Protected</span> <span class="tsd-flag ts-flagOptional">Optional</span> updater</h3>
 					<div class="tsd-signature tsd-kind-icon">updater<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../modules.html#updatableresourcecallback" class="tsd-signature-type" data-tsd-kind="Type alias">UpdatableResourceCallback</a></div>
 					<aside class="tsd-sources">
-						<p>Inherited from <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#updater">updater</a></p>
+						<p>Inherited from <a href="abstractupdatableresource.html">AbstractUpdatableResource</a>.<a href="abstractupdatableresource.html#updater">updater</a></p>
 					</aside>
 				</section>
 			</section>
@@ -412,7 +422,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/resources/updatable-resource.ts#L32">src/resources/updatable-resource.ts:32</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/resources/updatable-resource.ts#L36">src/resources/updatable-resource.ts:36</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -429,7 +439,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L158">src/courses/resources/attachments/sigaa-course-forum-student.ts:158</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L219">src/courses/resources/attachments/sigaa-course-forum-student.ts:219</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -451,7 +461,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L172">src/courses/resources/attachments/sigaa-course-forum-student.ts:172</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L233">src/courses/resources/attachments/sigaa-course-forum-student.ts:233</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -461,18 +471,18 @@
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a name="checkifitwasclosed" class="tsd-anchor"></a>
-					<h3>check<wbr>IfIt<wbr>Was<wbr>Closed</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+					<h3><span class="tsd-flag ts-flagProtected">Protected</span> check<wbr>IfIt<wbr>Was<wbr>Closed</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 						<li class="tsd-signature tsd-kind-icon">check<wbr>IfIt<wbr>Was<wbr>Closed<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#checkifitwasclosed">checkIfItWasClosed</a></p>
+								<p>Inherited from <a href="abstractupdatableresource.html">AbstractUpdatableResource</a>.<a href="abstractupdatableresource.html#checkifitwasclosed">checkIfItWasClosed</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/resources/updatable-resource.ts#L26">src/resources/updatable-resource.ts:26</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/resources/updatable-resource.ts#L30">src/resources/updatable-resource.ts:30</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -488,9 +498,10 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#close">close</a></p>
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#close">close</a></p>
+								<p>Inherited from <a href="abstractupdatableresource.html">AbstractUpdatableResource</a>.<a href="abstractupdatableresource.html#close">close</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/resources/updatable-resource.ts#L37">src/resources/updatable-resource.ts:37</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/resources/updatable-resource.ts#L41">src/resources/updatable-resource.ts:41</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -506,8 +517,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#getauthor">getAuthor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L203">src/courses/resources/attachments/sigaa-course-forum-student.ts:203</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L264">src/courses/resources/attachments/sigaa-course-forum-student.ts:264</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -528,8 +540,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#getcreationdate">getCreationDate</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L326">src/courses/resources/attachments/sigaa-course-forum-student.ts:326</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L387">src/courses/resources/attachments/sigaa-course-forum-student.ts:387</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -551,7 +564,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L190">src/courses/resources/attachments/sigaa-course-forum-student.ts:190</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L251">src/courses/resources/attachments/sigaa-course-forum-student.ts:251</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -562,13 +575,14 @@
 					<a name="getfile" class="tsd-anchor"></a>
 					<h3>get<wbr>File</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>File<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="sigaafile.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaFile</a><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>File<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/file.html" class="tsd-signature-type" data-tsd-kind="Interface">File</a><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#getfile">getFile</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L216">src/courses/resources/attachments/sigaa-course-forum-student.ts:216</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L277">src/courses/resources/attachments/sigaa-course-forum-student.ts:277</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -576,7 +590,7 @@
 									<p>File attached to the forum.</p>
 								</div>
 							</div>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="sigaafile.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaFile</a><span class="tsd-signature-symbol">&gt;</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/file.html" class="tsd-signature-type" data-tsd-kind="Interface">File</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -590,7 +604,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L353">src/courses/resources/attachments/sigaa-course-forum-student.ts:353</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L414">src/courses/resources/attachments/sigaa-course-forum-student.ts:414</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -619,8 +633,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#getforumtype">getForumType</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L180">src/courses/resources/attachments/sigaa-course-forum-student.ts:180</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L241">src/courses/resources/attachments/sigaa-course-forum-student.ts:241</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -641,8 +656,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#getmonitorreading">getMonitorReading</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L339">src/courses/resources/attachments/sigaa-course-forum-student.ts:339</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L400">src/courses/resources/attachments/sigaa-course-forum-student.ts:400</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -663,8 +679,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#getnumoftopics">getNumOfTopics</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L227">src/courses/resources/attachments/sigaa-course-forum-student.ts:227</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L288">src/courses/resources/attachments/sigaa-course-forum-student.ts:288</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -686,7 +703,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L162">src/courses/resources/attachments/sigaa-course-forum-student.ts:162</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L223">src/courses/resources/attachments/sigaa-course-forum-student.ts:223</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -703,7 +720,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L400">src/courses/resources/attachments/sigaa-course-forum-student.ts:400</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L461">src/courses/resources/attachments/sigaa-course-forum-student.ts:461</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -733,7 +750,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L376">src/courses/resources/attachments/sigaa-course-forum-student.ts:376</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L437">src/courses/resources/attachments/sigaa-course-forum-student.ts:437</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -762,8 +779,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#posttopic">postTopic</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L244">src/courses/resources/attachments/sigaa-course-forum-student.ts:244</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L305">src/courses/resources/attachments/sigaa-course-forum-student.ts:305</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -802,18 +820,18 @@
 						</li>
 					</ul>
 				</section>
-				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="update" class="tsd-anchor"></a>
 					<h3>update</h3>
-					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
 						<li class="tsd-signature tsd-kind-icon">update<span class="tsd-signature-symbol">(</span>forumOptions<span class="tsd-signature-symbol">: </span><a href="../interfaces/forumdata.html" class="tsd-signature-type" data-tsd-kind="Interface">ForumData</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Overrides <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#update">update</a></p>
+								<p>Implementation of <a href="../interfaces/courseforum.html">CourseForum</a>.<a href="../interfaces/courseforum.html#update">update</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/courses/resources/attachments/sigaa-course-forum-student.ts#L138">src/courses/resources/attachments/sigaa-course-forum-student.ts:138</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/courses/resources/attachments/sigaa-course-forum-student.ts#L199">src/courses/resources/attachments/sigaa-course-forum-student.ts:199</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -835,9 +853,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
-								<p>Inherited from <a href="updatableresource.html">UpdatableResource</a>.<a href="updatableresource.html#updateinstance">updateInstance</a></p>
+								<p>Inherited from <a href="abstractupdatableresource.html">AbstractUpdatableResource</a>.<a href="abstractupdatableresource.html#updateinstance">updateInstance</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/9650614/src/resources/updatable-resource.ts#L17">src/resources/updatable-resource.ts:17</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/resources/updatable-resource.ts#L25">src/resources/updatable-resource.ts:25</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -921,7 +939,7 @@
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="sigaacourseforum.html#title" class="tsd-kind-icon">title</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 								<a href="sigaacourseforum.html#checkifitwasclosed" class="tsd-kind-icon">check<wbr>IfIt<wbr>Was<wbr>Closed</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
@@ -963,7 +981,7 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="sigaacourseforum.html#posttopic" class="tsd-kind-icon">post<wbr>Topic</a>
 							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
+							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="sigaacourseforum.html#update" class="tsd-kind-icon">update</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-protected">

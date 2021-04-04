@@ -1,9 +1,12 @@
-import {
-  SigaaCourseStudent,
-  SigaaCourseStudentData
-} from '@courses/sigaa-course-student';
+import { CourseFactory } from '@courses/sigaa-course-student-factory';
 import { Parser } from '@helpers/sigaa-parser';
 import { HTTP } from '@session/sigaa-http';
+
+import {
+  CourseStudent,
+  CourseStudentData
+} from '@courses/sigaa-course-student';
+
 /**
  * Abstraction to represent a student bond.
  * @category Public
@@ -23,17 +26,18 @@ export interface StudentBond {
    * @param allPeriods if true, all courses will be returned; otherwise, only current courses.
    * @returns Promise with array of courses.
    */
-  getCourses(allPeriods?: boolean): Promise<SigaaCourseStudent[]>;
+  getCourses(allPeriods?: boolean): Promise<CourseStudent[]>;
 }
 
 /**
  * Class to represent student bond.
- * @category Public
+ * @category Internal
  */
 export class SigaaStudentBond implements StudentBond {
   constructor(
     private http: HTTP,
     private parser: Parser,
+    private courseFactory: CourseFactory,
     readonly program: string,
     readonly registration: string,
     readonly bondSwitchUrl: URL | null
@@ -46,14 +50,14 @@ export class SigaaStudentBond implements StudentBond {
    * @param allPeriods if true, all courses will be returned; otherwise, only current courses.
    * @returns Promise with array of courses.
    */
-  async getCourses(allPeriods = false): Promise<SigaaCourseStudent[]> {
+  async getCourses(allPeriods = false): Promise<CourseStudent[]> {
     const coursesPage = await this.http.get(
       '/sigaa/portais/discente/turmas.jsf'
     );
 
     const table = coursesPage.$('.listagem');
     if (table.length === 0) return [];
-    const listCourses: SigaaCourseStudent[] = [];
+    const listCourses: CourseStudent[] = [];
     let period;
     let rows = table.find('tbody > tr').toArray();
     if (!allPeriods) {
@@ -82,7 +86,7 @@ export class SigaaStudentBond implements StudentBond {
           if (!buttonOnClickCode) throw new Error('SIGAA: Invalid row.');
           const form = coursesPage.parseJSFCLJS(buttonOnClickCode);
 
-          const courseData: SigaaCourseStudentData = {
+          const courseData: CourseStudentData = {
             title: fullname.slice(fullname.indexOf(' - ') + 3),
             code: fullname.slice(0, fullname.indexOf(' - ')),
             numberOfStudents: parseInt(
@@ -93,9 +97,7 @@ export class SigaaStudentBond implements StudentBond {
             id: form.postValues['idTurma'],
             form
           };
-          listCourses.push(
-            new SigaaCourseStudent(courseData, this.http, this.parser)
-          );
+          listCourses.push(this.courseFactory.createCourseStudent(courseData));
         }
       }
     }

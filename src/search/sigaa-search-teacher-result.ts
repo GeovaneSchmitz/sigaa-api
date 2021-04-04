@@ -13,7 +13,7 @@ export interface TeacherResultData {
 }
 
 /**
- * @category Internal
+ * @category Public
  */
 export interface TeacherResult {
   readonly name: string;
@@ -38,7 +38,7 @@ export interface TeacherResult {
 }
 
 /**
- * @category Public
+ * @category Internal
  */
 export class SigaaSearchTeacherResult implements TeacherResult {
   private _name: string;

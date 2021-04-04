@@ -1,17 +1,9 @@
 import { Account } from '@account/sigaa-account';
-import {
-  AccountFactory,
-  SigaaAccountFactory
-} from '@account/sigaa-account-factory';
 import { BondFactory, SigaaBondFactory } from '@bonds/sigaa-bond-factory';
 import { Parser, SigaaParser } from '@helpers/sigaa-parser';
 import { FileData, SigaaFile } from '@resources/sigaa-file';
 import { SigaaSearch } from '@search/sigaa-search';
 import { HTTPSession, SigaaHTTPSession } from '@session/sigaa-http-session';
-import {
-  BondController,
-  SigaaBondController
-} from '@session/sigaa-bond-controller';
 import { HTTP } from '@session/sigaa-http';
 import { HTTPFactory, SigaaHTTPFactory } from '@session/sigaa-http-factory';
 import { Login, SigaaLogin } from '@session/sigaa-login';
@@ -20,37 +12,83 @@ import { SigaaTokens } from '@session/sigaa-tokens';
 import { SigaaPageCacheWithBond } from '@session/sigaa-page-cache-with-bond';
 import { SigaaPageCacheFactory } from '@session/sigaa-page-cache-factory';
 
+import {
+  AccountFactory,
+  SigaaAccountFactory
+} from '@account/sigaa-account-factory';
+import {
+  BondController,
+  SigaaBondController
+} from '@session/sigaa-bond-controller';
+import {
+  CourseFactory,
+  SigaaCourseFactory
+} from '@courses/sigaa-course-student-factory';
+import {
+  CourseResourcesManagerFactory,
+  SigaaCourseResourceManagerFactory
+} from '@courses/sigaa-course-resources-manager-factory';
+import {
+  CourseResourcesFactory,
+  SigaaCourseResourcesFactory
+} from '@courses/sigaa-course-resources-factory';
+import {
+  LessonParserFactory,
+  SigaaLessonParserFactory
+} from '@courses/sigaa-lesson-parser-factory';
+
 /**
  * @category Internal
  */
-interface SigaaConstructorURL {
-  url: string;
+interface SigaaCommonConstructorOptions {
   session?: Session;
   login?: Login;
   parser?: Parser;
-  accountFactory?: AccountFactory;
-  bondController?: BondController;
-  bondFactory?: BondFactory;
 }
 
+interface SigaaConstructorURL {
+  url: string;
+  bondController?: BondController;
+}
+
+interface WithAccountFactory {
+  accountFactory?: AccountFactory;
+}
+interface WithBondFactory {
+  bondFactory: BondFactory;
+}
+interface WithCourseFactory {
+  courseFactory: CourseFactory;
+}
+
+type WithoutCourseFactory = {
+  lessonParserFactory?: LessonParserFactory;
+} & XOR<
+  { courseResourcesManagerFactory?: CourseResourcesManagerFactory },
+  { courseResourcesFactory?: CourseResourcesFactory }
+>;
 /**
  * @category Internal
  */
 interface SigaaConstructorHTTP {
   httpFactory: HTTPFactory;
-  session?: Session;
-  login?: Login;
-  parser?: Parser;
-  accountFactory: AccountFactory;
   httpSession: HTTPSession;
 }
+
+type Without<T, U> = {
+  [P in Exclude<keyof T, keyof U>]?: never;
+};
+type XOR<T, U> = (Without<T, U> & U) | (Without<U, T> & T);
 
 /**
  * @category Public
  */
-export type SigaaOptionsConstructor =
-  | SigaaConstructorURL
-  | SigaaConstructorHTTP;
+export type SigaaOptionsConstructor = SigaaCommonConstructorOptions &
+  XOR<SigaaConstructorURL, SigaaConstructorHTTP> &
+  XOR<
+    WithAccountFactory,
+    XOR<WithBondFactory, XOR<WithCourseFactory, WithoutCourseFactory>>
+  >;
 
 /**
  * Main class, used to instantiate other classes in standard use.
@@ -93,49 +131,120 @@ export class Sigaa {
   private http: HTTP;
 
   constructor(options: SigaaOptionsConstructor) {
-    const optionsTypeURL = <SigaaConstructorURL>options;
-    const optionsTypeHttp = <SigaaConstructorHTTP>options;
-
     const pageCacheFactory = new SigaaPageCacheFactory();
     const pageCache = new SigaaPageCacheWithBond(pageCacheFactory);
 
-    this.parser = options.parser || new SigaaParser();
-    this.session = options.session || new SigaaSession();
+    if ('parser' in options && options.parser) {
+      this.parser = options.parser;
+    } else {
+      this.parser = new SigaaParser();
+    }
 
-    if (!optionsTypeHttp.httpFactory) {
+    if ('session' in options && options.session) {
+      this.session = options.session;
+    } else {
+      this.session = new SigaaSession();
+    }
+
+    if ('url' in options && options.url) {
       const tokens = new SigaaTokens();
-      this.httpSession = new SigaaHTTPSession(
-        optionsTypeURL.url,
-        tokens,
-        pageCache
-      );
+      this.httpSession = new SigaaHTTPSession(options.url, tokens, pageCache);
 
       const bondController =
-        optionsTypeURL.bondController || new SigaaBondController();
+        options.bondController || new SigaaBondController();
 
       this.httpFactory = new SigaaHTTPFactory(
         this.httpSession,
         pageCache,
         bondController
       );
+    } else {
+      if ('httpFactory' in options && options.httpFactory) {
+        this.httpFactory = options.httpFactory;
+      } else {
+        throw new Error(
+          'SIGAA: Invalid httpFactory. It may be that you have forgotten the URL'
+        );
+      }
+      if ('httpSession' in options && options.httpSession) {
+        this.httpSession = options.httpSession;
+      } else {
+        throw new Error('SIGAA: Invalid httpSession.');
+      }
+    }
 
-      const bondFactory =
-        optionsTypeURL.bondFactory ||
-        new SigaaBondFactory(this.httpFactory, this.parser);
+    this.http = this.httpFactory.createHttp();
 
-      const http = this.httpFactory.createHttp();
+    if ('accountFactory' in options && options.accountFactory) {
+      this.accountFactory = options.accountFactory;
+    } else {
+      let bondFactory: BondFactory;
+
+      if ('bondFactory' in options && options.bondFactory) {
+        bondFactory = options.bondFactory;
+      } else {
+        let courseFactory: CourseFactory;
+
+        if ('courseFactory' in options && options.courseFactory) {
+          courseFactory = options.courseFactory;
+        } else {
+          let courseResourcesManagerFactory: CourseResourcesManagerFactory;
+
+          if (
+            'courseResourcesManagerFactory' in options &&
+            options.courseResourcesManagerFactory
+          ) {
+            courseResourcesManagerFactory =
+              options.courseResourcesManagerFactory;
+          } else {
+            let courseResourcesFactory: CourseResourcesFactory;
+
+            if (
+              'courseResourcesFactory' in options &&
+              options.courseResourcesFactory
+            ) {
+              courseResourcesFactory = options.courseResourcesFactory;
+            } else {
+              courseResourcesFactory = new SigaaCourseResourcesFactory(
+                this.parser
+              );
+            }
+
+            courseResourcesManagerFactory = new SigaaCourseResourceManagerFactory(
+              courseResourcesFactory
+            );
+          }
+
+          let lessonParserFactory: LessonParserFactory;
+
+          if ('lessonParserFactory' in options && options.lessonParserFactory) {
+            lessonParserFactory = options.lessonParserFactory;
+          } else {
+            lessonParserFactory = new SigaaLessonParserFactory(this.parser);
+          }
+
+          courseFactory = new SigaaCourseFactory(
+            this.http,
+            this.parser,
+            courseResourcesManagerFactory,
+            lessonParserFactory
+          );
+        }
+
+        bondFactory = new SigaaBondFactory(
+          this.httpFactory,
+          this.parser,
+          courseFactory
+        );
+      }
       this.accountFactory = new SigaaAccountFactory(
-        http,
+        this.http,
         this.parser,
         this.session,
         bondFactory
       );
-    } else {
-      this.httpFactory = optionsTypeHttp.httpFactory;
-      this.accountFactory = optionsTypeHttp.accountFactory;
-      this.httpSession = optionsTypeHttp.httpSession;
     }
-    this.http = this.httpFactory.createHttp();
+
     this.loginInstance =
       options.login || new SigaaLogin(this.http, this.session);
   }
@@ -144,7 +253,6 @@ export class Sigaa {
    * User authentication.
    * @param username
    * @param password
-   * @returns
    */
   async login(username: string, password: string): Promise<Account> {
     const page = await this.loginInstance.login(username, password);
@@ -156,7 +264,6 @@ export class Sigaa {
    * @param options
    * @param options.id file id
    * @param options.key file key
-   * @returns
    */
   loadFile(options: FileData): SigaaFile {
     return new SigaaFile(this.http, options);

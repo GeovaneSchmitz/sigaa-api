@@ -1,12 +1,15 @@
 import { URL } from 'url';
+import { FileData } from '@resources/sigaa-file';
+import { HTTP } from '@session/sigaa-http';
+import { SigaaForm } from '@session/sigaa-page';
+import { File } from '@resources/sigaa-file';
+import { CourseResourcesFactory } from '@courses/sigaa-course-resources-factory';
 
-import { SigaaFile, FileData } from '@resources/sigaa-file';
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
-import { HTTP } from '@session/sigaa-http';
-import { SigaaForm } from '@session/sigaa-page';
 
 /**
  * @category Internal
@@ -23,9 +26,26 @@ export interface HomeworkData {
 }
 
 /**
- * @category Public
+ * @category Internal
  */
-export class SigaaHomework extends UpdatableResource<HomeworkData> {
+export interface Homework extends UpdatableResource<HomeworkData> {
+  readonly type: 'homework';
+  readonly title: string;
+  getHaveGrade(): Promise<boolean>;
+  readonly startDate: Date;
+  readonly endDate: Date;
+  /**
+   * Get attachment file.
+   */
+  getAttachmentFile(): Promise<File>;
+}
+
+/**
+ * @category Internal
+ */
+export class SigaaHomework
+  extends AbstractUpdatableResource
+  implements Homework {
   readonly type = 'homework';
 
   private _title!: string;
@@ -35,10 +55,11 @@ export class SigaaHomework extends UpdatableResource<HomeworkData> {
   private _formViewHomeworkSubmitted?: SigaaForm;
   private _description?: string;
   private _haveGrade?: boolean;
-  private _file?: SigaaFile;
+  private _file?: File;
 
   constructor(
     private http: HTTP,
+    private courseResourcesFactory: CourseResourcesFactory,
     options: HomeworkData,
     updater: UpdatableResourceCallback
   ) {
@@ -95,10 +116,9 @@ export class SigaaHomework extends UpdatableResource<HomeworkData> {
   }
 
   /**
-   * Get SigaaFile or throws if you don't have a file
-   * @returns
+   * @inheritdoc
    */
-  async getAttachmentFile(): Promise<SigaaFile> {
+  async getAttachmentFile(): Promise<File> {
     if (
       this._formSendHomework === undefined &&
       this._formViewHomeworkSubmitted === undefined
@@ -127,7 +147,13 @@ export class SigaaHomework extends UpdatableResource<HomeworkData> {
     };
 
     if (!this._file) {
-      this._file = new SigaaFile(this.http, file);
+      this._file = this.courseResourcesFactory.createFileFromFileData(
+        this.http,
+        file,
+        async () => {
+          throw new Error('SIGAA: Invalid file in Homework.');
+        }
+      );
     } else {
       this._file.update(file);
     }

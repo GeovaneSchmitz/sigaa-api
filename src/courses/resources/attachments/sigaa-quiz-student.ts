@@ -1,4 +1,5 @@
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
@@ -20,7 +21,23 @@ export interface QuizData {
 /**
  * @category Public
  */
-export class SigaaQuiz extends UpdatableResource<QuizData> {
+export interface Quiz extends UpdatableResource<QuizData> {
+  readonly title: string;
+  readonly type: 'quiz';
+  readonly endDate: Date;
+  readonly startDate: Date;
+
+  /**
+   * TODO
+   * @param retry
+   */
+  getAnswersSubmitted(): Promise<void>;
+}
+
+/**
+ * @category Internal
+ */
+export class SigaaQuiz extends AbstractUpdatableResource implements Quiz {
   readonly type = 'quiz';
 
   readonly errorDeadlineToReadClosed =
@@ -90,7 +107,7 @@ export class SigaaQuiz extends UpdatableResource<QuizData> {
             throw new Error(this.errorDeadlineToReadClosed);
           if (
             page.body.includes(
-              'Voc&#234; ainda n&#227;o enviou respostas para este question&#225;rio'
+              'Você ainda não enviou respostas para este questionário'
             )
           )
             throw new Error(this.errorQuizYetNoSendAnswers);

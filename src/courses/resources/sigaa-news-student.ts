@@ -1,5 +1,6 @@
 import { Parser } from '@helpers/sigaa-parser';
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
@@ -18,7 +19,16 @@ export interface NewsData {
 /**
  * @category Public
  */
-export class SigaaNews extends UpdatableResource<NewsData> {
+export interface News extends UpdatableResource<NewsData> {
+  readonly title: string;
+  getContent(): Promise<string>;
+  getDate(): Promise<Date>;
+}
+
+/**
+ * @category Internal
+ */
+export class SigaaNews extends AbstractUpdatableResource implements News {
   private _form!: SigaaForm;
   private _title!: string;
   private _content?: string;

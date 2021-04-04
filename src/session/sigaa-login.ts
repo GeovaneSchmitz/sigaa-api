@@ -11,10 +11,10 @@ import { Session } from './sigaa-session';
  */
 export interface Login {
   /**
-   * login on Sigaa
+   * Login on Sigaa
    * @param username
    * @param password'
-   * @returns login page result
+   * @returns Login page result.
    */
   login(username: string, password: string): Promise<Page>;
 }
@@ -24,14 +24,13 @@ export interface Login {
  * @category Internal
  */
 export class SigaaLogin implements Login {
-  constructor(private http: HTTP, private session: Session) {}
+  constructor(protected http: HTTP, protected session: Session) {}
   readonly errorInvalidCredentials = 'SIGAA: Invalid credentials.';
 
-  private parseLoginForm(page: Page): SigaaForm {
+  protected parseLoginForm(page: Page): SigaaForm {
     const formElement = page.$("form[name='loginForm']");
 
     const actionUrl = formElement.attr('action');
-
     if (!actionUrl) throw new Error('SIGAA: No action form on login page.');
 
     const action = new URL(actionUrl, page.url.href);
@@ -49,7 +48,7 @@ export class SigaaLogin implements Login {
   /**
    * Current login form.
    */
-  private form?: SigaaForm;
+  protected form?: SigaaForm;
 
   /**
    * Retuns HTML form
@@ -68,7 +67,7 @@ export class SigaaLogin implements Login {
    * @param username
    * @param password
    */
-  private async desktopLogin(
+  protected async desktopLogin(
     username: string,
     password: string
   ): Promise<Page> {
@@ -100,10 +99,10 @@ export class SigaaLogin implements Login {
     }
   }
 
-  private async parseDesktopLoginResult(page: Page): Promise<Page> {
+  protected async parseDesktopLoginResult(page: Page): Promise<Page> {
     const accountPage = await this.http.followAllRedirect(page);
     if (accountPage.body.includes('Entrar no Sistema')) {
-      if (accountPage.body.includes('Usu&#225;rio e/ou senha inv&#225;lidos')) {
+      if (accountPage.body.includes('Usuário e/ou senha inválidos')) {
         this.form = await this.parseLoginForm(accountPage);
         throw new Error(this.errorInvalidCredentials);
       } else {

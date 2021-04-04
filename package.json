@@ -1,7 +1,7 @@
 {
   "name": "sigaa-api",
   "description": "Unofficial high performance API for SIGAA IFSC using web scraping.",
-  "version": "1.0.16",
+  "version": "1.0.20",
   "main": "dist/sigaa-all-types.js",
   "types": "dist/sigaa-all-types.d.ts",
   "author": "Geovane Schmitz <contato@geovanems.com.br>",
@@ -11,6 +11,7 @@
     "cheerio": "^1.0.0-rc.3",
     "formdata-node": "^2.4.0",
     "he": "^1.2.0",
+    "iconv-lite": "^0.6.2",
     "lodash": "^4.17.20",
     "source-map-support": "^0.5.19"
   },
@@ -27,11 +28,11 @@
   "scripts": {
     "build": "tsc --emitDeclarationOnly && babel src --extensions .ts --out-dir dist && node fix-declaration-paths.js",
     "test": "jest --config jestconfig.json",
+    "docs": "typedoc --categorizeByGroup --out docs src/sigaa-all-types.ts",
     "prepare": "npm run build"
   },
   "files": [
-    "dist/**",
-    "src/**"
+    "dist/**"
   ],
   "devDependencies": {
     "@babel/cli": "^7.12.10",

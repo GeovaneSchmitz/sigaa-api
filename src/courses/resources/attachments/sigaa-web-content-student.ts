@@ -1,5 +1,6 @@
 import { Parser } from '@helpers/sigaa-parser';
 import {
+  AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
@@ -17,9 +18,21 @@ export interface WebContentData {
 }
 
 /**
- * @category Public
+ * @category Internal
  */
-export class SigaaWebContent extends UpdatableResource<WebContentData> {
+export interface WebContent extends UpdatableResource<WebContentData> {
+  readonly type: 'webcontent';
+
+  getDate(): Promise<Date>;
+  getContent(): Promise<string>;
+  readonly title: string;
+}
+/**
+ * @category Internal
+ */
+export class SigaaWebContent
+  extends AbstractUpdatableResource
+  implements WebContent {
   readonly type = 'webcontent';
 
   private _title!: string;
