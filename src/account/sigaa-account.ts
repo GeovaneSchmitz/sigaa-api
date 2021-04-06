@@ -280,7 +280,7 @@ export class SigaaAccount implements Account {
     const pictureElement = page.$('div[class="foto"] img');
     if (pictureElement.length === 0) return null;
     const pictureSrc = pictureElement.attr('src');
-    if (!pictureSrc) return null;
+    if (!pictureSrc || pictureSrc.includes('/sigaa/img/no_picture.png')) return null;
     return new URL(pictureSrc, page.url);
   }
 
