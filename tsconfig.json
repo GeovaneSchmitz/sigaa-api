@@ -3,7 +3,7 @@
     "experimentalDecorators": true,
     "target": "es2015",
     "declaration": true,
-    "outDir": "examples/dist",
+    "outDir": "./dist",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "baseUrl": ".",
