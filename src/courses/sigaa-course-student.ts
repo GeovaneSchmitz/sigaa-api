@@ -278,7 +278,7 @@ export class SigaaCourseStudent implements CourseStudent {
       }
     );
     if (page.statusCode === 200) {
-      if (page.body.includes('Comportamento Inesperado!')) {
+      if (page.bodyDecoded.includes('Comportamento Inesperado!')) {
         throw new Error('SIGAA: Unexpected behavior on the course page.');
       }
       return page;
@@ -335,7 +335,7 @@ export class SigaaCourseStudent implements CourseStudent {
       if (page.statusCode !== 200)
         throw new Error('SIGAA: Invalid course page status code.');
 
-      if (pageResponse.body.includes('Menu Turma Virtual')) {
+      if (pageResponse.bodyDecoded.includes('Menu Turma Virtual')) {
         this.currentPageCache = pageResponse;
       }
       return pageResponse;

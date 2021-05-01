@@ -12,7 +12,7 @@ test('if sigaa search loads campus list', async () => {
     expect(campus.name).toMatch(
       /CAMPUS|INSTITUTO|COORDENADORIA|DIRETORIA|TODOS/g
     );
-    expect(campus.name).toMatch(/^([A-Z]|[0-9]|[ÁÉÓÍÚÃÇÂÊÎÔÛ. \-()])+$/);
+    expect(campus.name).toMatch(/^([A-Z]|[0-9]|[ÁÉÓÍÚÃÇÂÊÎÔÛ. \-–()])+$/);
     expect(campus.value).toMatch(/^[0-9]+$/g);
   }
   sigaa.close();

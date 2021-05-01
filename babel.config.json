@@ -1,34 +1,34 @@
 {
-  "sourceMaps": "both",
-  "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "targets": {
-          "node": 10
-        }
-      }
+    "sourceMaps": "both",
+    "presets": [
+        [
+            "@babel/preset-env",
+            {
+                "targets": {
+                    "node": 10
+                }
+            }
+        ],
+        "@babel/preset-typescript"
     ],
-    "@babel/preset-typescript"
-  ],
-  "plugins": [
-    ["source-map-support"],
-    [
-      "module-resolver",
-      {
-        "alias": {
-          "@bonds": "./src/bonds",
-          "@account": "./src/account",
-          "@attachments": "./src/courses/resources/attachments",
-          "@courseResources": "./src/courses/resources",
-          "@resources": "./src/resources",
-          "@courses": "./src/courses",
-          "@helpers": "./src/helpers",
-          "@search": "./src/search",
-          "@session": "./src/session",
-          "@sigaa": "./src/main"
-        }
-      }
+    "plugins": [
+        ["source-map-support"],
+        [
+            "module-resolver",
+            {
+                "alias": {
+                    "@bonds": "./src/bonds",
+                    "@account": "./src/account",
+                    "@attachments": "./src/courses/resources/attachments",
+                    "@courseResources": "./src/courses/resources",
+                    "@resources": "./src/resources",
+                    "@courses": "./src/courses",
+                    "@helpers": "./src/helpers",
+                    "@search": "./src/search",
+                    "@session": "./src/session",
+                    "@sigaa": "./src/main"
+                }
+            }
+        ]
     ]
-  ]
 }

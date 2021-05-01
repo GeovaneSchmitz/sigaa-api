@@ -1,4 +1,5 @@
 import { URL } from 'url';
+import { decode as htmlEntitiesDecode } from 'he';
 
 import * as http from 'http';
 import { load as $load } from 'cheerio';
@@ -63,9 +64,15 @@ export interface Page {
 
   /**
    *
-   * @param body Page body of response
+   * @param body Response page body.
    */
   readonly body: string;
+
+  /**
+   *
+   * @param bodyDecoded Page body with HTML encoded characters replaced.
+   */
+  readonly bodyDecoded: string;
 
   /**
    *
@@ -169,10 +176,24 @@ export class SigaaPage implements Page {
   private _viewState?: string;
 
   /**
+   * Page body with HTML encoded characters replaced.
+   */
+  private _bodyDecoded?: string;
+
+  /**
    * HTTP request method that originated page.
    **/
   public get method(): HTTPMethod {
     return this.requestOptions.method;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  public get bodyDecoded(): string {
+    if (this._bodyDecoded) return this._bodyDecoded;
+    this._bodyDecoded = htmlEntitiesDecode(this.body);
+    return this._bodyDecoded;
   }
 
   public get $(): cheerio.Root {

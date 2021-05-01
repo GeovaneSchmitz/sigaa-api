@@ -376,7 +376,7 @@ export class SigaaCourseForum
       actionURl.href,
       formData
     );
-    if (!responsePage.body.includes('Operação realizada com sucesso!')) {
+    if (!responsePage.bodyDecoded.includes('Operação realizada com sucesso!')) {
       throw new Error('SIGAA: Unexpected response forum post page.');
     }
   }

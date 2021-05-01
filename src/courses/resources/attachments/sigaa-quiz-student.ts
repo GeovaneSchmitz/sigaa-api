@@ -102,11 +102,13 @@ export class SigaaQuiz extends AbstractUpdatableResource implements Quiz {
       switch (page.statusCode) {
         case 200:
           if (
-            page.body.includes('Acabou o prazo para visualizar as respostas.')
+            page.bodyDecoded.includes(
+              'Acabou o prazo para visualizar as respostas.'
+            )
           )
             throw new Error(this.errorDeadlineToReadClosed);
           if (
-            page.body.includes(
+            page.bodyDecoded.includes(
               'Você ainda não enviou respostas para este questionário'
             )
           )

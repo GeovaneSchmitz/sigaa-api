@@ -6,9 +6,11 @@ import { SigaaSearch } from '@search/sigaa-search';
 import { HTTPSession, SigaaHTTPSession } from '@session/sigaa-http-session';
 import { HTTP } from '@session/sigaa-http';
 import { HTTPFactory, SigaaHTTPFactory } from '@session/sigaa-http-factory';
-import { Login, SigaaLogin } from '@session/sigaa-login';
+import { Login } from '@session/login/sigaa-login';
+import { SigaaLoginIFSC } from '@session/login/sigaa-login-ifsc';
+import { SigaaLoginUFPB } from '@session/login/sigaa-login-ufpb';
 import { Session, SigaaSession } from '@session/sigaa-session';
-import { SigaaTokens } from '@session/sigaa-tokens';
+import { SigaaCookiesController } from '@session/sigaa-cookies-controller';
 import { SigaaPageCacheWithBond } from '@session/sigaa-page-cache-with-bond';
 import { SigaaPageCacheFactory } from '@session/sigaa-page-cache-factory';
 
@@ -38,9 +40,16 @@ import {
 } from '@courses/sigaa-lesson-parser-factory';
 
 /**
+ * The institution serves to adjust interactions with SIGAA.
+ * @category Public
+ */
+type InstituionType = 'IFSC' | 'UFPB';
+
+/**
  * @category Internal
  */
 interface SigaaCommonConstructorOptions {
+  institution?: InstituionType;
   session?: Session;
   login?: Login;
   parser?: Parser;
@@ -147,8 +156,12 @@ export class Sigaa {
     }
 
     if ('url' in options && options.url) {
-      const tokens = new SigaaTokens();
-      this.httpSession = new SigaaHTTPSession(options.url, tokens, pageCache);
+      const cookiesController = new SigaaCookiesController();
+      this.httpSession = new SigaaHTTPSession(
+        options.url,
+        cookiesController,
+        pageCache
+      );
 
       const bondController =
         options.bondController || new SigaaBondController();
@@ -246,7 +259,9 @@ export class Sigaa {
     }
 
     this.loginInstance =
-      options.login || new SigaaLogin(this.http, this.session);
+      options.login || options.institution === 'UFPB'
+        ? new SigaaLoginUFPB(this.http, this.session)
+        : new SigaaLoginIFSC(this.http, this.session);
   }
 
   /**
@@ -256,7 +271,15 @@ export class Sigaa {
    */
   async login(username: string, password: string): Promise<Account> {
     const page = await this.loginInstance.login(username, password);
-    return this.accountFactory.getAccount(page);
+    try {
+      return await this.accountFactory.getAccount(page);
+    } catch (err) {
+      const retryPage = await this.http.followAllRedirect(
+        await this.http.get(page.url.href, { noCache: true }),
+        { noCache: true }
+      );
+      return this.accountFactory.getAccount(retryPage);
+    }
   }
 
   /**

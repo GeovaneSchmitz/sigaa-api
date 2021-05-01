@@ -46,12 +46,14 @@ export * from '@search/sigaa-search-teacher';
 export * from '@search/sigaa-search';
 
 export * from '@session/sigaa-page-cache';
-export * from '@session/sigaa-tokens';
+export * from '@session/sigaa-cookies-controller';
 export * from '@session/sigaa-http-session';
 export * from '@session/sigaa-session';
 export * from '@session/sigaa-page';
 export * from '@session/sigaa-http';
-export * from '@session/sigaa-login';
+export * from '@session/login/sigaa-login';
+export * from '@session/login/sigaa-login-ifsc';
+export * from '@session/login/sigaa-login-ufpb';
 export * from '@session/sigaa-bond-controller';
 export * from '@session/sigaa-http-factory';
 export * from '@session/sigaa-http-with-bond';

@@ -116,8 +116,16 @@ export class SigaaAccount implements Account {
    * @param homepage home page to parse.
    */
   private parseHomepage(homepage: Page): void {
-    //As the login page can vary, we should check the type of page.
-
+    //Since the login page can vary, we should check the type of page.
+    if (
+      homepage.bodyDecoded.includes(
+        'O sistema comportou-se de forma inesperada'
+      )
+    ) {
+      throw new Error(
+        'SIGAA: Invalid homepage, the system behaved unexpectedly.'
+      );
+    }
     if (homepage.url.href.includes('/portais/discente/discente.jsf')) {
       //If it is home page student of desktop version.
       this.pagehomeParsePromise = this.parseStudentHomePage(homepage);
@@ -127,6 +135,8 @@ export class SigaaAccount implements Account {
     ) {
       //If it is bond page.
       this.pagehomeParsePromise = this.parseBondPage(homepage);
+    } else {
+      throw new Error('SIGAA: Unknown homepage format.');
     }
   }
 
@@ -280,7 +290,8 @@ export class SigaaAccount implements Account {
     const pictureElement = page.$('div[class="foto"] img');
     if (pictureElement.length === 0) return null;
     const pictureSrc = pictureElement.attr('src');
-    if (!pictureSrc || pictureSrc.includes('/sigaa/img/no_picture.png')) return null;
+    if (!pictureSrc || pictureSrc.includes('/sigaa/img/no_picture.png'))
+      return null;
     return new URL(pictureSrc, page.url);
   }
 

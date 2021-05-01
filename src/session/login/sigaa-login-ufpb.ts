@@ -1,34 +1,20 @@
-import { LoginStatus } from '../sigaa-types';
+import { LoginStatus } from '../../sigaa-types';
 import { URL } from 'url';
-import { HTTP } from './sigaa-http';
-import { Page, SigaaForm } from './sigaa-page';
-import { Session } from './sigaa-session';
+import { HTTP } from '../sigaa-http';
+import { Page, SigaaForm } from '../sigaa-page';
+import { Session } from '../sigaa-session';
+import { Login } from './sigaa-login';
 
 /**
- * Abstraction representing class that logs in.
- *
+ * Responsible for logging in UFPB.
  * @category Internal
  */
-export interface Login {
-  /**
-   * Login on Sigaa
-   * @param username
-   * @param password'
-   * @returns Login page result.
-   */
-  login(username: string, password: string): Promise<Page>;
-}
-
-/**
- * Responsible for logging in.
- * @category Internal
- */
-export class SigaaLogin implements Login {
+export class SigaaLoginUFPB implements Login {
   constructor(protected http: HTTP, protected session: Session) {}
   readonly errorInvalidCredentials = 'SIGAA: Invalid credentials.';
 
   protected parseLoginForm(page: Page): SigaaForm {
-    const formElement = page.$("form[name='loginForm']");
+    const formElement = page.$("form[name='form']");
 
     const actionUrl = formElement.attr('action');
     if (!actionUrl) throw new Error('SIGAA: No action form on login page.');
@@ -57,7 +43,7 @@ export class SigaaLogin implements Login {
     if (this.form) {
       return this.form;
     } else {
-      const page = await this.http.get('/sigaa/verTelaLogin.do');
+      const page = await this.http.get('/sigaa/logon.jsf');
       return this.parseLoginForm(page);
     }
   }
@@ -73,8 +59,8 @@ export class SigaaLogin implements Login {
   ): Promise<Page> {
     const { action, postValues } = await this.getLoginForm();
 
-    postValues['user.login'] = username;
-    postValues['user.senha'] = password;
+    postValues['form:login'] = username;
+    postValues['form:senha'] = password;
     const page = await this.http.post(action.href, postValues);
     return await this.parseDesktopLoginResult(page);
   }
@@ -101,8 +87,8 @@ export class SigaaLogin implements Login {
 
   protected async parseDesktopLoginResult(page: Page): Promise<Page> {
     const accountPage = await this.http.followAllRedirect(page);
-    if (accountPage.body.includes('Entrar no Sistema')) {
-      if (accountPage.body.includes('Usuário e/ou senha inválidos')) {
+    if (accountPage.bodyDecoded.includes('action="/sigaa/logon.jsf"')) {
+      if (accountPage.bodyDecoded.includes('Usuário e/ou senha inválidos')) {
         this.form = await this.parseLoginForm(accountPage);
         throw new Error(this.errorInvalidCredentials);
       } else {

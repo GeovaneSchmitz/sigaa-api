@@ -21,7 +21,7 @@ export interface PromiseItemStack<K, T> {
  * Abstraction to represent a class that performs chain functions and waits for each promise that the functions return.
  * @category Internal
  */
-interface PromiseStack<K, T> {
+export interface PromiseStack<K, T> {
   /**
    * Add promise in stack.
    * The function is not called the moment it is added to the stack, but when it is your turn on the stack
@@ -36,6 +36,11 @@ interface PromiseStack<K, T> {
    * Returns the functions that are still in the stack.
    */
   readonly promises: PromiseItemStack<K, T>[];
+
+  /**
+   * flush the stack.
+   */
+  flush(): void;
 }
 
 /**
@@ -65,6 +70,13 @@ export class SigaaPromiseStack<K, T> implements PromiseStack<K, T> {
    */
   constructor(order?: PromiseStackOrder) {
     this.order = order || 'normal';
+  }
+  /**
+   * @inheritdoc
+   */
+  flush(): void {
+    this.storedPromises = [];
+    this.promiseRunning = undefined;
   }
 
   /**

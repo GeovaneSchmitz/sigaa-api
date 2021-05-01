@@ -1,7 +1,10 @@
 import { URL } from 'url';
 
 import { isEqual } from 'lodash';
-import { SigaaPromiseStack } from '@helpers/sigaa-promise-stack';
+import {
+  RequestStacks,
+  sigaaRequestStackSingleton
+} from '@helpers/sigaa-request-stack';
 import {
   HTTPRequestOptions,
   ProgressCallback,
@@ -9,7 +12,7 @@ import {
 } from './sigaa-http';
 import { Page, SigaaPage } from './sigaa-page';
 import { PageCache } from './sigaa-page-cache';
-import { Token } from './sigaa-tokens';
+import { CookiesController } from './sigaa-cookies-controller';
 
 /**
  * Manage a http session
@@ -129,9 +132,10 @@ export class SigaaHTTPSession implements HTTPSession {
   /**
    * @param url base of all request, example: https://sigaa.ifsc.edu.br
    */
+
   constructor(
     public url: string,
-    private token: Token,
+    private cookiesController: CookiesController,
     private pageCache: PageCache
   ) {}
 
@@ -154,11 +158,9 @@ export class SigaaHTTPSession implements HTTPSession {
     return null;
   }
 
-  private postRequestsStack = new SigaaPromiseStack<Request, Page>('reverse');
-  private noCookieRequestsStack = new SigaaPromiseStack<Request, Page>(
-    'reverse'
-  );
-  private requestStack = new SigaaPromiseStack<Request, Page>('reverse');
+  get requestStacks(): RequestStacks<Request, Page> {
+    return sigaaRequestStackSingleton.getStacksByDomain(this.url);
+  }
 
   private requestPromises: RequestPromiseTracker[] = [];
 
@@ -214,13 +216,12 @@ export class SigaaHTTPSession implements HTTPSession {
     });
     const setCookie = page.headers['set-cookie'];
     if (setCookie) {
-      const cookies =
-        typeof setCookie === 'string' ? setCookie : setCookie.join(' ');
+      const cookies = typeof setCookie === 'string' ? [setCookie] : setCookie;
 
-      const token = cookies.match(/JSESSIONID=[^;]*/g);
-      if (token) {
-        this.token.setToken(page.requestOptions.hostname, token[0]);
-      }
+      this.cookiesController.storeCookies(
+        page.requestOptions.hostname,
+        cookies
+      );
     }
     if (page.statusCode === 200) {
       if (
@@ -244,7 +245,10 @@ export class SigaaHTTPSession implements HTTPSession {
     link: URL,
     httpOptions: HTTPRequestOptions
   ): Promise<HTTPRequestOptions> {
-    const cookie = this.token.getTokenByDomain(httpOptions.hostname);
+    const cookie = this.cookiesController.getCookieHeader(
+      link.hostname,
+      link.pathname
+    );
     if (cookie) {
       httpOptions.headers.Cookie = cookie;
     }
@@ -266,19 +270,19 @@ export class SigaaHTTPSession implements HTTPSession {
     }
 
     const stack = !httpOptions.headers.Cookie
-      ? this.noCookieRequestsStack
+      ? this.requestStacks.noCookie
       : httpOptions.method === 'POST'
-      ? this.postRequestsStack
-      : this.requestStack;
+      ? this.requestStacks.post
+      : this.requestStacks.get;
 
+    const request: Request = {
+      httpOptions,
+      body: requestBody
+    };
     if (
       (requestBody === undefined || typeof requestBody == 'string') &&
       options?.shareSameRequest
     ) {
-      const request: Request = {
-        httpOptions,
-        body: requestBody
-      };
       const runningRequest = stack.promises.find(
         (request) =>
           request.key.body === requestBody &&
@@ -287,15 +291,15 @@ export class SigaaHTTPSession implements HTTPSession {
       if (runningRequest?.promise) {
         return runningRequest.promise;
       }
-      await new Promise<void>((awaitResolve) => {
-        stack.addPromise(request, () => {
-          awaitResolve();
-          return new Promise<Page>((resolve, reject) => {
-            this.requestPromises.push({ request, reject, resolve });
-          });
+    }
+    await new Promise<void>((awaitResolve) => {
+      stack.addPromise(request, () => {
+        awaitResolve();
+        return new Promise<Page>((resolve, reject) => {
+          this.requestPromises.push({ request, resolve, reject });
         });
       });
-    }
+    });
 
     return null;
   }
@@ -304,7 +308,7 @@ export class SigaaHTTPSession implements HTTPSession {
    * @inheritdoc
    */
   close(): void {
-    this.token.clearTokens();
+    this.cookiesController.clearCookies();
     this.pageCache.clearCachePage();
   }
 }
