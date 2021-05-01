@@ -95,7 +95,7 @@
 			<section class="tsd-panel">
 				<h3>Implements</h3>
 				<ul class="tsd-hierarchy">
-					<li><span class="tsd-signature-type">PromiseStack</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<li><a href="../interfaces/promisestack.html" class="tsd-signature-type" data-tsd-kind="Interface">PromiseStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -126,6 +126,7 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sigaapromisestack.html#addpromise" class="tsd-kind-icon">add<wbr>Promise</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="sigaapromisestack.html#flush" class="tsd-kind-icon">flush</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="sigaapromisestack.html#promiseexecutor" class="tsd-kind-icon">promise<wbr>Executor</a></li>
 							</ul>
 						</section>
@@ -138,13 +139,13 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-has-type-parameter">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Sigaa<wbr>Promise<wbr>Stack&lt;K, T&gt;<span class="tsd-signature-symbol">(</span>order<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">&quot;normal&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;reverse&quot;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaapromisestack.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaPromiseStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Sigaa<wbr>Promise<wbr>Stack&lt;K, T&gt;<span class="tsd-signature-symbol">(</span>order<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">PromiseStackOrder</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="sigaapromisestack.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaPromiseStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/helpers/sigaa-promise-stack.ts#L61">src/helpers/sigaa-promise-stack.ts:61</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L66">src/helpers/sigaa-promise-stack.ts:66</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-type-parameters-title">Type parameters</h4>
@@ -159,7 +160,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5><span class="tsd-flag ts-flagOptional">Optional</span> order: <span class="tsd-signature-type">&quot;normal&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;reverse&quot;</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> order: <span class="tsd-signature-type">PromiseStackOrder</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="sigaapromisestack.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaPromiseStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -175,7 +176,7 @@
 					<div class="tsd-signature tsd-kind-icon">order<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">PromiseStackOrder</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/helpers/sigaa-promise-stack.ts#L51">src/helpers/sigaa-promise-stack.ts:51</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L56">src/helpers/sigaa-promise-stack.ts:56</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -188,10 +189,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a name="promiserunning" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> promise<wbr>Running</h3>
-					<div class="tsd-signature tsd-kind-icon">promise<wbr>Running<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/promiseitemstack.html" class="tsd-signature-type" data-tsd-kind="Interface">PromiseItemStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<div class="tsd-signature tsd-kind-icon">promise<wbr>Running<span class="tsd-signature-symbol">:</span> <a href="../interfaces/promiseitemstack.html" class="tsd-signature-type" data-tsd-kind="Interface">PromiseItemStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/helpers/sigaa-promise-stack.ts#L56">src/helpers/sigaa-promise-stack.ts:56</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L61">src/helpers/sigaa-promise-stack.ts:61</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -203,10 +204,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a name="storedpromises" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> stored<wbr>Promises</h3>
-					<div class="tsd-signature tsd-kind-icon">stored<wbr>Promises<span class="tsd-signature-symbol">:</span> <a href="../interfaces/promiseitemstack.html" class="tsd-signature-type" data-tsd-kind="Interface">PromiseItemStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = ...</span></div>
+					<div class="tsd-signature tsd-kind-icon">stored<wbr>Promises<span class="tsd-signature-symbol">:</span> <a href="../interfaces/promiseitemstack.html" class="tsd-signature-type" data-tsd-kind="Interface">PromiseItemStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> = []</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/helpers/sigaa-promise-stack.ts#L61">src/helpers/sigaa-promise-stack.ts:61</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L66">src/helpers/sigaa-promise-stack.ts:66</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -227,15 +228,16 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/promisestack.html">PromiseStack</a>.<a href="../interfaces/promisestack.html#promises">promises</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/helpers/sigaa-promise-stack.ts#L73">src/helpers/sigaa-promise-stack.ts:73</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L85">src/helpers/sigaa-promise-stack.ts:85</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
-								<dl class="tsd-comment-tags">
-									<dt>inheritdoc</dt>
-									<dd></dd>
-								</dl>
+								<div class="lead">
+									<p>Get promises objects.
+									Returns the functions that are still in the stack.</p>
+								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/promiseitemstack.html" class="tsd-signature-type" data-tsd-kind="Interface">PromiseItemStack</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">K</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">[]</span></h4>
 						</li>
@@ -253,26 +255,57 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/promisestack.html">PromiseStack</a>.<a href="../interfaces/promisestack.html#addpromise">addPromise</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/helpers/sigaa-promise-stack.ts#L106">src/helpers/sigaa-promise-stack.ts:106</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L118">src/helpers/sigaa-promise-stack.ts:118</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
-								<dl class="tsd-comment-tags">
-									<dt>inheritdoc</dt>
-									<dd></dd>
-								</dl>
+								<div class="lead">
+									<p>Add promise in stack.
+									The function is not called the moment it is added to the stack, but when it is your turn on the stack</p>
+								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>key: <span class="tsd-signature-type">K</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Key of promise array, to identify a function.</p>
+									</div>
 								</li>
 								<li>
 									<h5>promiseFunction: <a href="../interfaces/functionpromise.html" class="tsd-signature-type" data-tsd-kind="Interface">FunctionPromise</a><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>function to generate the promise</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">T</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>A promise that resolves with the function&#39;s response.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+					<a name="flush" class="tsd-anchor"></a>
+					<h3>flush</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon">flush<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/promisestack.html">PromiseStack</a>.<a href="../interfaces/promisestack.html#flush">flush</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L77">src/helpers/sigaa-promise-stack.ts:77</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>flush the stack.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -286,7 +319,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/helpers/sigaa-promise-stack.ts#L84">src/helpers/sigaa-promise-stack.ts:84</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/helpers/sigaa-promise-stack.ts#L96">src/helpers/sigaa-promise-stack.ts:96</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -333,6 +366,9 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="sigaapromisestack.html#addpromise" class="tsd-kind-icon">add<wbr>Promise</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class">
+								<a href="sigaapromisestack.html#flush" class="tsd-kind-icon">flush</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 								<a href="sigaapromisestack.html#promiseexecutor" class="tsd-kind-icon">promise<wbr>Executor</a>
 							</li>
@@ -360,16 +396,15 @@
 				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-			</ul>
-			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
 			</ul>
 		</div>
 	</div>

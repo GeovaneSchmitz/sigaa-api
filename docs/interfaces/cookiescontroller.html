@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Token | sigaa-api</title>
+	<title>CookiesController | sigaa-api</title>
 	<meta name="description" content="Documentation for sigaa-api">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,10 +55,10 @@
 					<a href="../modules.html">sigaa-api</a>
 				</li>
 				<li>
-					<a href="token.html">Token</a>
+					<a href="cookiescontroller.html">CookiesController</a>
 				</li>
 			</ul>
-			<h1>Interface Token</h1>
+			<h1>Interface CookiesController</h1>
 		</div>
 	</div>
 </header>
@@ -76,14 +76,14 @@
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">Token</span>
+						<span class="target">CookiesController</span>
 					</li>
 				</ul>
 			</section>
 			<section class="tsd-panel">
 				<h3>Implemented by</h3>
 				<ul class="tsd-hierarchy">
-					<li><a href="../classes/sigaatokens.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaTokens</a></li>
+					<li><a href="../classes/sigaacookiescontroller.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaCookiesController</a></li>
 				</ul>
 			</section>
 			<section class="tsd-panel-group tsd-index-group">
@@ -91,53 +91,29 @@
 				<section class="tsd-panel tsd-index-panel">
 					<div class="tsd-index-content">
 						<section class="tsd-index-section ">
-							<h3>Properties</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="token.html#tokens" class="tsd-kind-icon">tokens</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section ">
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="token.html#cleartokens" class="tsd-kind-icon">clear<wbr>Tokens</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="token.html#gettokenbydomain" class="tsd-kind-icon">get<wbr>Token<wbr>ByDomain</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="token.html#settoken" class="tsd-kind-icon">set<wbr>Token</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="cookiescontroller.html#clearcookies" class="tsd-kind-icon">clear<wbr>Cookies</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="cookiescontroller.html#getcookieheader" class="tsd-kind-icon">get<wbr>Cookie<wbr>Header</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="cookiescontroller.html#storecookies" class="tsd-kind-icon">store<wbr>Cookies</a></li>
 							</ul>
 						</section>
-					</div>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group ">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="tokens" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> tokens</h3>
-					<div class="tsd-signature tsd-kind-icon">tokens<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-tokens.ts#L28">src/session/sigaa-tokens.ts:28</a></li>
-						</ul>
-					</aside>
-					<div class="tsd-comment tsd-typography">
-						<div class="lead">
-							<p>Cookies key as domain and value as cookie string.</p>
-						</div>
 					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Methods</h2>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="cleartokens" class="tsd-anchor"></a>
-					<h3>clear<wbr>Tokens</h3>
+					<a name="clearcookies" class="tsd-anchor"></a>
+					<h3>clear<wbr>Cookies</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">clear<wbr>Tokens<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">clear<wbr>Cookies<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-tokens.ts#L23">src/session/sigaa-tokens.ts:23</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-cookies-controller.ts#L24">src/session/sigaa-cookies-controller.ts:24</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -150,16 +126,16 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="gettokenbydomain" class="tsd-anchor"></a>
-					<h3>get<wbr>Token<wbr>ByDomain</h3>
+					<a name="getcookieheader" class="tsd-anchor"></a>
+					<h3>get<wbr>Cookie<wbr>Header</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">get<wbr>Token<wbr>ByDomain<span class="tsd-signature-symbol">(</span>domain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></li>
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Cookie<wbr>Header<span class="tsd-signature-symbol">(</span>domain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, path<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-tokens.ts#L11">src/session/sigaa-tokens.ts:11</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-cookies-controller.ts#L12">src/session/sigaa-cookies-controller.ts:12</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -172,7 +148,13 @@
 								<li>
 									<h5>domain: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>domain of cookie</p>
+										<p>domain of request</p>
+									</div>
+								</li>
+								<li>
+									<h5>path: <span class="tsd-signature-type">string</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>path of request</p>
 									</div>
 								</li>
 							</ul>
@@ -182,16 +164,16 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-					<a name="settoken" class="tsd-anchor"></a>
-					<h3>set<wbr>Token</h3>
+					<a name="storecookies" class="tsd-anchor"></a>
+					<h3>store<wbr>Cookies</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-						<li class="tsd-signature tsd-kind-icon">set<wbr>Token<span class="tsd-signature-symbol">(</span>domain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, token<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">store<wbr>Cookies<span class="tsd-signature-symbol">(</span>domain<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, cookies<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-tokens.ts#L18">src/session/sigaa-tokens.ts:18</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-cookies-controller.ts#L19">src/session/sigaa-cookies-controller.ts:19</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -204,13 +186,13 @@
 								<li>
 									<h5>domain: <span class="tsd-signature-type">string</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Token URL domain without https:// only URL hostname</p>
+										<p>page domain without https://</p>
 									</div>
 								</li>
 								<li>
-									<h5>token: <span class="tsd-signature-type">string</span></h5>
+									<h5>cookies: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>token to store</p>
+										<p>cookies to store (array of Set-Cookie header)</p>
 									</div>
 								</li>
 							</ul>
@@ -233,19 +215,16 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="token.html" class="tsd-kind-icon">Token</a>
+						<a href="cookiescontroller.html" class="tsd-kind-icon">Cookies<wbr>Controller</a>
 						<ul>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="token.html#tokens" class="tsd-kind-icon">tokens</a>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="cookiescontroller.html#clearcookies" class="tsd-kind-icon">clear<wbr>Cookies</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="token.html#cleartokens" class="tsd-kind-icon">clear<wbr>Tokens</a>
+								<a href="cookiescontroller.html#getcookieheader" class="tsd-kind-icon">get<wbr>Cookie<wbr>Header</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="token.html#gettokenbydomain" class="tsd-kind-icon">get<wbr>Token<wbr>ByDomain</a>
-							</li>
-							<li class=" tsd-kind-method tsd-parent-kind-interface">
-								<a href="token.html#settoken" class="tsd-kind-icon">set<wbr>Token</a>
+								<a href="cookiescontroller.html#storecookies" class="tsd-kind-icon">store<wbr>Cookies</a>
 							</li>
 						</ul>
 					</li>
@@ -271,16 +250,15 @@
 				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-			</ul>
-			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
 			</ul>
 		</div>
 	</div>

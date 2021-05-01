@@ -100,6 +100,7 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="sigaapage.html#__" class="tsd-kind-icon">_$</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="sigaapage.html#_bodydecoded" class="tsd-kind-icon">_body<wbr>Decoded</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="sigaapage.html#_viewstate" class="tsd-kind-icon">_view<wbr>State</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="sigaapage.html#body" class="tsd-kind-icon">body</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="sigaapage.html#headers" class="tsd-kind-icon">headers</a></li>
@@ -114,6 +115,7 @@
 							<h3>Accessors</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="sigaapage.html#_" class="tsd-kind-icon">$</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="sigaapage.html#bodydecoded" class="tsd-kind-icon">body<wbr>Decoded</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="sigaapage.html#method" class="tsd-kind-icon">method</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="sigaapage.html#requestheaders" class="tsd-kind-icon">request<wbr>Headers</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="sigaapage.html#viewstate" class="tsd-kind-icon">view<wbr>State</a></li>
@@ -141,7 +143,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L113">src/session/sigaa-page.ts:113</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L120">src/session/sigaa-page.ts:120</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -160,10 +162,10 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a name="__" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> _$</h3>
-					<div class="tsd-signature tsd-kind-icon">_$<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Root</span></div>
+					<div class="tsd-signature tsd-kind-icon">_$<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Root</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L164">src/session/sigaa-page.ts:164</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L171">src/session/sigaa-page.ts:171</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -173,12 +175,27 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a name="_viewstate" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> _view<wbr>State</h3>
-					<div class="tsd-signature tsd-kind-icon">_view<wbr>State<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span></div>
+					<a name="_bodydecoded" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> _body<wbr>Decoded</h3>
+					<div class="tsd-signature tsd-kind-icon">_body<wbr>Decoded<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L169">src/session/sigaa-page.ts:169</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L181">src/session/sigaa-page.ts:181</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Page body with HTML encoded characters replaced.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="_viewstate" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> _view<wbr>State</h3>
+					<div class="tsd-signature tsd-kind-icon">_view<wbr>State<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L176">src/session/sigaa-page.ts:176</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -194,16 +211,9 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#body">body</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L154">src/session/sigaa-page.ts:154</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L161">src/session/sigaa-page.ts:161</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<dl class="tsd-comment-tags">
-							<dt>param</dt>
-							<dd><p>Page body of response</p>
-							</dd>
-						</dl>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="headers" class="tsd-anchor"></a>
@@ -212,16 +222,9 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#headers">headers</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L149">src/session/sigaa-page.ts:149</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L156">src/session/sigaa-page.ts:156</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<dl class="tsd-comment-tags">
-							<dt>param</dt>
-							<dd><p>The page HTTP response headers.</p>
-							</dd>
-						</dl>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="modifiedat" class="tsd-anchor"></a>
@@ -230,25 +233,18 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#modifiedat">modifiedAt</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L159">src/session/sigaa-page.ts:159</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L166">src/session/sigaa-page.ts:166</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<dl class="tsd-comment-tags">
-							<dt>param</dt>
-							<dd><p>Timestamp of the last request using the page&#39;s viewState</p>
-							</dd>
-						</dl>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="requestbody" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> request<wbr>Body</h3>
-					<div class="tsd-signature tsd-kind-icon">request<wbr>Body<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Buffer</span></div>
+					<div class="tsd-signature tsd-kind-icon">request<wbr>Body<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Buffer</span></div>
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#requestbody">requestBody</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L134">src/session/sigaa-page.ts:134</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L141">src/session/sigaa-page.ts:141</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -264,7 +260,7 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#requestoptions">requestOptions</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L129">src/session/sigaa-page.ts:129</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L136">src/session/sigaa-page.ts:136</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -281,16 +277,9 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#statuscode">statusCode</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L139">src/session/sigaa-page.ts:139</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L146">src/session/sigaa-page.ts:146</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<dl class="tsd-comment-tags">
-							<dt>param</dt>
-							<dd><p>HTTP status code,</p>
-							</dd>
-						</dl>
-					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="url" class="tsd-anchor"></a>
@@ -299,16 +288,9 @@
 					<aside class="tsd-sources">
 						<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#url">url</a></p>
 						<ul>
-							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L144">src/session/sigaa-page.ts:144</a></li>
+							<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L151">src/session/sigaa-page.ts:151</a></li>
 						</ul>
 					</aside>
-					<div class="tsd-comment tsd-typography">
-						<dl class="tsd-comment-tags">
-							<dt>param</dt>
-							<dd><p>Page URL</p>
-							</dd>
-						</dl>
-					</div>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -322,11 +304,35 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#_">$</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L178">src/session/sigaa-page.ts:178</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L199">src/session/sigaa-page.ts:199</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Cheerio page.</p>
+								</div>
+							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Root</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="bodydecoded" class="tsd-anchor"></a>
+					<h3>body<wbr>Decoded</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> bodyDecoded<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#bodydecoded">bodyDecoded</a></p>
+								<ul>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L193">src/session/sigaa-page.ts:193</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -339,8 +345,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#method">method</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L174">src/session/sigaa-page.ts:174</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L186">src/session/sigaa-page.ts:186</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -361,8 +368,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#requestheaders">requestHeaders</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L187">src/session/sigaa-page.ts:187</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L208">src/session/sigaa-page.ts:208</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
@@ -378,8 +386,9 @@
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
+								<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#viewstate">viewState</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L205">src/session/sigaa-page.ts:205</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L226">src/session/sigaa-page.ts:226</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -404,7 +413,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L194">src/session/sigaa-page.ts:194</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L215">src/session/sigaa-page.ts:215</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -427,7 +436,7 @@
 							<aside class="tsd-sources">
 								<p>Implementation of <a href="../interfaces/page.html">Page</a>.<a href="../interfaces/page.html#parsejsfcljs">parseJSFCLJS</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/cffa899/src/session/sigaa-page.ts#L218">src/session/sigaa-page.ts:218</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/session/sigaa-page.ts#L239">src/session/sigaa-page.ts:239</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -473,6 +482,9 @@
 								<a href="sigaapage.html#__" class="tsd-kind-icon">_$</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="sigaapage.html#_bodydecoded" class="tsd-kind-icon">_body<wbr>Decoded</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 								<a href="sigaapage.html#_viewstate" class="tsd-kind-icon">_view<wbr>State</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
@@ -498,6 +510,9 @@
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="sigaapage.html#_" class="tsd-kind-icon">$</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="sigaapage.html#bodydecoded" class="tsd-kind-icon">body<wbr>Decoded</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="sigaapage.html#method" class="tsd-kind-icon">method</a>
@@ -538,16 +553,15 @@
 				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
-			</ul>
-			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
 			</ul>
 		</div>
 	</div>
