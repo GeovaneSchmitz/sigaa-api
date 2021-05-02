@@ -9,7 +9,7 @@ import { HTTPFactory, SigaaHTTPFactory } from '@session/sigaa-http-factory';
 import { Login } from '@session/login/sigaa-login';
 import { SigaaLoginIFSC } from '@session/login/sigaa-login-ifsc';
 import { SigaaLoginUFPB } from '@session/login/sigaa-login-ufpb';
-import { Session, SigaaSession } from '@session/sigaa-session';
+import { InstituionType, Session, SigaaSession } from '@session/sigaa-session';
 import { SigaaCookiesController } from '@session/sigaa-cookies-controller';
 import { SigaaPageCacheWithBond } from '@session/sigaa-page-cache-with-bond';
 import { SigaaPageCacheFactory } from '@session/sigaa-page-cache-factory';
@@ -40,17 +40,9 @@ import {
 } from '@courses/sigaa-lesson-parser-factory';
 
 /**
- * The institution serves to adjust interactions with SIGAA.
- * @category Public
- */
-type InstituionType = 'IFSC' | 'UFPB';
-
-/**
  * @category Internal
  */
 interface SigaaCommonConstructorOptions {
-  institution?: InstituionType;
-  session?: Session;
   login?: Login;
   parser?: Parser;
 }
@@ -93,6 +85,7 @@ type XOR<T, U> = (Without<T, U> & U) | (Without<U, T> & T);
  * @category Public
  */
 export type SigaaOptionsConstructor = SigaaCommonConstructorOptions &
+  XOR<{ institution?: InstituionType }, { session?: Session }> &
   XOR<SigaaConstructorURL, SigaaConstructorHTTP> &
   XOR<
     WithAccountFactory,
@@ -152,7 +145,7 @@ export class Sigaa {
     if ('session' in options && options.session) {
       this.session = options.session;
     } else {
-      this.session = new SigaaSession();
+      this.session = new SigaaSession(options.institution);
     }
 
     if ('url' in options && options.url) {

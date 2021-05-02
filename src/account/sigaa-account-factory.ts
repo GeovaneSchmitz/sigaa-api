@@ -3,7 +3,9 @@ import { Parser } from '@helpers/sigaa-parser';
 import { HTTP } from '@session/sigaa-http';
 import { Page } from '@session/sigaa-page';
 import { Session } from '@session/sigaa-session';
-import { SigaaAccount, Account } from './sigaa-account';
+import { Account } from './sigaa-account';
+import { SigaaAccountIFSC } from './sigaa-account-ifsc';
+import { SigaaAccountUFPB } from './sigaa-account-ufpb';
 
 /**
  * Abstraction to represent the class that instantiates the account.
@@ -29,18 +31,27 @@ export class SigaaAccountFactory implements AccountFactory {
     private session: Session,
     private bondFactory: BondFactory
   ) {}
-
   /**
    * Creates a new instance of Account.
    * @param page home page of account (page after login).
    */
   async getAccount(page: Page): Promise<Account> {
-    return new SigaaAccount(
-      page,
-      this.http,
-      this.parser,
-      this.session,
-      this.bondFactory
-    );
+    if (this.session.institution === 'UFPB') {
+      return new SigaaAccountUFPB(
+        page,
+        this.http,
+        this.parser,
+        this.session,
+        this.bondFactory
+      );
+    } else {
+      return new SigaaAccountIFSC(
+        page,
+        this.http,
+        this.parser,
+        this.session,
+        this.bondFactory
+      );
+    }
   }
 }
