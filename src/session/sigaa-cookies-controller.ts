@@ -4,15 +4,15 @@
  */
 export interface CookiesController {
   /**
-   * Returns domain cookie JSESSIONID (token) or null if nothing.
+   * Returns domain cookies or null if nothing.
    * @param domain domain of request
    * @param path path of request
-   * @returns cookie string or null if not found.
+   * @returns header cookie value or null if not have cookies.
    */
   getCookieHeader(domain: string, path: string): string | null;
 
   /**
-   * Store cookie JSESSIONID (token) for domain URL.
+   * Store cookies
    * @param domain page domain without https://
    * @param cookies cookies to store (array of Set-Cookie header)
    */
@@ -51,8 +51,8 @@ export class SigaaCookiesController implements CookiesController {
       setCookie = setCookie.substr(cookieName.length);
       //if cookie value start with double-quotes
       let cookieValue;
-      if (setCookie.charAt(cookieName.length + 1) == '"') {
-        cookieValue = (setCookie.substr(1).match(/^[^" \t\n,;\\]+/) || [])[0];
+      if (setCookie.charAt(1) == '"') {
+        cookieValue = (setCookie.substr(2).match(/^[^" \t\n,;\\]+/) || [])[0];
       } else {
         cookieValue = (setCookie.substr(1).match(/^[^" \t\n,;\\]+/) || [])[0];
       }
@@ -64,8 +64,11 @@ export class SigaaCookiesController implements CookiesController {
         value: cookieValue,
         domain
       };
-
-      setCookie = setCookie.substr(cookieValue.length + 3);
+      if (setCookie.includes(' ')) {
+        setCookie = setCookie.substr(setCookie.indexOf(' ') + 1);
+      } else {
+        setCookie = '';
+      }
       let maxAgeFlagFound = false;
       let invalidCookie = false;
       //parse cookies flags
@@ -84,7 +87,7 @@ export class SigaaCookiesController implements CookiesController {
         } else if (flag.match(/^Max-Age=/)) {
           maxAgeFlagFound = true;
           const maxAge = Number(flag.replace(/^Max-Age=/, ''));
-          cookie.expires = new Date(Date.now() + maxAge);
+          cookie.expires = new Date(Date.now() + maxAge * 1000);
         } else if (!maxAgeFlagFound && flag.match(/^Expires=/)) {
           const expires = flag.replace(/^Expires=/, '');
           cookie.expires = new Date(expires);
@@ -108,7 +111,7 @@ export class SigaaCookiesController implements CookiesController {
       );
 
     if (validCookies.length === 0) return null;
-    return validCookies
+    const cookies = validCookies
       .filter(
         //Filter duplicated cookie
         (cookie, index) =>
@@ -118,7 +121,12 @@ export class SigaaCookiesController implements CookiesController {
           )
       )
       .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .reverse()
       .join('; ');
+    if (!cookies) {
+      return null;
+    }
+    return cookies;
   }
 
   /**
