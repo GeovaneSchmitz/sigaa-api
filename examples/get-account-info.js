@@ -1,4 +1,4 @@
-const Sigaa = require('sigaa-api').Sigaa;
+const { Sigaa } = require('sigaa-api');
 
 const sigaa = new Sigaa({
   url: 'https://sigaa.ifsc.edu.br'
@@ -11,9 +11,10 @@ const password = '';
 const main = async () => {
   const account = await sigaa.login(username, password); // login
 
-  console.log("> Nome: "+ await account.getName());
-  console.log("> Url foto: "+ await account.getProfilePictureURL());
-  
+  console.log('> Nome: ' + (await account.getName()));
+  console.log('> Emails: ' + (await account.getEmails()).join(', '));
+  console.log('> Url foto: ' + (await account.getProfilePictureURL()));
+
   // Encerra a sessão
   await account.logoff();
 };

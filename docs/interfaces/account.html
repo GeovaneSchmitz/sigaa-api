@@ -81,12 +81,6 @@
 					</li>
 				</ul>
 			</section>
-			<section class="tsd-panel">
-				<h3>Implemented by</h3>
-				<ul class="tsd-hierarchy">
-					<li><a href="../classes/sigaaaccount.html" class="tsd-signature-type" data-tsd-kind="Class">SigaaAccount</a></li>
-				</ul>
-			</section>
 			<section class="tsd-panel-group tsd-index-group">
 				<h2>Index</h2>
 				<section class="tsd-panel tsd-index-panel">
@@ -97,6 +91,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="account.html#changepassword" class="tsd-kind-icon">change<wbr>Password</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="account.html#downloadprofilepicture" class="tsd-kind-icon">download<wbr>Profile<wbr>Picture</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="account.html#getactivebonds" class="tsd-kind-icon">get<wbr>Active<wbr>Bonds</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="account.html#getemails" class="tsd-kind-icon">get<wbr>Emails</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="account.html#getinactivebonds" class="tsd-kind-icon">get<wbr>Inactive<wbr>Bonds</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="account.html#getname" class="tsd-kind-icon">get<wbr>Name</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-interface"><a href="account.html#getprofilepictureurl" class="tsd-kind-icon">get<wbr>Profile<wbr>PictureURL</a></li>
@@ -118,7 +113,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/account/sigaa-account.ts#L64">src/account/sigaa-account.ts:64</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L67">src/account/sigaa-account.ts:67</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -163,7 +158,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/account/sigaa-account.ts#L41">src/account/sigaa-account.ts:41</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L44">src/account/sigaa-account.ts:44</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -205,7 +200,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/account/sigaa-account.ts#L27">src/account/sigaa-account.ts:27</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L30">src/account/sigaa-account.ts:30</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -220,6 +215,29 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
+					<a name="getemails" class="tsd-anchor"></a>
+					<h3>get<wbr>Emails</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
+						<li class="tsd-signature tsd-kind-icon">get<wbr>Emails<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L22">src/account/sigaa-account.ts:22</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>get user&#39;s emails</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>a promise with user email.</p>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 					<a name="getinactivebonds" class="tsd-anchor"></a>
 					<h3>get<wbr>Inactive<wbr>Bonds</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -229,7 +247,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/account/sigaa-account.ts#L33">src/account/sigaa-account.ts:33</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L36">src/account/sigaa-account.ts:36</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -252,15 +270,16 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/account/sigaa-account.ts#L19">src/account/sigaa-account.ts:19</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L16">src/account/sigaa-account.ts:16</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>get user&#39;s name</p>
+									<p>get user&#39;s name.</p>
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
+							<p>a promise with user name.</p>
 						</li>
 					</ul>
 				</section>
@@ -274,7 +293,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/account/sigaa-account.ts#L50">src/account/sigaa-account.ts:50</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L53">src/account/sigaa-account.ts:53</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -301,7 +320,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/dfcf6ce/src/account/sigaa-account.ts#L55">src/account/sigaa-account.ts:55</a></li>
+									<li>Defined in <a href="https://github.com/GeovaneSchmitz/sigaa-api/blob/2922ca1/src/account/sigaa-account.ts#L58">src/account/sigaa-account.ts:58</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -338,6 +357,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="account.html#getactivebonds" class="tsd-kind-icon">get<wbr>Active<wbr>Bonds</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-interface">
+								<a href="account.html#getemails" class="tsd-kind-icon">get<wbr>Emails</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-interface">
 								<a href="account.html#getinactivebonds" class="tsd-kind-icon">get<wbr>Inactive<wbr>Bonds</a>

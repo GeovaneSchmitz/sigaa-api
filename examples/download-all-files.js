@@ -1,4 +1,4 @@
-const Sigaa = require('sigaa-api').Sigaa;
+const { Sigaa } = require('sigaa-api');
 
 const fs = require('fs');
 const path = require('path');

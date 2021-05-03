@@ -1,4 +1,4 @@
-const Sigaa = require('sigaa-api').Sigaa;
+const { Sigaa } = require('sigaa-api');
 
 const sigaa = new Sigaa({
   url: 'https://sigaa.ifsc.edu.br'
