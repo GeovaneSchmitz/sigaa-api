@@ -1,6 +1,6 @@
 import { URL } from 'url';
 
-import FormData from 'formdata-node';
+import { FormData } from 'formdata-node';
 import { Parser } from '@helpers/sigaa-parser';
 import { File, FileData } from '@resources/sigaa-file';
 import {

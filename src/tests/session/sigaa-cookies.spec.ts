@@ -8,7 +8,7 @@ test('if Sigaa cookie controller save cookies', () => {
     'A=12; Path=/'
   ]);
   expect(cookieController.getCookieHeader('example.com', '/teste')).toBe(
-    'A=12; ABC=123'
+    'ABC=123; A=12'
   );
 });
 
@@ -38,7 +38,7 @@ test('if Sigaa cookie controller ignore cookie with different paths', () => {
   ]);
   expect(cookieController.getCookieHeader('example.com', '/')).toBe('AT=12');
   expect(cookieController.getCookieHeader('example.com', '/ABC')).toBe(
-    'AT=12; ABC=123'
+    'ABC=123; AT=12'
   );
 });
 
@@ -51,10 +51,10 @@ test('if Sigaa cookie controller filters cookie per domain', () => {
   cookieController.storeCookies('anotherexample.com', ['another=123']);
 
   expect(cookieController.getCookieHeader('example.com', '/')).toBe(
-    'com=true; example=123'
+    'example=123; com=true'
   );
   expect(cookieController.getCookieHeader('anotherexample.com', '/ABC')).toBe(
-    'another=123; com=true'
+    'com=true; another=123'
   );
 });
 
@@ -81,6 +81,6 @@ test('if cookie Max-Age flag works', () => {
   ]);
 
   expect(cookieController.getCookieHeader('example.com', '/')).toBe(
-    'anotherdatewithexpires=true; anotherdate=true'
+    'anotherdate=true; anotherdatewithexpires=true'
   );
 });
