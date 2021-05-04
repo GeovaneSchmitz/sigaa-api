@@ -1,4 +1,5 @@
 ## SIGAA-API
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/59de69575e304168b97fb156b97cc972)](https://app.codacy.com/gh/GeovaneSchmitz/sigaa-api?utm_source=github.com&utm_medium=referral&utm_content=GeovaneSchmitz/sigaa-api&utm_campaign=Badge_Grade_Settings)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/1ed3e89858204acdb2307febc87da74c)](https://www.codacy.com/gh/GeovaneSchmitz/sigaa-api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=GeovaneSchmitz/sigaa-api&amp;utm_campaign=Badge_Grade)
 
 
