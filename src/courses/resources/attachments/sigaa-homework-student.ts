@@ -10,17 +10,19 @@ import {
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
 
 /**
  * @category Internal
  */
-export interface HomeworkData {
+export interface HomeworkData extends UpdatableResourceData {
   title: string;
   startDate: Date;
   endDate: Date;
-  id: string;
+  id?: string;
   description?: string;
   haveGrade?: boolean;
+  isGroupHomework?: boolean;
   formSendHomework?: SigaaForm;
   formViewHomeworkSubmitted?: SigaaForm;
 }
@@ -31,7 +33,9 @@ export interface HomeworkData {
 export interface Homework extends UpdatableResource<HomeworkData> {
   readonly type: 'homework';
   readonly title: string;
-  getHaveGrade(): Promise<boolean>;
+  getFlagHaveGrade(): Promise<boolean>;
+  getFlagIsGroupHomework(): Promise<boolean>;
+
   readonly startDate: Date;
   readonly endDate: Date;
   /**
@@ -51,10 +55,12 @@ export class SigaaHomework
   private _title!: string;
   private _startDate!: Date;
   private _endDate!: Date;
+  private _id?: string;
   private _formSendHomework?: SigaaForm;
   private _formViewHomeworkSubmitted?: SigaaForm;
   private _description?: string;
   private _haveGrade?: boolean;
+  private _isGroupHomework?: boolean;
   private _file?: File;
 
   constructor(
@@ -63,7 +69,7 @@ export class SigaaHomework
     options: HomeworkData,
     updater: UpdatableResourceCallback
   ) {
-    super(updater);
+    super(options.instanceIndentifier, updater);
     this.update(options);
   }
 
@@ -77,6 +83,7 @@ export class SigaaHomework
     this._formViewHomeworkSubmitted = options.formViewHomeworkSubmitted;
     this._description = options.description;
     this._haveGrade = options.haveGrade;
+    this._isGroupHomework = options.isGroupHomework;
 
     this.isClosed = false;
   }
@@ -86,20 +93,39 @@ export class SigaaHomework
     return this._title;
   }
 
-  async getHaveGrade(): Promise<boolean> {
+  get id(): string | null {
+    this.checkIfItWasClosed();
+    return this._id || null;
+  }
+
+  async getFlagHaveGrade(): Promise<boolean> {
     if (this._haveGrade === undefined) {
       await this.updateInstance();
     }
+    this.checkIfItWasClosed();
     if (this._haveGrade === undefined)
       throw new Error('SIGAA: Homework have grade could not be loaded.');
 
     return this._haveGrade;
   }
 
+  async getFlagIsGroupHomework(): Promise<boolean> {
+    if (this._isGroupHomework === undefined) {
+      await this.updateInstance();
+    }
+    this.checkIfItWasClosed();
+
+    if (this._isGroupHomework === undefined)
+      throw new Error('SIGAA: Homework group flag could not be loaded.');
+
+    return this._isGroupHomework;
+  }
+
   async getDescription(): Promise<string> {
     if (!this._description) {
       await this.updateInstance();
     }
+    this.checkIfItWasClosed();
     if (!this._description)
       throw new Error('SIGAA: Homework description could not be loaded.');
     return this._description;
@@ -143,7 +169,8 @@ export class SigaaHomework
       title: '',
       description: '',
       key: fileKey,
-      id: fileId
+      id: fileId,
+      instanceIndentifier: fileId
     };
 
     if (!this._file) {

@@ -11,7 +11,7 @@ import { CourseStudent } from './sigaa-course-student';
 import {
   CourseForum,
   ForumData
-} from '@attachments/sigaa-course-forum-student';
+} from '@courseResources/forum/sigaa-course-forum-student';
 import {
   WebContent,
   WebContentData

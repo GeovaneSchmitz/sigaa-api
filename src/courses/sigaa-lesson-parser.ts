@@ -7,16 +7,16 @@ import { Parser } from '@helpers/sigaa-parser';
 import { Attachment, LessonData } from '@courseResources/sigaa-lesson-student';
 import { Quiz } from '@attachments/sigaa-quiz-student';
 import { Survey } from '@attachments/sigaa-survey-student';
-import { FileData } from '@resources/sigaa-file';
-import { ForumData } from '@attachments/sigaa-course-forum-student';
+import { ForumData } from '@courseResources/forum/sigaa-course-forum-student';
 import { Homework } from '@attachments/sigaa-homework-student';
 
 import { CourseResourcesManager } from '@courses/sigaa-course-resources-manager';
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
 
 /**
  * @category Internal
  */
-interface GenericAttachmentData {
+interface GenericAttachmentData extends UpdatableResourceData {
   title: string;
   description: string;
   form: SigaaForm;
@@ -68,7 +68,7 @@ export class SigaaLessonParser implements LessonParser {
 
     for (const lessonElement of lessonsElements) {
       const lessonOptions = this.lessonParser(page, lessonElement);
-      usedLessonsIds.push(lessonOptions.id);
+      usedLessonsIds.push(lessonOptions.instanceIndentifier);
       this.resources.lessons.upsert(lessonOptions);
     }
     this.resources.lessons.keepOnly(usedLessonsIds);
@@ -119,7 +119,7 @@ export class SigaaLessonParser implements LessonParser {
       title,
       contentText,
       startDate,
-      id: createHash('sha512')
+      instanceIndentifier: createHash('sha512')
         .update(`${title} - ${startDate.toString()} - ${endDate.toString()}`)
         .digest('hex'),
       endDate,
@@ -183,8 +183,7 @@ export class SigaaLessonParser implements LessonParser {
             );
             const forumOptions: ForumData = {
               ...genericOptions,
-              id: this.forumsIdIndex.toString(),
-              isMain: true
+              instanceIndentifier: this.forumsIdIndex.toString()
             };
 
             this.forumsIdIndex++;
@@ -213,11 +212,8 @@ export class SigaaLessonParser implements LessonParser {
    * @param attachmentElement
    */
   private parseAttachmentFile(page: Page, attachmentElement: cheerio.Element) {
-    const fileOptions: FileData = this.parseAttachmentGeneric(
-      page,
-      attachmentElement
-    );
-    return this.resources.files.upsert(fileOptions);
+    const fileData = this.parseAttachmentGeneric(page, attachmentElement);
+    return this.resources.files.upsert(fileData);
   }
 
   /**
@@ -264,6 +260,7 @@ export class SigaaLessonParser implements LessonParser {
       title,
       form,
       id,
+      instanceIndentifier: id,
       description
     };
   }
@@ -286,7 +283,8 @@ export class SigaaLessonParser implements LessonParser {
     const surveyOptions = {
       title,
       form,
-      id: form.postValues.id
+      id: form.postValues.id,
+      instanceIndentifier: form.postValues.id
     };
     return this.resources.survey.upsert(surveyOptions);
   }
@@ -317,6 +315,7 @@ export class SigaaLessonParser implements LessonParser {
     const homeworkOptions = {
       id,
       title,
+      instanceIndentifier: id,
       startDate,
       endDate
     };
@@ -423,6 +422,7 @@ export class SigaaLessonParser implements LessonParser {
     const quizOptions = {
       title,
       id,
+      instanceIndentifier: id,
       startDate,
       endDate
     };

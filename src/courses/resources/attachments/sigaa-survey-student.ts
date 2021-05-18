@@ -1,3 +1,4 @@
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
 import {
   AbstractUpdatableResource,
   UpdatableResource,
@@ -8,7 +9,7 @@ import { SigaaForm } from '@session/sigaa-page';
 /**
  * @category Internal
  */
-export interface SurveyData {
+export interface SurveyData extends UpdatableResourceData {
   id: string;
   title: string;
   form: SigaaForm;
@@ -19,6 +20,7 @@ export interface SurveyData {
  */
 export interface Survey extends UpdatableResource<SurveyData> {
   readonly type: 'survey';
+  readonly id: string;
   readonly title: string;
 }
 
@@ -32,7 +34,7 @@ export class SigaaSurvey extends AbstractUpdatableResource implements Survey {
   private _form!: SigaaForm;
 
   constructor(options: SurveyData, updater: UpdatableResourceCallback) {
-    super(updater);
+    super(options.instanceIndentifier, updater);
     this.update(options);
   }
 

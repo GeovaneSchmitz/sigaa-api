@@ -1,5 +1,6 @@
 import { HTTP, ProgressCallback } from '@session/sigaa-http';
 import { SigaaForm } from '@session/sigaa-page';
+import { UpdatableResourceData } from './sigaa-resource-manager';
 import {
   AbstractUpdatableResource,
   UpdatableResource,
@@ -9,7 +10,7 @@ import {
 /**
  * @category Internal
  */
-interface FileDataKey {
+interface FileDataKey extends UpdatableResourceData {
   id: string;
   key: string;
   title: string;
@@ -19,7 +20,7 @@ interface FileDataKey {
 /**
  * @category Internal
  */
-interface FileDataForm {
+interface FileDataForm extends UpdatableResourceData {
   form: SigaaForm;
   id: string;
   title: string;
@@ -75,7 +76,7 @@ export class SigaaFile extends AbstractUpdatableResource implements File {
     options: FileData,
     updater?: UpdatableResourceCallback
   ) {
-    super(updater);
+    super(options.instanceIndentifier, updater);
     this.update(options);
   }
 
@@ -85,6 +86,7 @@ export class SigaaFile extends AbstractUpdatableResource implements File {
 
   private _title?: string;
   private _key?: string;
+  private _id!: string;
   private _description?: string;
 
   update(options: FileData): void {

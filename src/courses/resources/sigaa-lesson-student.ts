@@ -1,4 +1,4 @@
-import { CourseForum } from '@attachments/sigaa-course-forum-student';
+import { CourseForum } from '@courseResources/forum/sigaa-course-forum-student';
 import { Homework } from '@attachments/sigaa-homework-student';
 import { LinkAttachment } from '@attachments/sigaa-link-student';
 import { Quiz } from '@attachments/sigaa-quiz-student';
@@ -6,6 +6,7 @@ import { Survey } from '@attachments/sigaa-survey-student';
 import { VideoAttachment } from '@attachments/sigaa-video-student';
 import { WebContent } from '@attachments/sigaa-web-content-student';
 import { File } from '@resources/sigaa-file';
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
 import {
   AbstractUpdatableResource,
   UpdatableResource,
@@ -28,11 +29,10 @@ export type Attachment =
 /**
  * @category Internal
  */
-export interface LessonData {
+export interface LessonData extends UpdatableResourceData {
   title: string;
   contentText: string;
   startDate: Date;
-  id: string;
   endDate: Date;
   attachments: Attachment[];
 }
@@ -59,7 +59,7 @@ export class SigaaLesson extends AbstractUpdatableResource implements Lesson {
   private _attachments!: Attachment[];
 
   constructor(options: LessonData, updater?: UpdatableResourceCallback) {
-    super(updater);
+    super(options.instanceIndentifier, updater);
     this.update(options);
   }
 

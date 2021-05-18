@@ -8,7 +8,7 @@ export type UpdatableResourceCallback = () => Promise<void>;
  */
 export interface UpdatableResource<T> {
   update(T: T): void;
-  readonly id: string;
+  readonly _instanceIndentifier: string;
   close(): void;
 }
 
@@ -18,9 +18,10 @@ export interface UpdatableResource<T> {
 export abstract class AbstractUpdatableResource {
   protected isClosed = false;
 
-  protected _id!: string;
-
-  constructor(protected updater?: UpdatableResourceCallback) {}
+  constructor(
+    protected __instanceIndentifier: string,
+    protected updater?: UpdatableResourceCallback
+  ) {}
 
   protected async updateInstance(): Promise<void> {
     if (!this.updater) throw new Error('SIGAA: Resource updater not exists.');
@@ -33,9 +34,8 @@ export abstract class AbstractUpdatableResource {
     }
   }
 
-  get id(): string {
-    this.checkIfItWasClosed();
-    return this._id;
+  get _instanceIndentifier(): string {
+    return this.__instanceIndentifier;
   }
 
   close(): void {

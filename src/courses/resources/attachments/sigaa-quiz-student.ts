@@ -1,3 +1,4 @@
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
 import {
   AbstractUpdatableResource,
   UpdatableResource,
@@ -9,7 +10,7 @@ import { SigaaForm } from '@session/sigaa-page';
 /**
  * @category Internal
  */
-export interface QuizData {
+export interface QuizData extends UpdatableResourceData {
   title: string;
   id: string;
   startDate: Date;
@@ -26,7 +27,7 @@ export interface Quiz extends UpdatableResource<QuizData> {
   readonly type: 'quiz';
   readonly endDate: Date;
   readonly startDate: Date;
-
+  readonly id: string;
   /**
    * TODO
    * @param retry
@@ -49,13 +50,14 @@ export class SigaaQuiz extends AbstractUpdatableResource implements Quiz {
   private _startDate!: Date;
   private _endDate!: Date;
   private _title!: string;
+  private _id!: string;
 
   constructor(
     private http: HTTP,
     options: QuizData,
     updater: UpdatableResourceCallback
   ) {
-    super(updater);
+    super(options.instanceIndentifier, updater);
     this.update(options);
   }
 
@@ -73,6 +75,11 @@ export class SigaaQuiz extends AbstractUpdatableResource implements Quiz {
   get title(): string {
     this.checkIfItWasClosed();
     return this._title;
+  }
+
+  get id(): string {
+    this.checkIfItWasClosed();
+    return this._id;
   }
 
   get endDate(): Date {

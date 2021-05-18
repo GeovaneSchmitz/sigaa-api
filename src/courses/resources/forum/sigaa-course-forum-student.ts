@@ -11,12 +11,13 @@ import {
 import { HTTP } from '@session/sigaa-http';
 import { SigaaForm, Page } from '@session/sigaa-page';
 import { CourseResourcesFactory } from '@courses/sigaa-course-resources-factory';
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
 
 /**
  * Object that contains basic information about the class forum.
  * @category Internal
  */
-export interface ForumData {
+export interface ForumData extends UpdatableResourceData {
   /**
    * Title of the forum.
    */
@@ -31,11 +32,6 @@ export interface ForumData {
    * Form with parameters and url to load the forum page.
    */
   form: SigaaForm;
-
-  /**
-   * Whether it is the home forum or a topic in forum.
-   */
-  isMain: boolean;
 
   /**
    * creation date of the forum.
@@ -65,14 +61,9 @@ export interface CourseForum extends UpdatableResource<ForumData> {
   readonly type: 'forum';
 
   /**
-   * Whether it is the home forum or a topic in forum.
-   */
-  readonly isMain: boolean;
-
-  /**
    * If read monitoring is enabled.
    */
-  getMonitorReading(): Promise<boolean>;
+  getFlagMonitorReading(): Promise<boolean>;
 
   /**
    * Number of topics
@@ -126,11 +117,6 @@ export class SigaaCourseForum
   readonly type = 'forum';
 
   /**
-   * Whether it is the home forum or a topic in forum.
-   */
-  private _isMain!: boolean;
-
-  /**
    * Form with parameters and url to load the forum page.
    */
   private _form!: SigaaForm;
@@ -171,9 +157,13 @@ export class SigaaCourseForum
   private _file?: File;
 
   /**
+   * the forum id.
+   */
+  private _id!: string;
+  /**
    * If read monitoring is enabled.
    */
-  private _monitorReading?: boolean;
+  private _flagMonitorReading?: boolean;
 
   /**
    *
@@ -192,7 +182,7 @@ export class SigaaCourseForum
     forumOptions: ForumData,
     updater: UpdatableResourceCallback
   ) {
-    super(updater);
+    super(forumOptions.instanceIndentifier, updater);
     this.update(forumOptions);
   }
 
@@ -200,7 +190,6 @@ export class SigaaCourseForum
     this._title = forumOptions.title;
     this._form = forumOptions.form;
     this._id = forumOptions.id;
-    this._isMain = forumOptions.isMain;
 
     if (forumOptions.forumType !== undefined) {
       this._forumType = forumOptions.forumType;
@@ -214,10 +203,136 @@ export class SigaaCourseForum
   }
 
   /**
-   * Whether it is the home forum or a topic in forum.
+   * Loads the forum page.
+   * @param retry
    */
-  get isMain(): boolean {
-    return this._isMain;
+  private async getForumPage(retry = true): Promise<void> {
+    try {
+      const page = await this.http.post(
+        this._form.action.href,
+        this._form.postValues
+      );
+
+      this.parseForumTable(page);
+      this.parseSubmitPageForm(page);
+    } catch (err) {
+      if (retry) {
+        await this.updateInstance();
+        return this.getForumPage(false);
+      } else {
+        throw err;
+      }
+    }
+  }
+  /**
+   * Parse submit form in forum page.
+   * @param page
+   */
+  private parseSubmitPageForm(page: Page): void {
+    const formElement = page.$('form#form');
+    const action = formElement.attr('action');
+    if (!action)
+      throw new Error('SIGAA: Forum submit page has form without action.');
+    const actionURL = new URL(action, page.url.href);
+    const postValues: Record<string, string> = {};
+    formElement
+      .find("input:not([type='button'])")
+      .each((index: number, element: cheerio.Element) => {
+        const name = page.$(element).attr('name');
+        if (name) postValues[name] = page.$(element).val();
+      });
+
+    this._submitTopicPageForm = {
+      action: actionURL,
+      postValues
+    };
+  }
+
+  /**
+   * Parse main page of forum.
+   * @param page
+   */
+  private parseForumTable(page: Page): void {
+    const tableElement = page.$('table.formAva > tbody');
+    if (tableElement.length === 0)
+      throw new Error('SIGAA: Unexpected forum page without table element.');
+
+    const rows = tableElement.find('tr').toArray();
+    for (const row of rows) {
+      const headCellElement = page.$(row).find('th');
+      const dataCellElement = page.$(row).find('td');
+      const label = this.parser.removeTagsHtml(headCellElement.html());
+      const content = this.parser.removeTagsHtml(dataCellElement.html());
+      switch (label) {
+        case 'Título:': {
+          this._title = content;
+          break;
+        }
+        case 'Descrição:': {
+          this._description = content;
+          break;
+        }
+        case 'Autor(a):': {
+          this._author = content;
+          break;
+        }
+        case 'Arquivo:': {
+          const linkElement = page.$(dataCellElement).find('a');
+          if (linkElement.length === 1) {
+            const title = this.parser.removeTagsHtml(linkElement.html());
+            const onClick = linkElement.attr('onclick');
+            if (!onClick)
+              throw new Error('SIGAA: Invalid file format at forum page.');
+            const form = page.parseJSFCLJS(onClick);
+            const fileObj: FileData = {
+              title,
+              description: '',
+              form,
+              id: form.postValues.id,
+              instanceIndentifier: form.postValues.id
+            };
+            if (this._file) {
+              this._file.update(fileObj);
+            } else {
+              this._file = this.courseResourcesFactory.createFileFromFileData(
+                this.http,
+                fileObj,
+                async () => {
+                  await this.getForumPage();
+                }
+              );
+            }
+          } else {
+            this._file = undefined;
+          }
+          break;
+        }
+        case 'Monitorar Leitura:': {
+          if (content === 'SIM') {
+            this._flagMonitorReading = true;
+          } else {
+            this._flagMonitorReading = false;
+          }
+          break;
+        }
+        case 'Tipo:': {
+          this._forumType = content;
+          break;
+        }
+        case 'Ordenação Padrão:': {
+          //TODO
+          break;
+        }
+        case 'Criado em:': {
+          const dates = this.parser.parseDates(content, 1);
+          this._creationDate = dates[0];
+          break;
+        }
+        default: {
+          console.log('WARNING:forum label not recognized:' + label);
+        }
+      }
+    }
   }
 
   private async loadForumPage() {
@@ -272,6 +387,32 @@ export class SigaaCourseForum
   }
 
   /**
+   * If notifications are enabled
+   */
+  async getFlagMonitorReading(): Promise<boolean> {
+    this.checkIfItWasClosed();
+    if (this._flagMonitorReading === undefined) {
+      await this.loadForumPage();
+    }
+    if (!this._flagMonitorReading)
+      throw new Error('SIGAA: Forum monitor reading flag could not be loaded.');
+    return this._flagMonitorReading;
+  }
+
+  /**
+   * creation date of the forum.
+   */
+  async getCreationDate(): Promise<Date> {
+    this.checkIfItWasClosed();
+    if (this._creationDate === undefined) {
+      await this.loadForumPage();
+    }
+    if (!this._creationDate)
+      throw new Error('SIGAA: Forum creation date could not be loaded.');
+    return this._creationDate;
+  }
+
+  /**
    * File attached to the forum.
    */
   async getFile(): Promise<File | undefined> {
@@ -293,6 +434,11 @@ export class SigaaCourseForum
     if (!this._numOfTopics)
       throw new Error('SIGAA: Forum number of topics could not be loaded.');
     return this._numOfTopics;
+  }
+
+  get id(): string {
+    this.checkIfItWasClosed();
+    return this._id;
   }
 
   /**
@@ -381,162 +527,13 @@ export class SigaaCourseForum
     }
   }
 
-  /**
-   * creation date of the forum.
-   */
-  async getCreationDate(): Promise<Date> {
-    this.checkIfItWasClosed();
-    if (this._creationDate === undefined) {
-      await this.loadForumPage();
-    }
-    if (!this._creationDate)
-      throw new Error('SIGAA: Forum creation date could not be loaded.');
-    return this._creationDate;
-  }
-
-  /**
-   * If read monitoring is enabled.
-   */
-  async getMonitorReading(): Promise<boolean> {
-    this.checkIfItWasClosed();
-    if (this._monitorReading === undefined) {
-      await this.loadForumPage();
-    }
-    if (this._monitorReading !== false && this._monitorReading !== true)
-      throw new Error('SIGAA: Forum monitor reading could not be loaded.');
-    return this._monitorReading;
-  }
-
-  /**
-   * Loads the forum page.
-   * @param retry
-   */
-  private async getForumPage(retry = true): Promise<void> {
-    try {
-      const page = await this.http.post(
-        this._form.action.href,
-        this._form.postValues
-      );
-
-      this.parseForumTable(page);
-      this.parseSubmitPageForm(page);
-    } catch (err) {
-      if (retry) {
-        await this.updateInstance();
-        return this.getForumPage(false);
-      } else {
-        throw err;
-      }
-    }
-  }
-
-  /**
-   * Parse submit form in forum page.
-   * @param page
-   */
-  private parseSubmitPageForm(page: Page): void {
-    const formElement = page.$('form#form');
-    const action = formElement.attr('action');
-    if (!action)
-      throw new Error('SIGAA: Forum submit page has form without action.');
-    const actionURL = new URL(action, page.url.href);
-    const postValues: Record<string, string> = {};
-    formElement
-      .find("input:not([type='button'])")
-      .each((index: number, element: cheerio.Element) => {
-        const name = page.$(element).attr('name');
-        if (name) postValues[name] = page.$(element).val();
-      });
-
-    this._submitTopicPageForm = {
-      action: actionURL,
-      postValues
-    };
-  }
-
-  /**
-   * Parse main page of forum.
-   * @param page
-   */
-  private parseForumTable(page: Page): void {
-    const tableElement = page.$('table.formAva > tbody');
-    if (tableElement.length === 0)
-      throw new Error('SIGAA: Unexpected forum page without table element.');
-
-    const rows = tableElement.find('tr').toArray();
-    for (const row of rows) {
-      const headCellElement = page.$(row).find('th');
-      const dataCellElement = page.$(row).find('td');
-      const label = this.parser.removeTagsHtml(headCellElement.html());
-      const content = this.parser.removeTagsHtml(dataCellElement.html());
-      switch (label) {
-        case 'Título:': {
-          this._title = content;
-          break;
-        }
-        case 'Descrição:': {
-          this._description = content;
-          break;
-        }
-        case 'Autor(a):': {
-          this._author = content;
-          break;
-        }
-        case 'Arquivo:': {
-          const linkElement = page.$(dataCellElement).find('a');
-          if (linkElement.length === 1) {
-            const title = this.parser.removeTagsHtml(linkElement.html());
-            const onClick = linkElement.attr('onclick');
-            if (!onClick)
-              throw new Error('SIGAA: Invalid file format at forum page.');
-            const form = page.parseJSFCLJS(onClick);
-            const fileObj: FileData = {
-              title,
-              description: '',
-              form,
-              id: form.postValues.id
-            };
-            if (this._file) {
-              this._file.update(fileObj);
-            } else {
-              this._file = this.courseResourcesFactory.createFileFromFileData(
-                this.http,
-                fileObj,
-                async () => {
-                  await this.getForumPage();
-                }
-              );
-            }
-          } else {
-            this._file = undefined;
-          }
-          break;
-        }
-        case 'Monitorar Leitura:': {
-          if (content === 'SIM') {
-            this._monitorReading = true;
-          } else {
-            this._monitorReading = false;
-          }
-          break;
-        }
-        case 'Tipo:': {
-          this._forumType = content;
-          break;
-        }
-        case 'Ordenação Padrão:': {
-          //TODO
-          break;
-        }
-        case 'Criado em:': {
-          const dates = this.parser.parseDates(content, 1);
-          this._creationDate = dates[0];
-          break;
-        }
-        default: {
-          console.log('WARNING:forum label not recognized:' + label);
-        }
-      }
+  *getTopics(): Generator<Promise<boolean>, void, void> {
+    let stillHaveTopics = true;
+    while (stillHaveTopics) {
+      yield (async (): Promise<boolean> => {
+        stillHaveTopics = false;
+        return true;
+      })();
     }
   }
 }

@@ -1,4 +1,5 @@
 import { Parser } from '@helpers/sigaa-parser';
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
 import {
   AbstractUpdatableResource,
   UpdatableResource,
@@ -10,7 +11,7 @@ import { SigaaForm } from '@session/sigaa-page';
 /**
  * @category Internal
  */
-export interface NewsData {
+export interface NewsData extends UpdatableResourceData {
   title: string;
   form: SigaaForm;
   id: string;
@@ -40,7 +41,7 @@ export class SigaaNews extends AbstractUpdatableResource implements News {
     options: NewsData,
     updater: UpdatableResourceCallback
   ) {
-    super(updater);
+    super(options.instanceIndentifier, updater);
     this.update(options);
   }
 

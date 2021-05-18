@@ -23,11 +23,11 @@ export * from '@courseResources/sigaa-grades-student';
 export * from '@courseResources/sigaa-syllabus-student';
 export * from '@courseResources/sigaa-absence-list-student';
 export * from '@courseResources/sigaa-member-list-student';
+export * from '@courseResources/forum/sigaa-course-forum-student';
 
 export * from '@attachments/sigaa-homework-student';
 export * from '@attachments/sigaa-quiz-student';
 export * from '@attachments/sigaa-survey-student';
-export * from '@attachments/sigaa-course-forum-student';
 export * from '@attachments/sigaa-web-content-student';
 export * from '@attachments/sigaa-link-student';
 export * from '@attachments/sigaa-video-student';

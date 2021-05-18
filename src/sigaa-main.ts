@@ -38,6 +38,7 @@ import {
   LessonParserFactory,
   SigaaLessonParserFactory
 } from '@courses/sigaa-lesson-parser-factory';
+import { XOR } from './sigaa-types';
 
 /**
  * @category Internal
@@ -75,11 +76,6 @@ interface SigaaConstructorHTTP {
   httpFactory: HTTPFactory;
   httpSession: HTTPSession;
 }
-
-type Without<T, U> = {
-  [P in Exclude<keyof T, keyof U>]?: never;
-};
-type XOR<T, U> = (Without<T, U> & U) | (Without<U, T> & T);
 
 /**
  * @category Public

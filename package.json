@@ -1,7 +1,7 @@
 {
     "name": "sigaa-api",
     "description": "Unofficial high performance API for SIGAA IFSC using web scraping.",
-    "version": "1.0.25",
+    "version": "1.0.26",
     "main": "dist/sigaa-all-types.js",
     "types": "dist/sigaa-all-types.d.ts",
     "author": "Geovane Schmitz <contato@geovanems.com.br>",
@@ -57,7 +57,6 @@
         "eslint-plugin-promise": "^5.1.0",
         "eslint-plugin-standard": "^5.0.0",
         "jest": "^26.6.3",
-        "jsdoc": "^3.6.3",
         "prettier": "^2.2.1",
         "ts-jest": "^26.5.5",
         "typedoc": "^0.20.36",

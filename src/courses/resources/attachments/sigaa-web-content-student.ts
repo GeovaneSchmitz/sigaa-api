@@ -1,16 +1,18 @@
 import { Parser } from '@helpers/sigaa-parser';
+import { UpdatableResourceData } from '@resources/sigaa-resource-manager';
+import { HTTP } from '@session/sigaa-http';
+import { SigaaForm } from '@session/sigaa-page';
+
 import {
   AbstractUpdatableResource,
   UpdatableResource,
   UpdatableResourceCallback
 } from '@resources/updatable-resource';
-import { HTTP } from '@session/sigaa-http';
-import { SigaaForm } from '@session/sigaa-page';
 
 /**
  * @category Internal
  */
-export interface WebContentData {
+export interface WebContentData extends UpdatableResourceData {
   title: string;
   id: string;
   form: SigaaForm;
@@ -46,7 +48,7 @@ export class SigaaWebContent
     options: WebContentData,
     updater: UpdatableResourceCallback
   ) {
-    super(updater);
+    super(options.instanceIndentifier, updater);
     this.update(options);
   }
 

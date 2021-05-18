@@ -3,15 +3,17 @@ import { UpdatableResource } from '@resources/updatable-resource';
 /**
  * @category Internal
  */
-interface WithId {
-  id: string;
+export interface UpdatableResourceData {
+  instanceIndentifier: string;
 }
 
 /**
  * @category Internal
  */
-export class ResourceManager<T extends UpdatableResource<U>, U extends WithId>
-  implements ResourceManager<T, U> {
+export class ResourceManager<
+  T extends UpdatableResource<U>,
+  U extends UpdatableResourceData
+> implements ResourceManager<T, U> {
   constructor(private instanceConstructor: (options: U) => T) {}
 
   /**
@@ -26,7 +28,7 @@ export class ResourceManager<T extends UpdatableResource<U>, U extends WithId>
   keepOnly(idsToKeep: string[]): T[] {
     this._instances = this._instances.filter((instance) => {
       try {
-        if (idsToKeep.includes(instance.id)) {
+        if (idsToKeep.includes(instance._instanceIndentifier)) {
           return true;
         } else {
           instance.close();
@@ -48,8 +50,8 @@ export class ResourceManager<T extends UpdatableResource<U>, U extends WithId>
 
   /**
    * Update instance with new information
-   * If there is an instance with the ID equal to options.id and
-   * the same type, the update method will be called with
+   * If there is an instance with the instanceIndentifier equal to
+   * options.instanceIndentifier, the update method will be called with
    * instanceOptions.
    * E.g. instance.update(options.instanceOptions)
    * or create new instance with constructor.
@@ -57,13 +59,10 @@ export class ResourceManager<T extends UpdatableResource<U>, U extends WithId>
    * @return return the instance updated/created
    */
   upsert(options: U): T {
-    const instance = this._instances.find((classItem) => {
-      try {
-        return options.id === classItem.id;
-      } catch (err) {
-        return false;
-      }
-    });
+    const id = options.instanceIndentifier;
+    const instance = this._instances.find(
+      (classItem) => id === classItem._instanceIndentifier
+    );
 
     if (!instance) {
       const newInstance = this.instanceConstructor(options);

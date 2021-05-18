@@ -24,7 +24,7 @@ import {
 import {
   ForumData,
   CourseForum
-} from '@attachments/sigaa-course-forum-student';
+} from '@courseResources/forum/sigaa-course-forum-student';
 
 import {
   WebContent,
@@ -141,7 +141,7 @@ export interface CourseStudent {
   getSurveys(): Promise<SigaaSurvey[]>;
 
   /**
-   * Returns your homework.
+   * Returns yours homework.
    */
   getHomeworks(): Promise<Homework[]>;
 
@@ -404,7 +404,13 @@ export class SigaaCourseStudent implements CourseStudent {
         const form = page.parseJSFCLJS(buttonOnclick);
         const id = form.postValues['id'];
         const key = form.postValues['key'];
-        const fileOptions = { title, description, id, key };
+        const fileOptions = {
+          title,
+          description,
+          id,
+          key,
+          instanceIndentifier: id
+        };
         this.resources.files.upsert(fileOptions);
         usedFilesId.push(id);
       }
@@ -448,12 +454,12 @@ export class SigaaCourseStudent implements CourseStudent {
         const forumOptions: ForumData = {
           title,
           id: id.toString(),
+          instanceIndentifier: id.toString(),
           forumType,
           numOfTopics: numOfTopics,
           author,
           creationDate,
-          form,
-          isMain: true
+          form
         };
         this.resources.forums.upsert(forumOptions);
         usedForumIds.push(id.toString());
@@ -485,7 +491,12 @@ export class SigaaCourseStudent implements CourseStudent {
 
         const form = page.parseJSFCLJS(buttonOnClick);
         const id = form.postValues.id;
-        const newsOptions: NewsData = { title, form, id };
+        const newsOptions: NewsData = {
+          title,
+          form,
+          id,
+          instanceIndentifier: id
+        };
         this.resources.news.upsert(newsOptions);
         usedNewsId.push(id);
       }
@@ -646,6 +657,7 @@ export class SigaaCourseStudent implements CourseStudent {
         startDate,
         endDate,
         id,
+        instanceIndentifier: id,
         formSendAnswers,
         formViewAnswersSubmitted
       };
@@ -689,7 +701,8 @@ export class SigaaCourseStudent implements CourseStudent {
           title,
           date,
           form,
-          id
+          id,
+          instanceIndentifier: id
         };
         this.resources.webContents.upsert(webContentOptions);
         usedWebContentsIds.push(id);
@@ -713,69 +726,96 @@ export class SigaaCourseStudent implements CourseStudent {
   async getHomeworks(): Promise<Homework[]> {
     const page = await this.getCourseSubMenu('Tarefas');
 
-    const table = page.$('.listing');
+    const tables = page.$('.listing').toArray();
 
-    if (!table) return [];
-    const rows = table.find('tr[class]').toArray();
+    if (!tables) return [];
     const usedHomeworksIds = [];
+    for (const table of tables) {
+      //If table title is 'Tarefas Em Grupo'
+      const isGroupHomework =
+        this.parser.removeTagsHtml(page.$(table).siblings('legend').html()) ===
+        'Tarefas Em Grupo';
 
-    for (let i = 0; i < rows.length; i += 2) {
-      const cells = page.$(rows[i]).find('td');
-      const cellDescription = page.$(rows[i + 1]).find('td');
-      const title = this.parser.removeTagsHtml(cells.eq(1).html());
-      const description = this.parser.removeTagsHtml(cellDescription.html());
-      const date = this.parser.removeTagsHtml(cells.eq(2).html());
-      const dates = this.parser.parseDates(date, 2);
-      let haveGrade = true;
-      if (this.parser.removeTagsHtml(cells.eq(3).html()) === 'Não')
-        haveGrade = false;
-      const buttonSendHomeworkElement = page.$(cells.eq(5).find('a[onclick]'));
-      let formSendHomework;
-      if (buttonSendHomeworkElement.length !== 0) {
-        const onClick = buttonSendHomeworkElement.attr('onclick');
-        if (!onClick)
-          throw new Error('SIGAA: Button send homework without onclick event.');
-        formSendHomework = page.parseJSFCLJS(onClick);
-      }
-      const buttonViewHomeworkSubmittedElement = page.$(
-        cells.eq(6).find('a[onclick]')
-      );
-      let formViewHomeworkSubmitted;
-      if (buttonViewHomeworkSubmittedElement.length !== 0) {
-        const onClick = buttonViewHomeworkSubmittedElement.attr('onclick');
-        if (!onClick)
-          throw new Error('SIGAA: Button view homework without onclick event.');
-        formViewHomeworkSubmitted = page.parseJSFCLJS(onClick);
-      }
-      const form = formSendHomework || formViewHomeworkSubmitted;
-      let id;
-      if (!form) {
-        if (!this.resources.lessons.instances.length) {
-          await this.getLessons();
-        }
-        const homework = this.resources.homework.instances.find(
-          (homework) => homework.title === title
+      const rows = page.$(table).find('tr[class]').toArray();
+
+      for (let i = 0; i < rows.length; i += 2) {
+        const cells = page.$(rows[i]).find('td');
+        const cellDescription = page.$(rows[i + 1]).find('td');
+        const title = this.parser.removeTagsHtml(cells.eq(1).html());
+        const description = this.parser.removeTagsHtml(cellDescription.html());
+        const date = this.parser.removeTagsHtml(cells.eq(2).html());
+        const dates = this.parser.parseDates(date, 2);
+        const haveGrade =
+          this.parser.removeTagsHtml(cells.eq(3).html()) !== 'Não';
+
+        const buttonSendHomeworkElement = page.$(
+          cells.eq(5).find('a[onclick]')
         );
-        if (homework) {
-          id = homework.id;
-        } else {
-          throw new Error('SIGAA: Homework not found by title.');
+        let formSendHomework;
+        if (buttonSendHomeworkElement.length !== 0) {
+          const onClick = buttonSendHomeworkElement.attr('onclick');
+          if (!onClick)
+            throw new Error(
+              'SIGAA: Button send homework without onclick event.'
+            );
+          formSendHomework = page.parseJSFCLJS(onClick);
         }
-      } else {
-        id = form.postValues.id;
+        const buttonViewHomeworkSubmittedElement = page.$(
+          cells.eq(6).find('a[onclick]')
+        );
+        let formViewHomeworkSubmitted;
+        if (buttonViewHomeworkSubmittedElement.length !== 0) {
+          const onClick = buttonViewHomeworkSubmittedElement.attr('onclick');
+          if (!onClick)
+            throw new Error(
+              'SIGAA: Button view homework without onclick event.'
+            );
+          formViewHomeworkSubmitted = page.parseJSFCLJS(onClick);
+        }
+        const form = formSendHomework || formViewHomeworkSubmitted;
+        let id: string | undefined;
+        let instanceIndentifier: string | undefined;
+        if (!form) {
+          if (!this.resources.lessons.instances.length) {
+            await this.getLessons();
+          }
+
+          const homeworkList = this.resources.homework.instances.filter(
+            (homework) => homework.title === title
+          );
+
+          if (homeworkList.length > 1) {
+            throw new Error(
+              'SIGAA: There is more than one homework with same title and without id.'
+            );
+          } else if (homeworkList.length == 1) {
+            id = homeworkList[0]._instanceIndentifier;
+          } else {
+            instanceIndentifier = '_' + title;
+          }
+        } else {
+          id = form.postValues.id;
+        }
+        if (id) {
+          instanceIndentifier = id;
+        }
+        if (instanceIndentifier) {
+          const homeworkOptions: HomeworkData = {
+            title,
+            startDate: dates[0],
+            endDate: dates[1],
+            description,
+            isGroupHomework,
+            id,
+            instanceIndentifier,
+            formSendHomework,
+            formViewHomeworkSubmitted,
+            haveGrade
+          };
+          this.resources.homework.upsert(homeworkOptions);
+          usedHomeworksIds.push(instanceIndentifier);
+        }
       }
-      const homeworkOptions: HomeworkData = {
-        title,
-        startDate: dates[0],
-        endDate: dates[1],
-        description,
-        id,
-        formSendHomework,
-        formViewHomeworkSubmitted,
-        haveGrade
-      };
-      this.resources.homework.upsert(homeworkOptions);
-      usedHomeworksIds.push(id);
     }
     this.resources.homework.keepOnly(usedHomeworksIds);
     return this.resources.homework.instances;

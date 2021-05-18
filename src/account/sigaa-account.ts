@@ -25,7 +25,7 @@ export interface Account {
    * Returns active bonds, in IFSC it is called "Vínculos ativos".
    *
    * A user can have more than one bond.
-   * Eg. A user takes two courses.
+   * Eg. A user takes two programs.
    */
   getActiveBonds(): Promise<BondType[]>;
 

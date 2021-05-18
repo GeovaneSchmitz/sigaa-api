@@ -22,7 +22,7 @@ import {
   CourseForum,
   ForumData,
   SigaaCourseForum
-} from '@attachments/sigaa-course-forum-student';
+} from '@courseResources/forum/sigaa-course-forum-student';
 
 import {
   Homework,
