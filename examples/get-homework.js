@@ -46,7 +46,12 @@ const main = async () => {
 
         // Uma marcador (verdadeiro ou falso) que indica se a tarefa vale nota
         console.log(
-          (await homework.getHaveGrade()) ? 'Vale nota' : 'Não vale nota'
+          (await homework.getFlagHaveGrade()) ? 'Vale nota' : 'Não vale nota'
+        );
+
+        // Uma marcador (verdadeiro ou falso) que indica se a tarefa é em grupo
+        console.log(
+          (await homework.getFlagIsGroupHomework()) ? 'É em grupo' : 'É individual'
         );
 
         // A data de início para envio da tarefa
